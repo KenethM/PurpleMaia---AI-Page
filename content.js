@@ -107,7 +107,10 @@ window.SITE = {
         "LLMs: drafting and editing emails, summarizing long documents, quick how-to help, session prep.",
         "If you have used Otter, Google Translate or autocorrect, you have been using NLP for years."
       ],
-      resources: []
+      resources: [
+        { label: "Google PAIR Explorables — interactive essays on how these systems behave", url: "https://pair.withgoogle.com/explorables/" },
+        { label: "Glossary of every term used here", url: "#glossary" }
+      ]
     },
 
     /* ===== MODULE 2 — HOW AN LLM WORKS ===== */
@@ -124,7 +127,10 @@ window.SITE = {
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
         "The base model is not looking anything up — there is no fact database inside this loop. Search and document tools get bolted on top of it (Module 3), but that is an addition, not part of the machinery."
       ],
-      resources: []
+      resources: [
+        { label: "LLM visualizer — walk a working model layer by layer", url: "https://bbycroft.net/llm" },
+        { label: "Transformer Explainer — the whole loop running in your browser", url: "https://poloclub.github.io/transformer-explainer/" }
+      ]
     },
     {
       id: "m2-training-data",
@@ -139,7 +145,10 @@ window.SITE = {
         "If something is underrepresented in training data — ʻōlelo Hawaiʻi, for example — the model will be weaker on it.",
         "This is the root of the 'inadequate cultural context' problem. Bias in Module 3 comes straight back to this slide."
       ],
-      resources: []
+      resources: [
+        { label: "What is training data? — IBM", url: "https://www.ibm.com/think/topics/training-data" },
+        { label: "Quick, Draw! — thirty seconds and training data clicks", url: "https://quickdraw.withgoogle.com/?locale=en_US" }
+      ]
     },
     {
       id: "m2-parameters",
@@ -154,7 +163,9 @@ window.SITE = {
         "Change the parameters and you change those probabilities for the same input.",
         "More parameters generally — not always — means more capability. No need to go further than that."
       ],
-      resources: []
+      resources: [
+        { label: "TensorFlow Playground — watch parameters get tuned in real time", url: "https://playground.tensorflow.org/" }
+      ]
     },
     {
       id: "m2-pretraining-inference",
@@ -170,7 +181,10 @@ window.SITE = {
         "It is not learning from your conversation in real time — unless a product is specifically built to remember, which is a different feature.",
         "Everything from this point in the module onward is inference."
       ],
-      resources: []
+      resources: [
+        { label: "Glossary: pre-training, inference, parameters", url: "#glossary" },
+        { label: "FAQ: is the model learning from what I type?", url: "#faq" }
+      ]
     },
     {
       id: "m2-tokenization",
@@ -185,7 +199,9 @@ window.SITE = {
         "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
         "It works with those chunks rather than individual letters, which is why letter-level tasks — counting, reversing, rhyming on spelling — are unreliable."
       ],
-      resources: []
+      resources: [
+        { label: "Tiktokenizer — paste any text and see the tokens and their IDs", url: "https://tiktokenizer.vercel.app/" }
+      ]
     },
     {
       id: "m2-embeddings",
@@ -200,7 +216,9 @@ window.SITE = {
         "Words used in similar ways land close together. \"King\" sits near \"queen\".",
         "At this step a word has one position regardless of which sense you meant. Separating Python the language from Python the snake takes the surrounding words — that is the next lesson."
       ],
-      resources: []
+      resources: [
+        { label: "Embedding projector — rotate and search a real meaning space", url: "https://projector.tensorflow.org/" }
+      ]
     },
     {
       id: "m2-transformers",
@@ -216,7 +234,10 @@ window.SITE = {
         "This happens many times in parallel through different attention heads, each catching a different kind of relationship.",
         "It is also what separates the two Pythons: attention reads whether \"import\" or \"reptile\" is nearby and pulls the same token toward one sense or the other."
       ],
-      resources: []
+      resources: [
+        { label: "Transformer Explainer — hover a token to see what it attends to", url: "https://poloclub.github.io/transformer-explainer/" },
+        { label: "Generative AI exists because of the transformer — FT", url: "https://ig.ft.com/generative-ai/" }
+      ]
     },
     {
       id: "m2-next-token",
@@ -231,7 +252,9 @@ window.SITE = {
         "It is optimizing for \"plausible next token\", never for \"true statement\". That is where hallucination comes from.",
         "It also explains why the model sounds equally confident whether it is right or wrong — and why this is not thinking the way a person thinks."
       ],
-      resources: []
+      resources: [
+        { label: "Transformer Explainer — type a sentence and watch the probabilities rank", url: "https://poloclub.github.io/transformer-explainer/" }
+      ]
     },
     {
       id: "m2-sampling",
@@ -247,7 +270,10 @@ window.SITE = {
         "Greedy decoding always takes the top token. Sampling rolls the dice against those odds instead, so \"reef\" at 15% comes up about one time in seven.",
         "Temperature is a separate dial, and it acts before the roll: low temperature sharpens the odds toward the favourite, high temperature flattens them so the long shots land more often."
       ],
-      resources: []
+      resources: [
+        { label: "Transformer Explainer — it has a temperature slider; move it and watch the odds reshape", url: "https://poloclub.github.io/transformer-explainer/" },
+        { label: "FAQ: why do I get a different answer each time?", url: "#faq" }
+      ]
     },
     {
       id: "m2-context-window",
@@ -262,7 +288,9 @@ window.SITE = {
         "Once something falls outside the window, the model cannot see it at all.",
         "This is why a very long conversation seems to \"forget\" what you said at the start. Nothing is broken."
       ],
-      resources: []
+      resources: [
+        { label: "Glossary: context window, token", url: "#glossary" }
+      ]
     },
 
     /* ===== MODULE 3 — USING LLMs WELL ===== */
@@ -280,7 +308,8 @@ window.SITE = {
         "Weak: \"Write a bio for Keiko.\" Strong: \"Write a 100-word bio for Keiko, our program director, for a grant funder audience, warm but concise, drawing on the notes below.\""
       ],
       resources: [
-        { label: "Prompt library", url: "#prompts" }
+        { label: "Prompt library", url: "#prompts" },
+        { label: "Prompt engineering overview — Anthropic", url: "https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" }
       ]
     },
     {
@@ -296,7 +325,9 @@ window.SITE = {
         "Ask for the exact page number of a quote and it may hand you a specific-sounding page and citation that does not exist.",
         "That is not the model being confident. It is the model returning a probability."
       ],
-      resources: []
+      resources: [
+        { label: "Survey of Hallucination in Natural Language Generation — Ji et al.", url: "https://arxiv.org/abs/2202.03629" }
+      ]
     },
     {
       id: "m3-grounding",
@@ -311,7 +342,9 @@ window.SITE = {
         "Treat AI output as a draft, not a finished fact.",
         "A search-grounded assistant that shows its sources lets you click through and check the claim. A plain chat answer with no receipts does not."
       ],
-      resources: []
+      resources: [
+        { label: "Retrieval-Augmented Generation — Lewis et al., NeurIPS 2020", url: "https://arxiv.org/abs/2005.11401" }
+      ]
     },
     {
       id: "m3-bias",
@@ -327,7 +360,10 @@ window.SITE = {
         "A model trained mostly on English-language Western sources may answer a question about Hawaiian cultural protocol with a confident outside guess instead of deferring to community and Native sources."
       ],
       resources: [
-        { label: "Video: ChatGPT, AI and Māori data sovereignty (3:47)", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty" }
+        { label: "Video: ChatGPT, AI and Māori data sovereignty (3:47)", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty" },
+        { label: "On the Dangers of Stochastic Parrots — Bender et al., FAccT 2021", url: "https://dl.acm.org/doi/10.1145/3442188.3445922" },
+        { label: "Survival of the Best Fit — play out how bias gets baked in", url: "https://www.survivalofthebestfit.com/resources" },
+        { label: "AI4Hawaiʻi — local context for this conversation", url: "https://www.ai4hawaii.org/" }
       ]
     },
     {
@@ -343,7 +379,9 @@ window.SITE = {
         "Visible steps are not proof of correctness, and they are not human reasoning or understanding.",
         "A tidy, confident-looking chain of steps can add up to the wrong final answer."
       ],
-      resources: []
+      resources: [
+        { label: "Chain-of-Thought Prompting Elicits Reasoning in LLMs — Wei et al.", url: "https://arxiv.org/abs/2201.11903" }
+      ]
     },
     {
       id: "m3-oversight",
@@ -358,7 +396,9 @@ window.SITE = {
         "That goes double for anything public-facing, and anything touching culture or community.",
         "If AI drafts a post about a cultural practice, someone who actually knows the topic reads it and fixes what is off before it posts. Every time, no exceptions."
       ],
-      resources: []
+      resources: [
+        { label: "AI Risk Management Framework 1.0 — NIST", url: "https://www.nist.gov/itl/ai-risk-management-framework" }
+      ]
     },
     {
       id: "m3-model-families",
@@ -373,7 +413,11 @@ window.SITE = {
         "A \"family\" is versions of the same model line released over time — GPT-4 and GPT-5, the way iPhone 15 and iPhone 16 are versions.",
         "Similar general ideas underneath, different companies and different strengths."
       ],
-      resources: []
+      resources: [
+        { label: "Claude model overview — Anthropic", url: "https://docs.claude.com/en/docs/about-claude/models/overview" },
+        { label: "Model docs — OpenAI", url: "https://platform.openai.com/docs/models" },
+        { label: "Gemini model docs — Google", url: "https://ai.google.dev/gemini-api/docs/models" }
+      ]
     }
   ],
 
@@ -517,7 +561,7 @@ window.SITE = {
     links: [
       { label: "Contact", url: "#" },
       { label: "Source on GitHub", url: "https://github.com/KenethM/PurpleMaia---AI-Page" },
-      { label: "Report a problem", url: "#" }
+      { label: "Report a problem", url: "https://github.com/KenethM/PurpleMaia---AI-Page/issues" }
     ]
   }
 };
