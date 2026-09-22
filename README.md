@@ -17,18 +17,11 @@ assets/favicon.svg  the little icon in the browser tab
 
 ## 1. Put it on GitHub Pages
 
-This folder is already the `PurpleMaia---AI-Page` clone, with `origin` pointing at
-`github.com/KenethM/PurpleMaia---AI-Page`. The repo has no commits yet, so:
+The code is pushed to `github.com/KenethM/PurpleMaia---AI-Page`. The one
+remaining step is a setting only a repo admin can flip:
 
-```bash
-cd ~/Documents/GitHub/PurpleMaia---AI-Page
-git add .
-git commit -m "AI workshop learning page"
-git push -u origin main
-```
-
-Then on github.com: **Settings → Pages → Source: Deploy from a branch
-→ Branch: `main`, folder: `/ (root)` → Save.**
+**Settings → Pages → Source: Deploy from a branch → Branch: `main`,
+folder: `/ (root)` → Save.**
 
 A minute later it is live at:
 
@@ -39,6 +32,27 @@ Every `git push` after that republishes automatically — usually within a minut
 > **A custom domain?** Settings → Pages → Custom domain, then add a `CNAME` file
 > here containing just the domain. Point a CNAME DNS record at
 > `kenethm.github.io` and tick "Enforce HTTPS" once the certificate is issued.
+
+### Being findable
+
+Three files carry the search-engine and link-preview setup:
+
+| File | What it does |
+|---|---|
+| `robots.txt` | Tells crawlers everything is open, and points at the sitemap |
+| `sitemap.xml` | The one URL, for Google Search Console |
+| `assets/social.png` | 1200×630 card shown when the link is pasted anywhere |
+
+The `<head>` of `index.html` holds the canonical URL, Open Graph / Twitter tags,
+and JSON-LD structured data describing the workshop as a `Course`.
+
+**If the URL ever changes** (custom domain, or a move to a Purple Maiʻa org),
+find-and-replace `https://kenethm.github.io/PurpleMaia---AI-Page/` across
+`index.html`, `robots.txt` and `sitemap.xml`. Nothing else is URL-dependent.
+
+To get indexed rather than waiting: add the site at
+[search.google.com/search-console](https://search.google.com/search-console),
+verify it, and submit `sitemap.xml`.
 
 **To preview locally**, just double-click `index.html`. It works straight off the
 file system — nothing needs a server, so what you see locally is what ships.
