@@ -155,8 +155,8 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] The footer's "Source on GitHub" link points at this repo.
 - [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
 - [ ] Add Purple Maiʻa's own module videos as they come out of production — set `video:` on the lesson; until then it shows a “coming soon” placeholder.
-- [ ] Swap the remaining `url: "#"` entries for real links (Contact, Report a problem, slide-deck PDF).
-- [ ] Drop the deck PDF into `assets/` and link it under "For facilitators".
+- [x] Every `url: "#"` replaced; all 19 lessons carry resources.
+- [ ] **Export the deck to `assets/llm-nlp-101.pdf`** — the page already links that exact path, so the link 404s until the file is committed.
 
 ### Content structure
 

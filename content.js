@@ -548,7 +548,7 @@ window.SITE = {
       group: "For facilitators",
       items: [
         { label: "Fork this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page/fork", desc: "Run the same session for your own group." },
-        { label: "Slide deck (PDF)", url: "#", desc: "The full LLM/NLP 101 deck. Drop the file in assets/ and link it here." },
+        { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "The full LLM/NLP 101 deck, as presented." },
         { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." }
       ]
     }
@@ -559,7 +559,7 @@ window.SITE = {
     org: "Purple Maiʻa",
     note: "LLM/NLP 101 is an internal learning asset built to be reused — as video, slides, social clips and workshop material. Free to adapt.",
     links: [
-      { label: "Contact", url: "#" },
+      { label: "Contact", url: "mailto:keneth@purplemaia.org" },
       { label: "Source on GitHub", url: "https://github.com/KenethM/PurpleMaia---AI-Page" },
       { label: "Report a problem", url: "https://github.com/KenethM/PurpleMaia---AI-Page/issues" }
     ]
