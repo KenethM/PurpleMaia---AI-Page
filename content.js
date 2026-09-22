@@ -2,30 +2,36 @@
    content.js  —  EDIT THIS FILE, NOT THE HTML.
    Everything on the page is generated from the object below.
    Save, refresh, done. See README.md for a field-by-field guide.
+
+   Structure follows the LLM/NLP 101 deck:
+     Module 1  Overview            (10-12 min)
+     Module 2  How an LLM works    (20-25 min)
+     Module 3  Using LLMs well     (15-20 min)
    ============================================================= */
 
 window.SITE = {
 
   /* ---------- 1. THE BASICS ---------- */
   event: {
-    name: "AI Fundamentals",
-    shortName: "AI Fundamentals",
-    tagline: "A hands-on session on what AI actually is, what it is good at, and how to use it well.",
-    date: "Saturday, October 18, 2026",
-    time: "9:00 AM - 3:00 PM HST",
-    location: "Community Hall + livestream",
-    badge: "Workshop materials",
+    name: "LLM/NLP 101",
+    shortName: "LLM/NLP 101",
+    tagline: "What an LLM actually is, how it generates a response, and where it falls short — at a 101 level, for the whole team.",
+    date: "Tuesday, October 6, 2026",
+    time: "First Tuesday session",
+    location: "Purple Maiʻa all-staff",
+    badge: "Staff learning asset",
     intro:
-      "Everything from the session lives on this page: slides, recordings, exercises, and the links we mentioned. " +
-      "Nothing here expires and nothing is behind a login. Work through it in order, or jump to whatever you need.",
-    ctaPrimary: { label: "Start with Lesson 1", href: "#lessons" },
+      "Purple Maiʻa's AI footprint is growing, and that means more of us end up speaking about AI in public — to funders, to haumāna, to community. " +
+      "This page is the shared baseline so we can do that accurately. Three modules, no math, nothing behind a login. " +
+      "Work through it in order, or jump to whatever you need before a session.",
+    ctaPrimary: { label: "Start with Module 1", href: "#lessons" },
     ctaSecondary: { label: "See the run of show", href: "#agenda" },
     // Small facts shown under the hero
     facts: [
-      { label: "Lessons", value: "10" },
-      { label: "Total runtime", value: "~2h 35m" },
-      { label: "Cost", value: "Free, forever" },
-      { label: "Prereqs", value: "None" }
+      { label: "Modules", value: "3" },
+      { label: "Lessons", value: "19" },
+      { label: "Runtime", value: "~59 min" },
+      { label: "Level", value: "101, no prereqs" }
     ]
   },
 
@@ -33,31 +39,29 @@ window.SITE = {
   pathways: [
     {
       icon: "sprout",
-      title: "Brand new to AI",
-      body: "Never typed anything into a chatbot, or tried once and bounced off. Start at the beginning and go in order.",
-      action: { label: "Start the foundations track", filter: "foundations" }
+      title: "I use it, but I couldn't explain it",
+      body: "You get useful answers out of ChatGPT or Claude, but the words underneath — tokens, training, inference — are a blur. Start at the beginning.",
+      action: { label: "Start with the overview", filter: "overview" }
     },
     {
       icon: "wrench",
-      title: "I use it, but badly",
-      body: "You get mediocre answers and assume that is just how it is. It is not. Skip ahead to prompting.",
-      action: { label: "Jump to prompting", filter: "prompting" }
+      title: "I want to know what's under the hood",
+      body: "You want the actual mechanism: how text becomes tokens, what attention is doing, and why the same question gives different answers.",
+      action: { label: "Go to how an LLM works", filter: "how-it-works" }
     },
     {
       icon: "shield",
-      title: "I need to make a call",
-      body: "You are deciding what your team, classroom, or organization should allow. Start with responsible use.",
-      action: { label: "Review responsible use", filter: "responsible" }
+      title: "I have to speak about this publicly",
+      body: "You present to funders, community, or haumāna and cannot afford to get it wrong. Start with the limits and the judgment calls.",
+      action: { label: "Go to using LLMs well", filter: "using-llms" }
     }
   ],
 
   /* ---------- 3. TRACKS (the filter chips) ---------- */
   tracks: [
-    { id: "foundations", label: "Foundations" },
-    { id: "prompting",   label: "Prompting" },
-    { id: "practice",    label: "Practice" },
-    { id: "responsible", label: "Responsible use" },
-    { id: "build",       label: "Build something" }
+    { id: "overview",     label: "1 · Overview" },
+    { id: "how-it-works", label: "2 · How an LLM works" },
+    { id: "using-llms",   label: "3 · Using LLMs well" }
   ],
 
   /* ---------- 4. LESSONS ----------
@@ -68,189 +72,338 @@ window.SITE = {
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
   --------------------------------------------------------------- */
   lessons: [
+
+    /* ===== MODULE 1 — OVERVIEW ===== */
     {
-      id: "l1",
-      title: "What generative AI actually is",
-      track: "foundations",
-      level: "Start here",
-      duration: "12 min",
-      summary: "No math, no hype. A working mental model you can explain to someone else over dinner.",
+      id: "m1-map",
+      title: "AI, ML, NLP, generative AI, LLMs",
+      track: "overview",
+      level: "Module 1",
+      duration: "6 min",
+      summary: "Five words people use interchangeably that are not interchangeable. They nest inside each other.",
       video: "",
       slides: "",
       takeaways: [
-        "It predicts likely next words. It does not look anything up unless you give it a tool that does.",
-        "Confidence and correctness are unrelated. It sounds equally sure either way.",
-        "It has no memory between conversations unless the product adds one."
+        "AI is the umbrella term. Machine learning is a way of building AI: systems learn patterns from data instead of being programmed rule by rule.",
+        "NLP is machine learning applied to language — reading, understanding and producing human speech and text.",
+        "Generative AI creates new content (text, images, audio, video) rather than only classifying or predicting.",
+        "LLMs are the specific technology behind most generative text AI today: ChatGPT, Claude, Gemini."
       ],
       resources: [
-        { label: "One-page mental model (PDF)", url: "#" },
-        { label: "Glossary of terms used today", url: "#glossary" }
+        { label: "Glossary of every term used here", url: "#glossary" }
       ]
     },
     {
-      id: "l2",
-      title: "Your first ten minutes",
-      track: "foundations",
-      level: "Start here",
-      duration: "10 min",
-      summary: "Pick a tool, open it, and get one genuinely useful result before we go any further.",
+      id: "m1-daily",
+      title: "Where each one shows up in your day",
+      track: "overview",
+      level: "Module 1",
+      duration: "5 min",
+      summary: "You already use all three. Naming which is which is most of the literacy.",
       video: "",
       takeaways: [
-        "Any of the major assistants will do for today. Do not shop around yet.",
-        "Start with a task you already know the right answer to, so you can judge the output.",
-        "If the first answer is bad, that is information, not a verdict."
+        "NLP: live captions and transcription, translation tools, grammar and spell-check, voice-to-text.",
+        "Generative AI: social graphics, first-draft copy, meeting summaries, curriculum brainstorming.",
+        "LLMs: drafting and editing emails, summarizing long documents, quick how-to help, session prep.",
+        "If you have used Otter, Google Translate or autocorrect, you have been using NLP for years."
       ],
-      resources: [
-        { label: "Exercise 1: the warm-up task", url: "#" }
-      ]
+      resources: []
     },
+
+    /* ===== MODULE 2 — HOW AN LLM WORKS ===== */
     {
-      id: "l3",
-      title: "The five-part prompt recipe",
-      track: "prompting",
-      level: "Core",
-      duration: "18 min",
-      summary: "Role, task, context, format, constraints. The highest-leverage thing in this whole session.",
+      id: "m2-loop",
+      title: "The loop, end to end",
+      track: "how-it-works",
+      level: "Module 2",
+      duration: "3 min",
+      summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
       video: "",
       takeaways: [
-        "Say who it should be, what to do, what it needs to know, how to shape the answer, and what to avoid.",
-        "Specific beats polite. \"120 words, third person, no adjectives\" beats \"please write something nice\".",
-        "Show one example of what good looks like and quality jumps immediately."
-      ],
-      resources: [
-        { label: "Prompt library", url: "#prompts" },
-        { label: "Exercise 2: rewrite a bad prompt", url: "#" }
-      ]
-    },
-    {
-      id: "l4",
-      title: "Giving it the right context",
-      track: "prompting",
-      level: "Core",
-      duration: "15 min",
-      summary: "Pasting documents, sharing links, and spotting when the model is guessing instead of reading.",
-      video: "",
-      takeaways: [
-        "It only knows what is in front of it. Assume nothing is implied.",
-        "Long context is not free. Bury the key fact on page nine and it may be missed.",
-        "Ask it to quote the source line before it answers. Guessing becomes obvious."
+        "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
+        "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
+        "Nothing in the loop is a lookup. There is no database being consulted."
       ],
       resources: []
     },
     {
-      id: "l5",
-      title: "Using it as a thought partner",
-      track: "practice",
-      level: "Core",
-      duration: "14 min",
-      summary: "Brainstorming, pressure-testing an idea, and getting critique that is not just flattery.",
+      id: "m2-training-data",
+      title: "Training data",
+      track: "how-it-works",
+      level: "Module 2 · Pre-training",
+      duration: "4 min",
+      summary: "The massive body of text a model reads. The single most important idea in this module.",
       video: "",
       takeaways: [
-        "Ask for the three strongest objections to your plan, not for feedback.",
-        "Ask for ten options and throw away eight. Volume is cheap here.",
-        "Make it argue the other side before you commit to yours."
+        "Websites, books, articles and code. It is the source of both what the model knows and what it does not.",
+        "If something is underrepresented in training data — ʻōlelo Hawaiʻi, for example — the model will be weaker on it.",
+        "This is the root of the 'inadequate cultural context' problem. Bias in Module 3 comes straight back to this slide."
       ],
       resources: []
     },
     {
-      id: "l6",
-      title: "Hallucinations and how to catch them",
-      track: "responsible",
-      level: "Core",
-      duration: "16 min",
-      summary: "Why confident nonsense happens, where it shows up most, and a checking habit that takes 30 seconds.",
+      id: "m2-parameters",
+      title: "Parameters",
+      track: "how-it-works",
+      level: "Module 2 · Pre-training",
+      duration: "3 min",
+      summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
       video: "",
       takeaways: [
-        "Highest risk: names, dates, citations, quotes, statistics, legal and medical specifics.",
-        "Never accept a source you have not opened yourself.",
-        "If it cannot be wrong in a way that matters, you may not need to check it."
+        "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
+        "Change the parameters and you change those probabilities for the same input.",
+        "More parameters generally — not always — means more capability. No need to go further than that."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-pretraining-inference",
+      title: "Pre-training vs. inference",
+      track: "how-it-works",
+      level: "Module 2",
+      duration: "2 min",
+      summary: "The one distinction that clears up most confusion about whether it is \"learning from you\".",
+      video: "",
+      takeaways: [
+        "Pre-training happens once, up front. The model reads enormous amounts of text and adjusts its parameters.",
+        "Inference is every time you send a message. The model applies what it already learned.",
+        "It is not learning from your conversation in real time — unless a product is specifically built to remember, which is a different feature.",
+        "Everything from this point in the module onward is inference."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-tokenization",
+      title: "Tokenization",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "3 min",
+      summary: "The model does not see words. It sees numbered chunks.",
+      video: "",
+      takeaways: [
+        "Text is chopped into tokens, and every token gets a number — a token ID.",
+        "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
+        "This is why an LLM can miscount the letters in a word. It never saw the letters."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-embeddings",
+      title: "Embeddings",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "3 min",
+      summary: "Turning tokens into coordinates in a space where distance means similarity of meaning.",
+      video: "",
+      takeaways: [
+        "Each token becomes a vector — a position in a \"meaning space\".",
+        "Words used in similar ways land close together. \"King\" sits near \"queen\".",
+        "Context decides which meaning: Python the language sits near JavaScript, Python the snake sits near reptile, and those two are far apart."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-transformers",
+      title: "Transformers and attention",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "3 min",
+      summary: "For every token, the model decides which other tokens matter most.",
+      video: "",
+      takeaways: [
+        "Attention is the model weighting the relationships between tokens — some links are strong, some barely matter.",
+        "In \"The honu swam toward the ocean\", honu and swam are a strong link; the second \"the\" barely matters.",
+        "This happens many times in parallel through different attention heads, each catching a different kind of relationship."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-next-token",
+      title: "Next-token prediction",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "3 min",
+      summary: "The heart of it. Given everything so far, guess the single most likely next token — then do it again.",
+      video: "",
+      takeaways: [
+        "The output is a ranked list of probabilities, not an answer: ocean 47%, shore 21%, reef 15%, current 12%, sky 10%.",
+        "It is optimizing for \"plausible next token\", never for \"true statement\". That is where hallucination comes from.",
+        "It also explains why the model sounds equally confident whether it is right or wrong — and why this is not thinking the way a person thinks."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-sampling",
+      title: "Probabilistic vs. deterministic",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "2 min",
+      summary: "Why asking the same question twice gives you two different answers — and why that is normal.",
+      video: "",
+      takeaways: [
+        "A deterministic system gives the same output every time for the same input. A calculator.",
+        "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
+        "Greedy decoding picks the top token every time. Sampling with temperature spreads the choice out — at temperature 0.9 it might pick \"reef\" at 15% over \"ocean\" at 47%."
+      ],
+      resources: []
+    },
+    {
+      id: "m2-context-window",
+      title: "Context windows",
+      track: "how-it-works",
+      level: "Module 2 · Inference",
+      duration: "2 min",
+      summary: "How much the model can hold in view at once — and what happens when you go past it.",
+      video: "",
+      takeaways: [
+        "The window covers your prompt, the conversation so far, and any documents you have shared.",
+        "Once something falls outside the window, the model cannot see it at all.",
+        "This is why a very long conversation seems to \"forget\" what you said at the start. Nothing is broken."
+      ],
+      resources: []
+    },
+
+    /* ===== MODULE 3 — USING LLMs WELL ===== */
+    {
+      id: "m3-prompts",
+      title: "Prompts and context",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "4 min",
+      summary: "The most immediately useful thing in this whole session. Treat it like a capable new hire.",
+      video: "",
+      takeaways: [
+        "It has vast general knowledge and knows nothing about your specific situation. Be explicit about audience, format and tone.",
+        "Hand it the source material. Do not expect it to already know your program, your people or your numbers.",
+        "Weak: \"Write a bio for Keiko.\" Strong: \"Write a 100-word bio for Keiko, our program director, for a grant funder audience, warm but concise, drawing on the notes below.\""
       ],
       resources: [
-        { label: "The 30-second verification checklist", url: "#" }
+        { label: "Prompt library", url: "#prompts" }
       ]
     },
     {
-      id: "l7",
-      title: "Privacy: what not to paste",
-      track: "responsible",
-      level: "Core",
-      duration: "11 min",
-      summary: "A practical line between fine, ask first, and never - plus how to find your own data settings.",
+      id: "m3-hallucinations",
+      title: "Hallucinations",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "3 min",
+      summary: "Fluent, confident, and simply wrong. Straight back to next-token prediction.",
       video: "",
       takeaways: [
-        "Assume anything you paste may be stored and reviewed unless the settings say otherwise.",
-        "Never: identifiable personal records, credentials, unreleased legal or financial material.",
-        "Check the data controls in whatever tool you use. They are usually one screen deep."
+        "It is built to predict the next plausible word, not to verify truth. Invented citations, wrong dates, quotes nobody said.",
+        "Ask for the exact page number of a quote and it may hand you a specific-sounding page and citation that does not exist.",
+        "That is not the model being confident. It is the model returning a probability."
       ],
       resources: []
     },
     {
-      id: "l8",
-      title: "Automating one real task",
-      track: "practice",
-      level: "Applied",
-      duration: "20 min",
-      summary: "Take one recurring chore from your actual week and build it into something repeatable.",
+      id: "m3-grounding",
+      title: "Grounding and verification",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "3 min",
+      summary: "Pairing the model with real, retrievable sources — and checking what comes back.",
       video: "",
       takeaways: [
-        "Good candidates: repetitive, text-heavy, low stakes, obvious when wrong.",
-        "Write the prompt once, save it, reuse it. That saved prompt is the actual product.",
-        "Keep a human check on the step where a mistake would cost something."
-      ],
-      resources: [
-        { label: "Exercise 3: your automation worksheet", url: "#" }
-      ]
-    },
-    {
-      id: "l9",
-      title: "Bias, attribution, and community values",
-      track: "responsible",
-      level: "Applied",
-      duration: "17 min",
-      summary: "Whose data trained it, whose voice it flattens, and what disclosure looks like in practice.",
-      video: "",
-      takeaways: [
-        "Training data over-represents some communities and languages and under-represents others.",
-        "Disclose AI involvement where a reader would want to know. That is usually the right test.",
-        "Some knowledge is not yours to feed into someone else's model. Ask before you do."
+        "Cross-check anything presented as fact. Numbers, quotes and names are the highest-risk items.",
+        "Treat AI output as a draft, not a finished fact.",
+        "A search-grounded assistant that shows its sources lets you click through and check the claim. A plain chat answer with no receipts does not."
       ],
       resources: []
     },
     {
-      id: "l10",
-      title: "Building your own assistant",
-      track: "build",
-      level: "Applied",
-      duration: "22 min",
-      summary: "Turn your best prompt into a reusable custom assistant your whole group can share.",
+      id: "m3-bias",
+      title: "Bias",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "3 min",
+      summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
       video: "",
       takeaways: [
-        "A custom assistant is mostly a good instruction block plus a few reference files.",
-        "Write the instructions like onboarding a new volunteer, not like code.",
-        "Test it with the three weirdest requests you can think of before you share it."
+        "Training data reflects the internet's existing skews: whose voices, languages and stories are well represented, and whose are not.",
+        "A model can reproduce and amplify those gaps rather than flag them.",
+        "A model trained mostly on English-language Western sources may answer a question about Hawaiian cultural protocol with a confident outside guess instead of deferring to community and Native sources."
+      ],
+      resources: []
+    },
+    {
+      id: "m3-reasoning",
+      title: "Reasoning, and what it isn't",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "2 min",
+      summary: "A corrective to the instinct that \"it showed its work, so it must be right\".",
+      video: "",
+      takeaways: [
+        "When a model shows step-by-step reasoning, it is still generating plausible-sounding text, one step at a time.",
+        "Visible steps are not proof of correctness, and they are not human reasoning or understanding.",
+        "A tidy, confident-looking chain of steps can add up to the wrong final answer."
+      ],
+      resources: []
+    },
+    {
+      id: "m3-oversight",
+      title: "Human judgment and oversight",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "3 min",
+      summary: "The clearest, most actionable takeaway of the entire session.",
+      video: "",
+      takeaways: [
+        "AI drafts, explores and accelerates. A person stays responsible for what actually goes out the door.",
+        "That goes double for anything public-facing, and anything touching culture or community.",
+        "If AI drafts a post about a cultural practice, someone who actually knows the topic reads it and fixes what is off before it posts. Every time, no exceptions."
+      ],
+      resources: []
+    },
+    {
+      id: "m3-model-families",
+      title: "Proprietary models and model families",
+      track: "using-llms",
+      level: "Module 3",
+      duration: "2 min",
+      summary: "Just enough to follow a conversation without getting lost. Not benchmark comparison.",
+      video: "",
+      takeaways: [
+        "Different companies build different models: ChatGPT from OpenAI, Claude from Anthropic, Gemini from Google.",
+        "A \"family\" is versions of the same model line released over time — GPT-4 and GPT-5, the way iPhone 15 and iPhone 16 are versions.",
+        "Similar general ideas underneath, different companies and different strengths."
       ],
       resources: []
     }
   ],
 
-  /* ---------- 5. RUN OF SHOW ---------- */
+  /* ---------- 5. RUN OF SHOW ----------
+     Times are minutes from the start of the session, not clock times. */
   agenda: [
-    { time: "9:00",  title: "Welcome and why we are here", detail: "Introductions, ground rules, and what you will walk out with.", tag: "All" },
-    { time: "9:30",  title: "Foundations",                 detail: "Lessons 1 and 2. Everyone gets a working result before the break.", tag: "Hands-on" },
-    { time: "10:45", title: "Break",                       detail: "Coffee, snacks, questions in the hallway.", tag: "" },
-    { time: "11:00", title: "Prompting workshop",          detail: "Lessons 3 and 4, then rewrite your own prompts in pairs.", tag: "Hands-on" },
-    { time: "12:00", title: "Lunch",                       detail: "Provided. Vegetarian option available.", tag: "" },
-    { time: "1:00",  title: "Responsible use panel",       detail: "Lessons 6, 7, and 9. Bring the hard questions.", tag: "Discussion" },
-    { time: "2:00",  title: "Build something",             detail: "Lessons 8 and 10. Leave with one working assistant.", tag: "Hands-on" },
-    { time: "2:45",  title: "Show and tell, then pau",     detail: "Share what you built. Where to go next.", tag: "All" }
+    { time: "0:00", title: "Why we are doing this",       detail: "Our AI footprint is growing and we all end up speaking about it publicly. This is the shared baseline.", tag: "All" },
+    { time: "0:03", title: "Module 1 — Overview",         detail: "AI, ML, NLP, generative AI and LLMs, and where each already shows up in your day.", tag: "10-12 min" },
+    { time: "0:15", title: "Module 2 — How an LLM works", detail: "Training data and parameters, then the inference loop: tokens, embeddings, attention, prediction, sampling, context.", tag: "20-25 min" },
+    { time: "0:40", title: "Module 3 — Using LLMs well",  detail: "Prompting, hallucination, grounding, bias, reasoning, oversight, model families.", tag: "15-20 min" },
+    { time: "0:58", title: "Questions and where next",    detail: "What people want to go deeper on, and what belongs in a 200-level follow-up.", tag: "Discussion" }
   ],
 
   /* ---------- 6. PROMPT LIBRARY (each gets a copy button) ---------- */
   prompts: [
     {
-      title: "The five-part recipe",
-      use: "Your default starting shape for anything that matters.",
-      text: "You are a [role] with experience in [domain].\n\nTask: [what you want done]\n\nContext: [what it needs to know that it could not guess]\n\nFormat: [length, structure, tone, audience]\n\nAvoid: [what would make this answer useless]"
+      title: "The capable new hire",
+      use: "Your default shape for anything that matters. Audience, format, tone, source material.",
+      text: "You are helping me write for [audience].\n\nTask: [what you want done]\n\nContext they need that they could not guess: [program, people, numbers, history]\n\nFormat: [length, structure, tone]\n\nAvoid: [what would make this useless]\n\n[paste your source material]"
+    },
+    {
+      title: "Bio for a funder",
+      use: "The Module 3 example, ready to use. Note how much context it carries.",
+      text: "Write a 100-word bio for [name], our [role], for a grant funder audience. Warm but concise. Draw only on the notes below — do not add accomplishments that are not there.\n\n[paste notes]"
+    },
+    {
+      title: "Source-checked answer",
+      use: "Makes guessing visible instead of invisible. The practical antidote to hallucination.",
+      text: "Answer using only the document below. Before each claim, quote the exact sentence it came from.\n\nIf the document does not answer the question, say \"Not in the document\" and stop. Do not fill the gap from general knowledge.\n\n[paste document]"
+    },
+    {
+      title: "Meeting notes to actions",
+      use: "The most reliably useful thing most of us do with an LLM.",
+      text: "Turn these notes into: (1) decisions made, (2) open questions, (3) action items with an owner and a due date where one was stated.\n\nIf an owner or date was never mentioned, write UNASSIGNED. Do not invent either one.\n\n[paste notes]"
     },
     {
       title: "Honest critique",
@@ -258,94 +411,105 @@ window.SITE = {
       text: "Here is my draft. Do not tell me what works.\n\nGive me the three strongest objections a skeptical [audience] would raise, ranked by how much damage each one does. For each, say what would have to be true for the objection to be wrong.\n\n[paste your work]"
     },
     {
-      title: "Explain it to me properly",
-      use: "Learning something new without getting an encyclopedia dump.",
-      text: "Explain [topic] to me. I already understand [what you know]. I get lost at [where you get lost].\n\nStart with one concrete example before any definitions. Then check my understanding by asking me two questions. Do not move on until I answer."
-    },
-    {
-      title: "Meeting notes to actions",
-      use: "The most reliably useful thing most people do with AI.",
-      text: "Turn these notes into: (1) decisions made, (2) open questions, (3) action items with an owner and a due date where one was stated.\n\nIf an owner or date was never mentioned, write UNASSIGNED. Do not invent either one.\n\n[paste notes]"
-    },
-    {
-      title: "Source-checked answer",
-      use: "Makes guessing visible instead of invisible.",
-      text: "Answer using only the document below. Before each claim, quote the exact sentence it came from.\n\nIf the document does not answer the question, say \"Not in the document\" and stop. Do not fill the gap from general knowledge.\n\n[paste document]"
-    },
-    {
-      title: "Ten options, fast",
-      use: "Names, headlines, framings, approaches.",
-      text: "Give me 10 options for [thing]. Make them genuinely different from each other, not 10 versions of the same idea.\n\nNumbers 8, 9, and 10 should be ones a cautious person would not suggest. One line each, no explanation."
+      title: "Check me before I present",
+      use: "Before you speak publicly about something you are still learning.",
+      text: "I am going to explain [topic] to [audience]. Here is my explanation in my own words.\n\nTell me: what is wrong, what is oversimplified in a misleading way, and what a knowledgeable person in the room would push back on. Flag anything I should not say with confidence.\n\n[paste your explanation]"
     }
   ],
 
   /* ---------- 7. GLOSSARY ---------- */
   glossary: [
-    { term: "Model", def: "The trained system itself. GPT, Claude, Gemini and Llama are models; the app you type into is the product wrapped around one." },
-    { term: "Prompt", def: "Everything you send it: your question plus any pasted context, files, or instructions the product adds behind the scenes." },
-    { term: "Token", def: "A chunk of text, roughly three-quarters of a word. Models read and write in tokens, and pricing is usually per token." },
-    { term: "Context window", def: "How much text it can hold in mind at once. Go past it and the earliest material falls out of view." },
-    { term: "Hallucination", def: "Fluent, confident output that is simply false. Not lying and not quite a bug: a side effect of predicting plausible text." },
-    { term: "Training data", def: "The text, code and images the model learned patterns from. It shapes what the model is good at and what it is blind to." },
-    { term: "Fine-tuning", def: "Extra training on a narrow dataset to specialise a general model for one job or one voice." },
-    { term: "RAG", def: "Retrieval-augmented generation: look up real documents first, then answer from them. How most useful company chatbots work." },
-    { term: "Agent", def: "A model given tools and permission to take steps on its own - search, run code, send a message - rather than only replying." },
-    { term: "Multimodal", def: "Handles more than text: images, audio, video and documents, going in and coming out." },
-    { term: "Temperature", def: "A randomness dial. Low is repetitive and safe, high is creative and unreliable. Most chat products hide it." },
-    { term: "Open weights", def: "The trained model files are published, so anyone can run or modify it on their own hardware." },
-    { term: "Guardrails", def: "Rules and filters layered around a model to block certain outputs. Useful, imperfect, and not the same as the model being safe." },
-    { term: "Inference", def: "Actually running the model to get an answer, as opposed to training it. This is what you pay for per use." }
+    { term: "Machine learning (ML)", def: "A way of building AI. Systems learn patterns from data instead of being explicitly programmed rule by rule." },
+    { term: "Natural language processing (NLP)", def: "Machine learning applied specifically to language: getting computers to read, understand and produce human speech and text." },
+    { term: "Generative AI", def: "Machine learning that creates new content — text, images, audio, video — rather than only classifying or predicting." },
+    { term: "Large language model (LLM)", def: "The specific technology behind most generative text AI today. ChatGPT, Claude and Gemini are products built on LLMs." },
+    { term: "Training data", def: "The websites, books, articles and code a model reads during pre-training. The source of both its knowledge and its gaps." },
+    { term: "Parameters", def: "The model's learned settings — internal knobs that determine how it weighs and combines information to produce the next word." },
+    { term: "Pre-training", def: "The first phase, which happens once. The model reads enormous amounts of text and adjusts its parameters to get better at predicting language." },
+    { term: "Inference", def: "Using the model. Happens in real time, every message you send. The model applies what it already learned and is not learning from you." },
+    { term: "Token", def: "A chunk of text, roughly three-quarters of a word. Each one gets a number. Common words are one token; long words get split into several." },
+    { term: "Embedding / vector", def: "A token turned into coordinates in a \"meaning space\". Words used in similar ways end up close together." },
+    { term: "Transformer", def: "The architecture underneath modern LLMs. For every token it decides which other tokens matter most." },
+    { term: "Attention", def: "The weighting of relationships between tokens. Strong links carry meaning; weak links barely register. Runs in parallel across many attention heads." },
+    { term: "Next-token prediction", def: "The core loop: given everything so far, produce a ranked list of probabilities for what comes next, pick one, repeat." },
+    { term: "Probabilistic", def: "Uses statistical likelihood, so the same input can produce different outputs. The opposite of deterministic, like a calculator." },
+    { term: "Greedy decoding", def: "Always picking the highest-probability token. Predictable, and flatter." },
+    { term: "Temperature", def: "A dial on how confident the probability distribution is. Higher temperature makes lower-ranked tokens more likely to get picked." },
+    { term: "Context window", def: "How much text the model can see at once: your prompt, the conversation, and shared documents. Past the limit, the oldest material drops out of view." },
+    { term: "Hallucination", def: "Fluent, confident output that is simply false. A side effect of optimizing for plausible next word rather than true statement." },
+    { term: "Grounding", def: "Pairing the model with real, retrievable sources so answers can be traced and checked instead of taken on trust." },
+    { term: "Model family", def: "Versions of the same model line released over time — GPT-4 and GPT-5, or Claude's successive releases." }
   ],
 
   /* ---------- 8. FAQ ---------- */
   faq: [
-    { q: "Do I need to pay for anything to follow along?",
-      a: "No. Every exercise works on a free tier. Paid plans are faster and hold more context, but nothing here requires one." },
-    { q: "Which tool should I use?",
-      a: "For today, whichever one you can open right now. The skills transfer between all of them, and the differences matter far less than how you prompt." },
-    { q: "Is it safe to use with our organization's information?",
-      a: "It depends entirely on the tool's settings and your own policy. Lesson 7 covers the practical line. The short version: never paste identifiable personal records or credentials into a consumer chat product." },
-    { q: "Is it going to take my job?",
-      a: "Honest answer: it is already changing which parts of many jobs are worth a person's time. The useful response is to get specific about which parts of yours are repetitive text work, and then decide deliberately what you want to keep doing yourself." },
-    { q: "Can students use this?",
-      a: "Yes, and the responsible-use track is written with that in mind. Whether they may use it for a given assignment is your institution's call, not ours." },
-    { q: "How do I cite or disclose AI use?",
-      a: "Disclose where a reader would want to know - that is the test that holds up. Lesson 9 goes through what that looks like in writing, in design work, and in research." },
+    { q: "Who is this for?",
+      a: "Purple Maiʻa staff first, at a 101 level. Our staff distribution mirrors the broader community well enough that this doubles as a useful public asset, which is why the page is open and has no login." },
+    { q: "Do I need any technical background?",
+      a: "None. There is no math anywhere in these three modules, and nothing assumes you have used a particular tool." },
+    { q: "Is the model learning from what I type?",
+      a: "Not in real time. Pre-training happened once, before you ever opened the app, and inference is the model applying what it already learned. Some products are separately built to remember things about you — that is a product feature, not the model retraining itself." },
+    { q: "Why do I get a different answer when I ask the same question twice?",
+      a: "Because an LLM is probabilistic rather than deterministic. It samples from a ranked list of likely next tokens instead of always taking the top one. That variation is expected behaviour, not a bug." },
+    { q: "Why is it weak on ʻōlelo Hawaiʻi and Hawaiian cultural context?",
+      a: "Training data. If something is underrepresented in what the model read, the model is weaker on it — and it will still answer confidently rather than tell you it is out of its depth. This is covered in Module 2 and returns in Module 3 under bias." },
+    { q: "It showed its reasoning step by step. Doesn't that mean it is right?",
+      a: "No. Visible reasoning is still plausible-sounding text generated one step at a time. A tidy chain of steps can lead to a wrong answer, and looking rigorous is not the same as being correct." },
+    { q: "Can I use this to draft something public-facing?",
+      a: "Yes, as a draft. A person who actually knows the subject reads it and fixes what is off before it goes out — every time, especially for anything touching culture or community." },
+    { q: "Why isn't fine-tuning, RLHF, agents or open weights covered?",
+      a: "Deliberately held back. Those belong with the Sovereign Stack work and a 200-level follow-up, alongside the community responsibility material — governance, data provenance and consent, Indigenous data sovereignty, cultural authority. This asset is the 101 baseline." },
     { q: "Will these materials stay up?",
-      a: "Yes. This page is static and public, and there is no login. Bookmark it, or fork the repository if you want your own copy." }
+      a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
   ],
 
   /* ---------- 9. RESOURCES ---------- */
   resources: [
     {
-      group: "Handouts from today",
+      group: "Video sequence (~35 min)",
       items: [
-        { label: "Slide deck", url: "#", desc: "The full deck as a PDF." },
-        { label: "Exercise workbook", url: "#", desc: "All three exercises in one printable file." },
-        { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." }
+        { label: "Natural Language Processing: Crash Course AI #7", url: "#", desc: "13:29 · pairs with Module 1. Add the YouTube link." },
+        { label: "Large Language Models explained briefly — 3Blue1Brown", url: "#", desc: "7:58 · pairs with Module 2. Add the YouTube link." },
+        { label: "How LLMs Actually Generate Text — LearnThatStack", url: "#", desc: "9:24 · the source for most of Module 2. Add the YouTube link." },
+        { label: "ChatGPT, AI and Māori Data Sovereignty", url: "#", desc: "3:47 · pairs with bias in Module 3. Add the YouTube link." }
       ]
     },
     {
-      group: "Keep going",
+      group: "Demos worth playing with",
       items: [
-        { label: "Reading list", url: "#", desc: "Six things worth your time, none of them hype." },
-        { label: "Community channel", url: "#", desc: "Where participants keep asking questions afterward." },
-        { label: "Next session", url: "#", desc: "Dates for the follow-up workshop." }
+        { label: "LLM visualizer", url: "https://bbycroft.net/llm", desc: "Walk through a working model layer by layer. The best companion to Module 2." },
+        { label: "Embedding projector", url: "https://projector.tensorflow.org/", desc: "Meaning space you can rotate and search. Makes embeddings click." },
+        { label: "TensorFlow Playground", url: "https://playground.tensorflow.org/", desc: "Train a tiny neural net in the browser and watch it learn." },
+        { label: "Survival of the Best Fit", url: "https://www.survivalofthebestfit.com/resources", desc: "Hiring-algorithm game about how bias gets baked in. Good before Module 3." },
+        { label: "Google PAIR Explorables", url: "https://pair.withgoogle.com/explorables/", desc: "Interactive essays on bias, privacy and model behaviour." },
+        { label: "Quick, Draw!", url: "https://quickdraw.withgoogle.com/?locale=en_US", desc: "Thirty seconds, and everyone understands training data." },
+        { label: "AI4Hawaiʻi", url: "https://www.ai4hawaii.org/", desc: "Local context for the conversation." }
+      ]
+    },
+    {
+      group: "Sources cited in the deck",
+      items: [
+        { label: "On the Dangers of Stochastic Parrots — Bender et al., FAccT 2021", url: "https://dl.acm.org/doi/10.1145/3442188.3445922", desc: "The bias slide." },
+        { label: "Retrieval-Augmented Generation — Lewis et al., NeurIPS 2020", url: "https://arxiv.org/abs/2005.11401", desc: "The grounding slide." },
+        { label: "Chain-of-Thought Prompting — Wei et al., 2022", url: "https://arxiv.org/abs/2201.11903", desc: "The reasoning slide." },
+        { label: "Survey of Hallucination in NLG — Ji et al., 2023", url: "https://arxiv.org/abs/2202.03629", desc: "The hallucination slide." },
+        { label: "NIST AI Risk Management Framework 1.0", url: "https://www.nist.gov/itl/ai-risk-management-framework", desc: "The human oversight slide." }
       ]
     },
     {
       group: "For facilitators",
       items: [
         { label: "Fork this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page/fork", desc: "Run the same session for your own group." },
-        { label: "Facilitator notes", url: "#", desc: "Timing, common questions, what usually goes sideways." }
+        { label: "Slide deck (PDF)", url: "#", desc: "The full LLM/NLP 101 deck. Drop the file in assets/ and link it here." },
+        { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." }
       ]
     }
   ],
 
   /* ---------- 10. FOOTER ---------- */
   footer: {
-    org: "AI Fundamentals",
-    note: "These materials are free to reuse and adapt. If you run your own version, we would love to hear how it went.",
+    org: "Purple Maiʻa",
+    note: "LLM/NLP 101 is an internal learning asset built to be reused — as video, slides, social clips and workshop material. Free to adapt.",
     links: [
       { label: "Contact", url: "#" },
       { label: "Source on GitHub", url: "https://github.com/KenethM/PurpleMaia---AI-Page" },

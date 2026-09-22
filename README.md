@@ -1,4 +1,4 @@
-# AI Fundamentals — workshop page
+# LLM/NLP 101 — Purple Maiʻa staff learning page
 
 A single static page for hosting workshop material: lessons, video recordings,
 a prompt library, a glossary, an agenda and links. No build step, no framework,
@@ -149,12 +149,27 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 ## 5. Before you share the link
 
-- [ ] Replace the placeholder text in `content.js` section 1 (name, date, time, location).
-- [ ] Swap every `url: "#"` for a real link, or delete that item.
-- [ ] Add your video IDs.
-- [ ] Update `<title>` and the `<meta name="description">` in `index.html`.
-- [ ] Update the `og:image` path in `index.html`, or drop a 1200×630 PNG at `assets/social.png` so link previews look right.
-- [ ] Point the footer's "Source on GitHub" link at your repo.
+- [x] Section 1 of `content.js` carries the real event (LLM/NLP 101, First Tuesday, Oct 6 2026).
+- [x] `<title>`, `<meta name="description">` and the JSON-LD in `index.html` match.
+- [x] `assets/social.png` is a 1200×630 card for link previews.
+- [x] The footer's "Source on GitHub" link points at this repo.
+- [ ] **Add the four YouTube IDs** — `resources` section 9, and `video:` on the lessons each one pairs with.
+- [ ] Swap the remaining `url: "#"` entries for real links (Contact, Report a problem, slide-deck PDF).
+- [ ] Drop the deck PDF into `assets/` and link it under "For facilitators".
+
+### Content structure
+
+`content.js` follows the three modules of the LLM/NLP 101 deck:
+
+| Track id | Module | Lessons | Time |
+|---|---|---|---|
+| `overview` | 1 — Overview | 2 | 11 min |
+| `how-it-works` | 2 — How an LLM works | 10 | 28 min |
+| `using-llms` | 3 — Using LLMs well | 7 | 20 min |
+
+Adding a lesson means adding to `lessons` with one of those three `track` values.
+If you change the lesson count or durations, update the `facts` array in section 1
+so the hero numbers stay honest.
 
 ---
 
