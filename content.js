@@ -81,7 +81,7 @@ window.SITE = {
       level: "Module 1",
       duration: "6 min",
       summary: "Five words people use interchangeably that are not interchangeable. They nest inside each other.",
-      video: "",
+      video: "youtube:oi0JXuL19TA",
       slides: "",
       takeaways: [
         "AI is the umbrella term. Machine learning is a way of building AI: systems learn patterns from data instead of being programmed rule by rule.",
@@ -118,7 +118,7 @@ window.SITE = {
       level: "Module 2",
       duration: "3 min",
       summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
-      video: "",
+      video: "youtube:NKnZYvZA7w4",
       takeaways: [
         "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
@@ -148,7 +148,7 @@ window.SITE = {
       level: "Module 2 · Pre-training",
       duration: "3 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
-      video: "",
+      video: "youtube:LPZh9BOjkQs",
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
         "Change the parameters and you change those probabilities for the same input.",
@@ -324,7 +324,9 @@ window.SITE = {
         "A model can reproduce and amplify those gaps rather than flag them.",
         "A model trained mostly on English-language Western sources may answer a question about Hawaiian cultural protocol with a confident outside guess instead of deferring to community and Native sources."
       ],
-      resources: []
+      resources: [
+        { label: "Video: ChatGPT, AI and Māori data sovereignty (3:47)", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty" }
+      ]
     },
     {
       id: "m3-reasoning",
@@ -468,10 +470,10 @@ window.SITE = {
     {
       group: "Video sequence (~35 min)",
       items: [
-        { label: "Natural Language Processing: Crash Course AI #7", url: "#", desc: "13:29 · pairs with Module 1. Add the YouTube link." },
-        { label: "Large Language Models explained briefly — 3Blue1Brown", url: "#", desc: "7:58 · pairs with Module 2. Add the YouTube link." },
-        { label: "How LLMs Actually Generate Text — LearnThatStack", url: "#", desc: "9:24 · the source for most of Module 2. Add the YouTube link." },
-        { label: "ChatGPT, AI and Māori Data Sovereignty", url: "#", desc: "3:47 · pairs with bias in Module 3. Add the YouTube link." }
+        { label: "Natural Language Processing: Crash Course AI #7", url: "https://www.youtube.com/watch?v=oi0JXuL19TA", desc: "13:29 · embedded in Module 1, “AI, ML, NLP, generative AI, LLMs”." },
+        { label: "How LLMs Actually Generate Text — LearnThatStack", url: "https://www.youtube.com/watch?v=NKnZYvZA7w4", desc: "9:24 · embedded in Module 2, “The loop, end to end”. The source for most of that module." },
+        { label: "Large Language Models explained briefly — 3Blue1Brown", url: "https://www.youtube.com/watch?v=LPZh9BOjkQs", desc: "7:58 · embedded in Module 2, “Parameters”." },
+        { label: "ChatGPT, AI and Māori data sovereignty", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty", desc: "3:47 · linked from Module 3, “Bias”. Hosted by Science Learning Hub, with a full transcript." }
       ]
     },
     {

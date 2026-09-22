@@ -153,7 +153,8 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] `<title>`, `<meta name="description">` and the JSON-LD in `index.html` match.
 - [x] `assets/social.png` is a 1200×630 card for link previews.
 - [x] The footer's "Source on GitHub" link points at this repo.
-- [ ] **Add the four YouTube IDs** — `resources` section 9, and `video:` on the lessons each one pairs with.
+- [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
+- [ ] Add Purple Maiʻa's own module videos as they come out of production — set `video:` on the lesson; until then it shows a “coming soon” placeholder.
 - [ ] Swap the remaining `url: "#"` entries for real links (Contact, Report a problem, slide-deck PDF).
 - [ ] Drop the deck PDF into `assets/` and link it under "For facilitators".
 
