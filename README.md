@@ -162,11 +162,16 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 `content.js` follows the three modules of the LLM/NLP 101 deck:
 
-| Track id | Module | Lessons | Time |
+| Track id | Module | Lessons | Self-paced |
 |---|---|---|---|
-| `overview` | 1 — Overview | 2 | 11 min |
-| `how-it-works` | 2 — How an LLM works | 10 | 28 min |
-| `using-llms` | 3 — Using LLMs well | 7 | 20 min |
+| `overview` | 1 — Overview | 2 | 25 min |
+| `how-it-works` | 2 — How an LLM works | 10 | 46 min |
+| `using-llms` | 3 — Using LLMs well | 7 | 24 min |
+
+**Two different clocks, deliberately.** A lesson's `duration` is self-paced time
+and includes any video on the card, which is why Module 1 reads 25 min against a
+10-12 min live budget. The `agenda` tags carry the live run; you would not play
+the full Crash Course video during the session. Both numbers show in the hero.
 
 Adding a lesson means adding to `lessons` with one of those three `track` values.
 If you change the lesson count or durations, update the `facts` array in section 1

@@ -30,8 +30,8 @@ window.SITE = {
     facts: [
       { label: "Modules", value: "3" },
       { label: "Lessons", value: "19" },
-      { label: "Runtime", value: "~59 min" },
-      { label: "Level", value: "101, no prereqs" }
+      { label: "Self-paced", value: "~95 min" },
+      { label: "Live session", value: "~59 min" }
     ]
   },
 
@@ -79,7 +79,7 @@ window.SITE = {
       title: "AI, ML, NLP, generative AI, LLMs",
       track: "overview",
       level: "Module 1",
-      duration: "6 min",
+      duration: "20 min",
       summary: "Five words people use interchangeably that are not interchangeable. They nest inside each other.",
       video: "youtube:oi0JXuL19TA",
       slides: "",
@@ -116,13 +116,13 @@ window.SITE = {
       title: "The loop, end to end",
       track: "how-it-works",
       level: "Module 2",
-      duration: "3 min",
+      duration: "13 min",
       summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
       video: "youtube:NKnZYvZA7w4",
       takeaways: [
         "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
-        "Nothing in the loop is a lookup. There is no database being consulted."
+        "The base model is not looking anything up — there is no fact database inside this loop. Search and document tools get bolted on top of it (Module 3), but that is an addition, not part of the machinery."
       ],
       resources: []
     },
@@ -146,7 +146,7 @@ window.SITE = {
       title: "Parameters",
       track: "how-it-works",
       level: "Module 2 · Pre-training",
-      duration: "3 min",
+      duration: "11 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
       video: "youtube:LPZh9BOjkQs",
       takeaways: [
@@ -183,7 +183,7 @@ window.SITE = {
       takeaways: [
         "Text is chopped into tokens, and every token gets a number — a token ID.",
         "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
-        "This is why an LLM can miscount the letters in a word. It never saw the letters."
+        "It works with those chunks rather than individual letters, which is why letter-level tasks — counting, reversing, rhyming on spelling — are unreliable."
       ],
       resources: []
     },
@@ -198,7 +198,7 @@ window.SITE = {
       takeaways: [
         "Each token becomes a vector — a position in a \"meaning space\".",
         "Words used in similar ways land close together. \"King\" sits near \"queen\".",
-        "Context decides which meaning: Python the language sits near JavaScript, Python the snake sits near reptile, and those two are far apart."
+        "At this step a word has one position regardless of which sense you meant. Separating Python the language from Python the snake takes the surrounding words — that is the next lesson."
       ],
       resources: []
     },
@@ -213,7 +213,8 @@ window.SITE = {
       takeaways: [
         "Attention is the model weighting the relationships between tokens — some links are strong, some barely matter.",
         "In \"The honu swam toward the ocean\", honu and swam are a strong link; the second \"the\" barely matters.",
-        "This happens many times in parallel through different attention heads, each catching a different kind of relationship."
+        "This happens many times in parallel through different attention heads, each catching a different kind of relationship.",
+        "It is also what separates the two Pythons: attention reads whether \"import\" or \"reptile\" is nearby and pulls the same token toward one sense or the other."
       ],
       resources: []
     },
@@ -226,7 +227,7 @@ window.SITE = {
       summary: "The heart of it. Given everything so far, guess the single most likely next token — then do it again.",
       video: "",
       takeaways: [
-        "The output is a ranked list of probabilities, not an answer: ocean 47%, shore 21%, reef 15%, current 12%, sky 10%.",
+        "The output is a ranked list of probabilities, not an answer: ocean 45%, shore 20%, reef 15%, current 12%, sky 8%.",
         "It is optimizing for \"plausible next token\", never for \"true statement\". That is where hallucination comes from.",
         "It also explains why the model sounds equally confident whether it is right or wrong — and why this is not thinking the way a person thinks."
       ],
@@ -243,7 +244,8 @@ window.SITE = {
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
-        "Greedy decoding picks the top token every time. Sampling with temperature spreads the choice out — at temperature 0.9 it might pick \"reef\" at 15% over \"ocean\" at 47%."
+        "Greedy decoding always takes the top token. Sampling rolls the dice against those odds instead, so \"reef\" at 15% comes up about one time in seven.",
+        "Temperature is a separate dial, and it acts before the roll: low temperature sharpens the odds toward the favourite, high temperature flattens them so the long shots land more often."
       ],
       resources: []
     },
@@ -316,7 +318,7 @@ window.SITE = {
       title: "Bias",
       track: "using-llms",
       level: "Module 3",
-      duration: "3 min",
+      duration: "7 min",
       summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
       video: "",
       takeaways: [
@@ -379,9 +381,9 @@ window.SITE = {
      Times are minutes from the start of the session, not clock times. */
   agenda: [
     { time: "0:00", title: "Why we are doing this",       detail: "Our AI footprint is growing and we all end up speaking about it publicly. This is the shared baseline.", tag: "All" },
-    { time: "0:03", title: "Module 1 — Overview",         detail: "AI, ML, NLP, generative AI and LLMs, and where each already shows up in your day.", tag: "10-12 min" },
-    { time: "0:15", title: "Module 2 — How an LLM works", detail: "Training data and parameters, then the inference loop: tokens, embeddings, attention, prediction, sampling, context.", tag: "20-25 min" },
-    { time: "0:40", title: "Module 3 — Using LLMs well",  detail: "Prompting, hallucination, grounding, bias, reasoning, oversight, model families.", tag: "15-20 min" },
+    { time: "0:03", title: "Module 1 — Overview",         detail: "AI, ML, NLP, generative AI and LLMs, and where each already shows up in your day.", tag: "10-12 min live" },
+    { time: "0:15", title: "Module 2 — How an LLM works", detail: "Training data and parameters, then the inference loop: tokens, embeddings, attention, prediction, sampling, context.", tag: "20-25 min live" },
+    { time: "0:40", title: "Module 3 — Using LLMs well",  detail: "Prompting, hallucination, grounding, bias, reasoning, oversight, model families.", tag: "15-20 min live" },
     { time: "0:58", title: "Questions and where next",    detail: "What people want to go deeper on, and what belongs in a 200-level follow-up.", tag: "Discussion" }
   ],
 
