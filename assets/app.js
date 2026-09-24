@@ -691,12 +691,98 @@
   }
 
   /* ---------- Token chopper ----------
-     An approximation of how byte-pair tokenizers behave: short words stay
-     whole, long ones break into pieces, punctuation stands alone, and the
-     space rides along with the word that follows it. Close enough to make
-     the point; Tiktokenizer is linked on the card for the real thing. */
-  var TOK_WORD = /[A-Za-z0-9ʻ‘’'À-ɏ]+/;
-  var TOK_SPLIT = /[A-Za-z0-9ʻ‘’'À-ɏ]+|[^A-Za-z0-9ʻ‘’'À-ɏ]/g;
+     Byte-pair tokenizers do not split on length, they split on FREQUENCY.
+     The vocabulary is built from the training data, so a word that appeared
+     constantly gets its own token, and a word the training data barely
+     contains has no entry at all and shatters into fragments. Characters
+     outside plain ASCII — ʻokina, kahakō — are several bytes each and are
+     rare in an English-dominated corpus, so they tend to come apart on
+     their own.
+
+     That is the whole bias argument in one widget, so it has to model the
+     real cause. An earlier version split purely on word length, which made
+     ʻōlelo Hawaiʻi look CHEAPER than English — exactly backwards.
+
+     Still an approximation: a real vocabulary holds ~100k entries learned
+     from data, not the ~350 below. Tiktokenizer is linked on the card. */
+
+  // Words frequent enough in an English-heavy corpus to earn a single token.
+  var TOK_VOCAB = (
+    'the be to of and a in that have i it for not on with he as you do at this but his by from ' +
+    'they we say her she or an will my one all would there their what so up out if about who get ' +
+    'which go me when make can like time no just him know take people into year your good some ' +
+    'could them see other than then now look only come its over think also back after use two how ' +
+    'our work first well way even new want because any these give day most us is are was were been ' +
+    'has had did does am being having more very much many such own same each few own here where why ' +
+    'before while through during under between both against once again ever never always often ' +
+    'every another around down off above below near across behind along without within among since ' +
+    'until upon toward towards should must might may shall ought need dare used able ' +
+    'thing things man woman child children student students teacher school learn learning read ' +
+    'write written writing word words language model models data set sets train trained training ' +
+    'text answer answers question questions program programs system systems page pages note notes ' +
+    'report reports meeting meetings email emails draft drafts team teams staff community project ' +
+    'projects grant funder funding budget plan plans goal goals result results source sources ' +
+    'number numbers name names date dates list lists file files link links site sites ' +
+    'computer machine learning network networks token tokens context window sample samples ' +
+    'ocean water land island islands fish bird tree trees sun moon star stars sky sea reef ' +
+    'swim swam walk walked run ran sit sat stand stood open opened close closed start started ' +
+    'help helps helped please thank thanks hello welcome today tomorrow yesterday morning night ' +
+    'home house family friend friends group groups place places world life story stories ' +
+    'everyone everything something anything someone nothing somewhere anywhere everywhere ' +
+    'together important different following understand understanding information example ' +
+    'examples available support supports process processes practice change changes continue ' +
+    'include includes provide provides consider however therefore gather gathering run running ' +
+    'give given going made making getting taking coming looking working saying knowing'
+  ).split(' ');
+  var TOK_SET = Object.create(null);
+  TOK_VOCAB.forEach(function (w) { if (w) TOK_SET[w] = 1; });
+
+  // Endings frequent enough to be their own token when peeled off a known stem.
+  var TOK_SUFFIX = ['ing', 'tion', 'ment', 'ness', 'able', 'ible', 'ed', 'ly', 'es', 'er', 'est', 's'];
+
+  var TOK_WORDCH = /[A-Za-z0-9ʻ‘’'À-ɏ]/;
+  var TOK_SPLIT  = /[A-Za-z0-9ʻ‘’'À-ɏ]+|[^A-Za-z0-9ʻ‘’'À-ɏ]/g;
+  var TOK_ASCII  = /^[A-Za-z0-9']+$/;
+
+  function inVocab(word) { return TOK_SET[word.toLowerCase()] === 1; }
+
+  /* Break a word the vocabulary has no entry for. Non-ASCII characters come
+     away on their own (multi-byte and rare); the rest goes in short pieces. */
+  function chopUnknown(word) {
+    var out = [], run = '';
+    function flushRun() {
+      if (!run) return;
+      if (inVocab(run)) { out.push(run); run = ''; return; }
+      var at = 0;
+      while (at < run.length) { out.push(run.slice(at, at + 3)); at += 3; }
+      run = '';
+    }
+    for (var i = 0; i < word.length; i++) {
+      var ch = word.charAt(i);
+      if (TOK_ASCII.test(ch)) { run += ch; }
+      else { flushRun(); out.push(ch); }     // ʻokina, kahakō, accented vowels
+    }
+    flushRun();
+    return out;
+  }
+
+  function chopWord(word) {
+    if (inVocab(word)) return [word];
+    // a known stem plus a frequent ending is two tokens, not a shattering
+    for (var i = 0; i < TOK_SUFFIX.length; i++) {
+      var suf = TOK_SUFFIX[i];
+      if (word.length > suf.length + 2 && word.slice(-suf.length).toLowerCase() === suf) {
+        var stem = word.slice(0, -suf.length);
+        if (inVocab(stem)) return [stem, word.slice(-suf.length)];
+        // "running" -> run + ning: the doubled consonant belongs to the ending
+        var undoubled = stem.slice(0, -1);
+        if (stem.length > 2 && stem.slice(-1) === stem.slice(-2, -1) && inVocab(undoubled)) {
+          return [undoubled, word.slice(undoubled.length)];
+        }
+      }
+    }
+    return chopUnknown(word);
+  }
 
   function chopTokens(text) {
     var out = [];
@@ -705,19 +791,13 @@
       var lead = m[1], parts = m[2].match(TOK_SPLIT) || [m[2]];
       parts.forEach(function (part, idx) {
         var pre = idx === 0 ? lead : '';
-        if (!(TOK_WORD.test(part) && part.length > 5)) { out.push(pre + part); return; }
-        var at = 0;
-        while (at < part.length) {
-          var size = 4;
-          if (part.length - (at + size) === 1) size = 5;   // never leave a one-letter tail
-          out.push((at === 0 ? pre : '') + part.slice(at, at + size));
-          at += size;
-        }
+        if (!TOK_WORDCH.test(part)) { out.push(pre + part); return; }   // punctuation
+        var pieces = chopWord(part);
+        pieces.forEach(function (p, n) { out.push((n === 0 ? pre : '') + p); });
       });
     }
     return out;
   }
-
   function buildTokens(host, cfg) {
     host.innerHTML =
       '<textarea class="tok-field" spellcheck="false" aria-label="Text to chop into tokens"></textarea>' +
@@ -886,128 +966,159 @@
     renderQuiz(host, items.slice(), { restart: function () { return items.slice(); } });
   }
 
-  /* ---------- Invent a citation ----------
-     Roll the dice pointed at something that looks like a fact. Every field is
-     a plausible pick from a list, nothing is looked up, and rolling the same
-     claim twice gives a different source — which is the whole lesson.
-     Output is stamped INVENTED so a screenshot can never pass as real. */
+  /* ---------- Spot the real one ----------
+     The earlier version only ever showed fabricated citations, so "you cannot
+     tell by looking" was something the card asserted and the reader took on
+     trust. Showing one real paper beside three fakes, in identical formatting,
+     proves it instead — and the reveal links to the real one so it can be
+     checked. Fakes are stamped only after the answer is given, never before. */
   function buildCite(host, cfg) {
-    var claims = cfg.claims || [];
-    if (!claims.length) return;
-    var ci = 0, built = null, rolls = 0;
+    var reals = cfg.real || [], parts = cfg.fake || {};
+    if (!reals.length || !parts.authors) return;
+    var round = null, picked = null, rounds = 0;
 
-    function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+    function pick(list, not) {
+      var pool = not ? list.filter(function (x) { return not.indexOf(x) < 0; }) : list;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
 
-    function generate() {
-      var c = claims[ci];
-      var pool = c.authors.slice();
-      var first = pick(pool);
-      pool = pool.filter(function (a) { return a !== first; });   // no "Kahale & Kahale"
+    function makeFake(usedTitles) {
+      var a = pick(parts.authors);
+      var b = pick(parts.authors, [a]);
+      var t = pick(parts.titles, usedTitles);
+      usedTitles.push(t);
+      var page = 40 + Math.floor(Math.random() * 380);
       return {
-        first:   first,
-        second:  pool.length ? pick(pool) : first,
-        title:   pick(c.titles),
-        journal: pick(c.journals),
-        year:    2014 + Math.floor(Math.random() * 12),
-        vol:     8 + Math.floor(Math.random() * 40),
-        issue:   1 + Math.floor(Math.random() * 4),
-        page:    40 + Math.floor(Math.random() * 400)
+        fake: true,
+        authors: a + ', K. & ' + b + ', M.',
+        year: 2018 + Math.floor(Math.random() * 8),
+        title: t,
+        venue: pick(parts.venues),
+        pages: page + '–' + (page + 12 + Math.floor(Math.random() * 10))
       };
     }
 
+    function newRound() {
+      var used = [];
+      var list = [reals[Math.floor(Math.random() * reals.length)]];
+      while (list.length < 4) list.push(makeFake(used));
+      shuffle(list);
+      round = list;
+      picked = null;
+      rounds++;
+      draw();
+    }
+
+    function refHtml(r) {
+      return '<span class="ref-authors">' + esc(r.authors) + '</span> (' + r.year + '). ' +
+             esc(r.title) + '. <em>' + esc(r.venue) + '</em>, ' + esc(r.pages) + '.';
+    }
+
     function draw() {
-      var c = claims[ci];
+      var answered = picked !== null;
       host.innerHTML =
-        '<label class="cite-label" for="claim-' + esc(cfg.id) + '">The claim you want a source for</label>' +
-        '<select class="cite-select" id="claim-' + esc(cfg.id) + '">' +
-          claims.map(function (x, n) {
-            return '<option value="' + n + '"' + (n === ci ? ' selected' : '') + '>' + esc(x.claim) + '</option>';
+        '<ul class="ref-list" role="list">' +
+          round.map(function (r, n) {
+            var state = '';
+            if (answered) state = r.fake ? ' is-fake' : ' is-real';
+            if (answered && n === picked) state += ' is-picked';
+            return '<li><button class="ref' + state + '" type="button" data-n="' + n + '"' +
+                     (answered ? ' disabled' : '') + '>' +
+                     '<span class="ref-mark">' + String.fromCharCode(65 + n) + '</span>' +
+                     '<span class="ref-body">' + refHtml(r) +
+                       (answered
+                         ? '<span class="ref-verdict">' + (r.fake ? 'Invented just now' : 'Real paper') + '</span>'
+                         : '') +
+                     '</span>' +
+                   '</button></li>';
           }).join('') +
-        '</select>' +
-        '<div class="cite-out" aria-live="polite"></div>' +
-        '<div class="dice-controls">' +
-          '<button class="btn btn-primary btn-small" type="button" data-gen>' +
-            (built ? 'Ask again' : 'Find me a source') + '</button>' +
-          (built ? '<button class="btn btn-ghost btn-small" type="button" data-reset>Start over</button>' : '') +
-        '</div>' +
-        '<p class="dice-result"></p>';
+        '</ul>' +
+        '<p class="dice-result">' + verdict() + '</p>' +
+        (answered
+          ? '<div class="dice-controls">' +
+              '<a class="btn btn-ghost btn-small" href="' + esc(realOne().url) + '" target="_blank" rel="noopener">Open the real paper</a>' +
+              '<button class="btn btn-primary btn-small" type="button" data-again>Another round</button>' +
+            '</div>'
+          : '');
 
-      $('.cite-select', host).addEventListener('change', function (e) {
-        ci = Number(e.target.value); built = null; rolls = 0; draw();
+      $$('.ref', host).forEach(function (b) {
+        b.addEventListener('click', function () { picked = Number(b.getAttribute('data-n')); draw(); });
       });
-      $('[data-gen]', host).addEventListener('click', function () {
-        built = generate(); rolls++; draw();
-      });
-      var rst = $('[data-reset]', host);
-      if (rst) rst.addEventListener('click', function () { built = null; rolls = 0; draw(); });
-
-      paint(c);
+      var again = $('[data-again]', host);
+      if (again) again.addEventListener('click', newRound);
     }
 
-    function paint(c) {
-      var out = $('.cite-out', host);
-      if (!built) {
-        out.innerHTML = '<p class="practice-note" style="margin:0">No source yet. Press the button and one will appear.</p>';
-        return;
-      }
-      out.innerHTML =
-        '<span class="cite-stamp">Invented</span>' +
-        '<p class="cite-ref">' +
-          '<span class="cite-f">' + esc(built.first) + ', A. &amp; ' + esc(built.second) + ', R.</span> ' +
-          '(<span class="cite-f">' + built.year + '</span>). ' +
-          '<span class="cite-f">' + esc(built.title) + '</span>. ' +
-          '<em><span class="cite-f">' + esc(built.journal) + '</span></em>, ' +
-          '<span class="cite-f">' + built.vol + '</span>(' + built.issue + '), ' +
-          '<span class="cite-f">' + built.page + '–' + (built.page + 14) + '</span>.' +
-        '</p>';
-
-      $('.dice-result', host).innerHTML = rolls < 2
-        ? 'Every highlighted field was picked because it <strong>looked right there</strong>, not because it was found. Press <strong>Ask again</strong>.'
-        : 'Same claim, <strong>' + rolls + ' different sources</strong>. None was looked up. A real model does this with the same fluency, and without the stamp.';
+    function realOne() {
+      for (var i = 0; i < round.length; i++) if (!round[i].fake) return round[i];
+      return round[0];
     }
 
-    draw();
+    function verdict() {
+      if (picked === null) return 'One of these four is a real paper. The other three did not exist sixty seconds ago.';
+      var right = !round[picked].fake;
+      return (right
+        ? '<strong>Right.</strong> Now notice what that took — you had to already know the paper. '
+        : '<strong>That one was invented.</strong> It was assembled from a list of plausible parts, the same way a model does it. ') +
+        'Nothing on the page distinguished them: same formatting, same specificity, same confidence. ' +
+        'The only thing that separates a real citation from a fabricated one is going and checking.';
+    }
+
+    newRound();
   }
 
   /* ---------- How much did it read? ----------
-     Two meters: relevant training material, and stated confidence. Working
-     down the list, the first collapses and the second barely moves. */
+     All rows visible at once, because the point is a PATTERN across the six —
+     coverage collapses, certainty does not follow it down. Showing one at a
+     time asked the reader to hold five numbers in their head and take the
+     conclusion on trust.
+
+     Both series are percentages on one shared 0–100 axis, so they belong on
+     one chart. Colours are the validated categorical pair (see the comment
+     on --viz-read / --viz-sure in styles.css); identity is carried by a
+     legend and by direct value labels, never by colour alone. */
   function buildCorpus(host, cfg) {
     var qs = cfg.questions || [];
     if (!qs.length) return;
-    var qi = 0, seen = {};
+    var open = 0;
 
-    function draw() {
-      var q = qs[qi];
-      seen[qi] = true;
-      host.innerHTML =
-        '<ul class="corpus-qs">' +
-          qs.map(function (x, n) {
-            return '<li><button class="corpus-q' + (n === qi ? ' is-active' : '') +
-                   '" type="button" data-n="' + n + '">' + esc(x.q) + '</button></li>';
-          }).join('') +
-        '</ul>' +
-        '<div class="corpus-meters" aria-live="polite">' +
-          meter('How much it read on this', q.coverage, 'read') +
-          meter('How certain it sounds', q.confidence, 'sure') +
-        '</div>' +
-        '<p class="dice-result">' + esc(q.verdict) + '</p>' +
-        (Object.keys(seen).length >= qs.length
-          ? '<p class="corpus-punch">The top bar fell from ' + qs[0].coverage + '% to ' + qs[qs.length - 1].coverage +
-            '%. The bottom bar moved ' + (qs[0].confidence - qs[qs.length - 1].confidence) +
-            ' points. That gap is the whole problem — it does not get less sure when it knows less.</p>'
-          : '');
-
-      $$('.corpus-q', host).forEach(function (btn) {
-        btn.addEventListener('click', function () { qi = Number(btn.getAttribute('data-n')); draw(); });
-      });
+    // Computed, never assumed: reordering or inserting a question stays honest.
+    function span(key) {
+      var vals = qs.map(function (q) { return q[key]; });
+      return { hi: Math.max.apply(null, vals), lo: Math.min.apply(null, vals) };
     }
 
-    function meter(label, pct, kind) {
-      return '<div class="corpus-meter">' +
-        '<div class="corpus-meter-top"><span>' + esc(label) + '</span><strong>' + pct + '%</strong></div>' +
-        '<div class="corpus-track"><span class="corpus-fill corpus-' + kind + '" style="width:' + pct + '%"></span></div>' +
-      '</div>';
+    function row(q, n) {
+      return '<tr class="cq-row' + (n === open ? ' is-open' : '') + '" data-n="' + n + '">' +
+        '<th scope="row"><button type="button" data-n="' + n + '">' + esc(q.q) + '</button></th>' +
+        '<td>' +
+          '<div class="cq-bars">' +
+            '<span class="cq-bar"><span class="cq-fill cq-read" style="width:' + q.coverage + '%"></span></span>' +
+            '<span class="cq-bar"><span class="cq-fill cq-sure" style="width:' + q.confidence + '%"></span></span>' +
+          '</div>' +
+        '</td>' +
+        '<td class="cq-nums"><span class="cq-n cq-n-read">' + q.coverage + '%</span>' +
+        '<span class="cq-n cq-n-sure">' + q.confidence + '%</span></td>' +
+      '</tr>';
+    }
+
+    function draw() {
+      var cov = span('coverage'), con = span('confidence');
+      host.innerHTML =
+        '<div class="cq-legend">' +
+          '<span><i class="cq-key cq-read"></i>How much it read on this</span>' +
+          '<span><i class="cq-key cq-sure"></i>How certain it sounds</span>' +
+        '</div>' +
+        '<table class="cq-table"><caption class="sr-only">' +
+          'Training coverage and stated confidence, as a percentage, for six questions' +
+        '</caption><tbody>' + qs.map(row).join('') + '</tbody></table>' +
+        '<p class="dice-result">' + esc(qs[open].verdict) + '</p>' +
+        '<p class="corpus-punch">Read across the rows. Coverage falls from ' + cov.hi + '% to ' + cov.lo +
+          '% — a ' + (cov.hi - cov.lo) + '-point collapse. Certainty moves ' + (con.hi - con.lo) +
+          ' points. It does not get less sure when it knows less, and that gap is the whole problem.</p>';
+
+      $$('.cq-row [data-n]', host).forEach(function (b) {
+        b.addEventListener('click', function () { open = Number(b.getAttribute('data-n')); draw(); });
+      });
     }
 
     draw();
@@ -1028,7 +1139,7 @@
     var items = (S.practice || []).filter(function (p) { return PRACTICE_ENGINES[p.type]; });
     if (!items.length) { $('#practice').hidden = true; return; }
 
-    grid.innerHTML = items.map(function (p) {
+    function card(p) {
       var foot = '';
       if (p.note || p.link) {
         foot = '<div class="practice-foot">' +
@@ -1042,6 +1153,23 @@
         '<p class="practice-blurb">' + esc(p.blurb) + '</p>' +
         '<div class="practice-body"></div>' + foot +
       '</article>';
+    }
+
+    /* Demos and quizzes teach differently, so they do not sit in one grid.
+       Anything without a group falls in with the demos. */
+    var GROUPS = [
+      { id: 'demo', title: 'Try it',        sub: 'Move something and watch what the machinery does.' },
+      { id: 'quiz', title: 'Check yourself', sub: 'Answer, then find out why. Nothing is scored anywhere but here.' }
+    ];
+    grid.innerHTML = GROUPS.map(function (g) {
+      var mine = items.filter(function (p) { return (p.group || 'demo') === g.id; });
+      if (!mine.length) return '';
+      return '<section class="practice-group">' +
+        '<header class="practice-group-head">' +
+          '<h3>' + esc(g.title) + '</h3><p>' + esc(g.sub) + '</p>' +
+        '</header>' +
+        '<div class="practice-grid-inner">' + mine.map(card).join('') + '</div>' +
+      '</section>';
     }).join('');
 
     items.forEach(function (p) {

@@ -231,22 +231,41 @@ new kind of activity needs code as well as content.
 |---|---|---|
 | `tokens` | Live token-chopping sandbox | `sample` starting text |
 | `predict` | Next-token dice roll with a temperature slider | `rounds: [{ stem, options: [{ word, p }] }]` |
-| `cite` | Builds a fabricated citation field by field | `claims: [{ claim, authors, titles, journals }]` |
-| `corpus` | Training-coverage vs stated-confidence meters | `questions: [{ q, coverage, confidence, verdict }]` |
+| `cite` | One real paper among three fabricated ones | `real: [{…}]` and `fake: { authors, titles, venues }` |
+| `corpus` | Training coverage vs stated confidence, all rows at once | `questions: [{ q, coverage, confidence, verdict }]` |
+
+Each entry also takes `group: "demo"` or `group: "quiz"`, which decides whether it
+lands under **Try it** or **Check yourself**. Anything without a group falls in
+with the demos.
 | `match` | Definition → term quiz, built from the glossary | `rounds: 6` |
 | `scenarios` | Judgment calls | `items`, same shape as a quiz above |
 
-**On `cite`:** it fabricates academic references on purpose, to show that a
-specific-sounding citation costs the model nothing to invent. Every output is
-stamped "Invented" in the markup itself, not just in the surrounding copy, so a
-screenshot can never be mistaken for a real reference. Keep that stamp if you
-edit the engine. Use generic surnames in `authors` and avoid naming real
-researchers — the widget attributes work to whoever it picks.
+**On `cite`:** it shows one real paper beside three references it fabricates on
+the spot, identically formatted, and asks which is real. An earlier version showed
+only fabrications, which meant "you cannot tell by looking" was asserted rather
+than demonstrated. Two rules if you edit it: the entries under `real` must stay
+exactly right, because they are the control and the reveal links to them for
+checking; and `fake.authors` must stay generic surnames, because the widget
+attributes invented work to whoever it picks. Nothing is labelled until the
+reader has answered.
 
 **On `corpus`:** the `coverage` and `confidence` numbers are illustrative, not
 measured, and the card says so. Nobody publishes an exact breakdown of a frontier
-model's training data. What is not in dispute is the direction, which is the
-point the activity makes: coverage collapses, confidence does not follow it down.
+model's training data. What is not in dispute is the direction, which is the point
+the activity makes: coverage collapses, confidence does not follow it down. The
+summary line under the table is computed from the data, so reordering or inserting
+a question keeps it honest — do not hard-code those numbers back in.
+
+**On the chart colours:** the two series use `--viz-read` / `--viz-sure`, which are
+deliberately *not* the UI `--accent` / `--coral`. That pair fails colourblind
+separation and the chroma floor when used as data colours. The current steps pass
+all six checks in both modes; if you change them, re-run the validator rather than
+eyeballing it:
+
+```
+node scripts/validate_palette.js "#0d9488,#b4452c" --mode light
+node scripts/validate_palette.js "#17a894,#d4634a" --mode dark
+```
 
 `scenarios` is the cheap one to extend: it takes the same `{ q, options, answer, why }`
 objects as the lesson quizzes, so adding situations to "Would you send it?" is

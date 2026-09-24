@@ -877,3 +877,95 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   background: var(--coral-soft); border-left: 3px solid var(--coral);
   color: var(--text-2); font-size: .91rem; line-height: 1.55;
 }
+
+/* ---------- Practice: demos and quizzes are separate ---------- */
+#practiceGrid { display: flex; flex-direction: column; gap: 40px; }
+.practice-grid-inner { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px; }
+.practice-group-head { margin-bottom: 16px; }
+.practice-group-head h3 {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--muted); font-family: var(--font-body); font-weight: 700; margin: 0 0 4px;
+}
+.practice-group-head p { margin: 0; color: var(--text-2); font-size: .95rem; }
+@media (max-width: 760px) { .practice-grid-inner { grid-template-columns: 1fr; } }
+
+/* ---------- Chart series colours ----------
+   Categorical pair for the two-series meters. NOT the UI --accent/--coral:
+   those fail the colourblind-separation and chroma checks as a data pair.
+   These steps pass all six checks of the dataviz validator against each
+   mode's surface. Re-run it before changing them:
+     node scripts/validate_palette.js "#0d9488,#b4452c" --mode light
+     node scripts/validate_palette.js "#17a894,#d4634a" --mode dark      */
+:root { --viz-read: #0d9488; --viz-sure: #b4452c; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --viz-read: #17a894; --viz-sure: #d4634a; }
+}
+:root[data-theme="dark"] { --viz-read: #17a894; --viz-sure: #d4634a; }
+
+/* ---------- How much did it read? ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.cq-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .82rem; color: var(--text-2); }
+.cq-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.cq-key { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.cq-key.cq-read { background: var(--viz-read); }
+.cq-key.cq-sure { background: var(--viz-sure); }
+
+.cq-table { width: 100%; border-collapse: collapse; }
+.cq-table th, .cq-table td { padding: 7px 0; vertical-align: middle; text-align: left; font-weight: 400; }
+.cq-table th { width: 42%; padding-right: 14px; }
+.cq-table th button {
+  font: inherit; font-size: .87rem; text-align: left; cursor: pointer;
+  background: none; border: 0; padding: 0; color: var(--text-2); line-height: 1.35;
+}
+.cq-table th button:hover { color: var(--text); text-decoration: underline; }
+.cq-row.is-open th button { color: var(--text); font-weight: 600; }
+
+/* 2px surface gap between the two fills, per the mark spec */
+.cq-bars { display: flex; flex-direction: column; gap: 2px; }
+.cq-bar { display: block; height: 9px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.cq-fill { display: block; height: 100%; border-radius: 999px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.cq-fill.cq-read { background: var(--viz-read); }
+.cq-fill.cq-sure { background: var(--viz-sure); }
+
+.cq-nums { width: 46px; text-align: right; }
+.cq-n { display: block; font-size: .76rem; font-variant-numeric: tabular-nums; line-height: 1.5; }
+.cq-n-read { color: var(--viz-read); font-weight: 600; }
+.cq-n-sure { color: var(--viz-sure); font-weight: 600; }
+.cq-row.is-open .cq-bar { box-shadow: 0 0 0 1px var(--border-strong); }
+
+@media (max-width: 560px) {
+  .cq-table th { width: 50%; }
+  .cq-table th button { font-size: .82rem; }
+}
+
+/* ---------- Spot the real one ---------- */
+.ref-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.ref {
+  width: 100%; text-align: left; font: inherit; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-2); transition: border-color .15s ease, background .15s ease;
+}
+.ref:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.ref:disabled { cursor: default; }
+.ref-mark {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px; margin-top: 1px;
+  border: 1px solid var(--border-strong); display: grid; place-items: center;
+  font-size: .72rem; font-weight: 700; color: var(--muted);
+}
+.ref-body { font-size: .89rem; line-height: 1.55; }
+.ref-authors { font-weight: 600; color: var(--text); }
+.ref-verdict {
+  display: inline-block; margin-top: 6px; font-size: .66rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .11em; padding: 2px 7px; border-radius: 4px;
+}
+.ref.is-real { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.ref.is-real .ref-mark { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ref.is-real .ref-verdict { background: var(--accent); color: var(--accent-ink); }
+.ref.is-fake { border-style: dashed; }
+.ref.is-fake .ref-verdict { border: 1.5px solid var(--coral); color: var(--coral); }
+.ref.is-picked { box-shadow: 0 0 0 2px var(--border-strong); }
+.ref.is-fake.is-picked { box-shadow: 0 0 0 2px var(--coral); }

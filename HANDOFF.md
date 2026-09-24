@@ -16,6 +16,86 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-09-24 — Accuracy pass on the practice activities
+
+**Who:** Keneth, with Claude Code
+**State:** working tree only, not committed
+**Files:** `content.js`, `assets/app.js`, `assets/styles.css`, `README.md`
+
+### Why
+
+A review of the six activities against what they actually claim. This page's whole
+value is being correct, so a demo that teaches the wrong mechanism is worse than no
+demo. One was.
+
+### What changed
+
+**The token chopper was teaching the wrong cause.** It split purely on word length,
+so `Aloha kākou` came out as 2 tokens against `Hello everyone` at 3 — ʻōlelo Hawaiʻi
+looked *cheaper* than English, the exact opposite of the point, on the widget that
+bridges Module 2 to the entire bias argument.
+
+Real tokenizers do not split on length, they split on **frequency**: the vocabulary
+is built from the training data, so a word that appeared constantly gets one token
+and a word the data barely contains has no entry and shatters. The chopper now models
+that — a ~350-word vocabulary, suffix peeling, and non-ASCII characters (ʻokina,
+kahakō are several bytes each) coming away on their own. English now runs 4.5–5.8
+chars/token against 2.1–2.6 for Hawaiian, which is both the right direction and
+roughly the right magnitude.
+
+**Invent a citation → Spot the real one.** The old version only ever showed
+fabrications, so "you cannot tell a real citation from an invented one by looking"
+was something the card asserted and the reader took on trust. It now shows one real
+paper — the ones actually cited in the deck — among three it fabricates on the spot,
+identically formatted, and asks which is real. The reveal links to the real paper so
+it can be checked. Proven instead of claimed, and it reuses citations already in the
+repo.
+
+**How much did it read? shows all six rows at once.** It was a click-through
+slideshow that asked the reader to hold five numbers in their head and then take the
+conclusion on faith. The pattern is the finding, so the pattern is now visible in one
+view. The summary line is computed from the data rather than hard-coded to the first
+and last rows, which it previously was — correct only by accident of ordering, and
+silently wrong the moment anyone inserted a question.
+
+**Demos are separated from quizzes.** Two labelled groups: **Try it** (token chopper,
+roll the dice, spot the real one, how much did it read) and **Check yourself** (term
+match, would you send it). They teach differently and were sitting in one grid as if
+they were the same kind of thing.
+
+### Decisions worth knowing
+
+- **Chart colours are not the UI colours.** `--accent` and `--coral` fail
+  colourblind separation and the chroma floor when used as a data pair. The two
+  series use `--viz-read` / `--viz-sure`, which pass all six checks of the dataviz
+  validator in both light and dark. Re-run the validator rather than eyeballing any
+  change — the command is in the README.
+- The corpus table carries a legend, per-row value labels and a screen-reader
+  caption, so series identity is never colour-alone.
+- The chopper's vocabulary is a few hundred words against a real one's ~100,000.
+  The card says so. It models the right *cause*, which is the part that matters.
+
+### How it was tested
+
+143 assertions, up from 125, run four times to check for shuffle flakiness. The new
+ones assert the thing that was actually broken: that Hawaiian costs more tokens per
+character than English and by a substantial margin, that a five-letter word in the
+vocabulary stays whole while a five-letter word outside it shatters, that every
+citation round has exactly one real paper with no duplicate titles, that no real
+researcher is ever credited with a fabrication, and that the corpus summary matches
+the computed min and max rather than the first and last rows.
+
+One old test had encoded the wrong model — "a 5-letter word stays whole" was a
+property of length-based splitting. It now asserts vocabulary membership instead.
+
+### Open / next
+
+- [ ] Look at all six cards in a browser, both themes. The corpus table and the
+      reference list are new layouts and the chart colours have never been seen.
+- [ ] Commit.
+
+---
+
 ## 2026-09-24 — Two more mechanism demos: Bias and Hallucinations
 
 **Who:** Keneth, with Claude Code

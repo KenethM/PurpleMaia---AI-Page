@@ -933,16 +933,18 @@ window.SITE = {
   practice: [
     {
       id: "tokens",
+      group: "demo",
       type: "tokens",
       title: "Token chopper",
       tag: "Module 2 · Tokenization",
-      blurb: "Type anything and watch it come apart into the chunks a model actually sees. Try your own name. Then try a sentence in ʻōlelo Hawaiʻi and watch the count climb.",
+      blurb: "Type anything and watch it come apart into the chunks a model actually sees. Type an English sentence, then the same length in ʻōlelo Hawaiʻi, and compare the characters-per-token. The gap is not about word length — it is about what the model read.",
       sample: "Aloha kākou! The honu swam toward the ocean, indistinguishable from the reef.",
-      note: "This is an approximation of how real tokenizers behave — close enough to make the point, not the exact chunking any one model uses.",
+      note: "A tokenizer's vocabulary is built from its training data, so a word that appeared constantly gets one token and a word the data barely contains has no entry and shatters. ʻOkina and kahakō are several bytes each and rare in an English-heavy corpus, so they tend to come apart on their own. That is the same fact the bias lesson rests on, visible here. Approximate: a real vocabulary holds about 100,000 entries, this one holds a few hundred.",
       link: { label: "The real thing: Tiktokenizer", url: "https://tiktokenizer.vercel.app/" }
     },
     {
       id: "dice",
+      group: "demo",
       type: "predict",
       title: "Roll the dice",
       tag: "Module 2 · Prediction & sampling",
@@ -983,6 +985,7 @@ window.SITE = {
     },
     {
       id: "match",
+      group: "quiz",
       type: "match",
       title: "Term match",
       tag: "All modules · Glossary",
@@ -991,6 +994,7 @@ window.SITE = {
     },
     {
       id: "judge",
+      group: "quiz",
       type: "scenarios",
       title: "Would you send it?",
       tag: "Module 3 · Oversight",
@@ -1048,64 +1052,78 @@ window.SITE = {
     },
     {
       id: "cite",
+      group: "demo",
       type: "cite",
-      title: "Invent a citation",
+      title: "Spot the real one",
       tag: "Module 3 · Hallucinations",
-      blurb: "Pick a claim and watch a source get built for it, field by field, out of whatever looks plausible. Then roll it again — same claim, different source, same confident delivery. Nothing is ever looked up.",
-      note: "Every citation this produces is fabricated, and is stamped as such. That is the entire point — it is the same next-token machinery as Roll the dice, pointed at something that looks like a fact.",
-      claims: [
+      blurb: "Four references, same field, same formatting. One is a real paper — the other three were assembled a moment ago out of plausible parts. Pick the real one before you scroll.",
+      note: "The real papers are the ones cited in the deck, and the reveal links straight to each. The three fakes are stamped once revealed and are generated fresh every round, so the answer is never in the same place. Nothing here was looked up — which is exactly what a model does when it invents a citation.",
+      /* Real papers. Keep these EXACT — they are the control in the experiment,
+         and the reveal links to them so anyone can check. */
+      real: [
         {
-          claim: "Place-based learning improves student retention in Hawaiʻi",
-          authors: ["Kahale", "Fernandez", "Whitford", "Akana", "Brennan", "Nakamura"],
-          titles: [
-            "Place-based pedagogy and student persistence",
-            "Land, language and learner retention",
-            "Situated curriculum in island communities",
-            "Belonging and persistence in place-based programs"
-          ],
-          journals: [
-            "Journal of Educational Research",
-            "Pacific Educational Review",
-            "International Journal of Place-Based Education",
-            "Studies in Community Learning"
-          ]
+          authors: "Bender, E. M., Gebru, T., McMillan-Major, A. & Shmitchell, S.",
+          year: 2021,
+          title: "On the dangers of stochastic parrots: can language models be too big?",
+          venue: "Proceedings of FAccT '21",
+          pages: "610–623",
+          url: "https://dl.acm.org/doi/10.1145/3442188.3445922"
         },
         {
-          claim: "Students who learn to code before age 12 earn more as adults",
-          authors: ["Oyelaran", "Voss", "Chandra", "Mellor", "Iwasaki", "Delacroix"],
-          titles: [
-            "Early computational exposure and lifetime earnings",
-            "Age of first programming and labour market outcomes",
-            "Childhood technical education and wage trajectories",
-            "Coding age and long-run economic return"
-          ],
-          journals: [
-            "Journal of Labor Economics",
-            "Computers & Education",
-            "Review of Economics of Education",
-            "Technology and Workforce Quarterly"
-          ]
+          authors: "Lewis, P., Perez, E., Piktus, A. et al.",
+          year: 2020,
+          title: "Retrieval-augmented generation for knowledge-intensive NLP tasks",
+          venue: "Advances in Neural Information Processing Systems 33",
+          pages: "9459–9474",
+          url: "https://arxiv.org/abs/2005.11401"
         },
         {
-          claim: "Community-led data governance increases trust in research",
-          authors: ["Tumataroa", "Redfeather", "Kalani", "Owusu", "Petersen", "Vaile"],
-          titles: [
-            "Community governance and research participation",
-            "Consent, control and trust in data partnerships",
-            "Indigenous data sovereignty and institutional trust",
-            "Who holds the data: governance and willingness to participate"
-          ],
-          journals: [
-            "Journal of Research Ethics",
-            "Big Data & Society",
-            "International Indigenous Policy Journal",
-            "Community Research Review"
-          ]
+          authors: "Wei, J., Wang, X., Schuurmans, D. et al.",
+          year: 2022,
+          title: "Chain-of-thought prompting elicits reasoning in large language models",
+          venue: "Advances in Neural Information Processing Systems 35",
+          pages: "24824–24837",
+          url: "https://arxiv.org/abs/2201.11903"
+        },
+        {
+          authors: "Ji, Z., Lee, N., Frieske, R. et al.",
+          year: 2023,
+          title: "Survey of hallucination in natural language generation",
+          venue: "ACM Computing Surveys 55(12)",
+          pages: "1–38",
+          url: "https://arxiv.org/abs/2202.03629"
         }
-      ]
+      ],
+      /* Parts the fakes get assembled from. Generic surnames on purpose — the
+         widget attributes invented work to whoever it picks, so no real
+         researchers go in this list. */
+      fake: {
+        authors: ["Almeida", "Brennan", "Castellanos", "Duarte", "Ellery", "Fontaine",
+                  "Grierson", "Halloran", "Iversen", "Jarrah", "Kowalski", "Lindqvist",
+                  "Moreau", "Nakagawa", "Oyelaran", "Pahlavi", "Quint", "Rasmussen"],
+        titles: [
+          "Measuring factual drift in instruction-tuned language models",
+          "Confidence calibration under distribution shift in generative text",
+          "Source attribution failures in retrieval-augmented systems",
+          "On the limits of self-verification in autoregressive models",
+          "Quantifying fabricated references in machine-generated prose",
+          "Prompt sensitivity and answer stability across model families",
+          "Low-resource language degradation in subword tokenization",
+          "Human oversight thresholds for generative drafting workflows"
+        ],
+        venues: [
+          "Transactions of the Association for Computational Linguistics",
+          "Proceedings of EMNLP",
+          "Journal of Artificial Intelligence Research",
+          "Proceedings of ACL",
+          "Computational Linguistics",
+          "Proceedings of NAACL"
+        ]
+      }
     },
     {
       id: "corpus",
+      group: "demo",
       type: "corpus",
       title: "How much did it read?",
       tag: "Module 2 · Training data → Module 3 · Bias",
