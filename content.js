@@ -155,7 +155,7 @@ window.SITE = {
         "Everything here is free and public — open it again at home, or run the whole session yourself for your own group.",
       facts: [
         { label: "Format", value: "Hands-on" },
-        { label: "Activities", value: "4" },
+        { label: "Activities", value: "6" },
         { label: "Session", value: "~90 min" },
         { label: "Bring", value: "A device" }
       ],
@@ -615,6 +615,11 @@ window.SITE = {
        answer  index of the correct one (0 = first)
        why     shown after answering, whether they got it right or not
      Keep `why` teaching something rather than saying "correct".
+
+     Write the correct option first if that is easiest. The page shuffles the
+     options on every render and remaps `answer` to follow, so the answer is
+     never reliably in the same place. Add `fixed: true` to a question whose
+     options only make sense in the order given.
   --------------------------------------------------------------- */
   quizzes: {
     "m1-map": [
@@ -1038,6 +1043,110 @@ window.SITE = {
           options: ["Tell them what it did and who reviewed it", "Say no — a person edited it, so it counts as yours", "Avoid the question"],
           answer: 0,
           why: "The honest answer is usually the easy one: it drafted, a named person reviewed and is accountable for it. That is the standard we are asking others to hold too."
+        }
+      ]
+    },
+    {
+      id: "cite",
+      type: "cite",
+      title: "Invent a citation",
+      tag: "Module 3 · Hallucinations",
+      blurb: "Pick a claim and watch a source get built for it, field by field, out of whatever looks plausible. Then roll it again — same claim, different source, same confident delivery. Nothing is ever looked up.",
+      note: "Every citation this produces is fabricated, and is stamped as such. That is the entire point — it is the same next-token machinery as Roll the dice, pointed at something that looks like a fact.",
+      claims: [
+        {
+          claim: "Place-based learning improves student retention in Hawaiʻi",
+          authors: ["Kahale", "Fernandez", "Whitford", "Akana", "Brennan", "Nakamura"],
+          titles: [
+            "Place-based pedagogy and student persistence",
+            "Land, language and learner retention",
+            "Situated curriculum in island communities",
+            "Belonging and persistence in place-based programs"
+          ],
+          journals: [
+            "Journal of Educational Research",
+            "Pacific Educational Review",
+            "International Journal of Place-Based Education",
+            "Studies in Community Learning"
+          ]
+        },
+        {
+          claim: "Students who learn to code before age 12 earn more as adults",
+          authors: ["Oyelaran", "Voss", "Chandra", "Mellor", "Iwasaki", "Delacroix"],
+          titles: [
+            "Early computational exposure and lifetime earnings",
+            "Age of first programming and labour market outcomes",
+            "Childhood technical education and wage trajectories",
+            "Coding age and long-run economic return"
+          ],
+          journals: [
+            "Journal of Labor Economics",
+            "Computers & Education",
+            "Review of Economics of Education",
+            "Technology and Workforce Quarterly"
+          ]
+        },
+        {
+          claim: "Community-led data governance increases trust in research",
+          authors: ["Tumataroa", "Redfeather", "Kalani", "Owusu", "Petersen", "Vaile"],
+          titles: [
+            "Community governance and research participation",
+            "Consent, control and trust in data partnerships",
+            "Indigenous data sovereignty and institutional trust",
+            "Who holds the data: governance and willingness to participate"
+          ],
+          journals: [
+            "Journal of Research Ethics",
+            "Big Data & Society",
+            "International Indigenous Policy Journal",
+            "Community Research Review"
+          ]
+        }
+      ]
+    },
+    {
+      id: "corpus",
+      type: "corpus",
+      title: "How much did it read?",
+      tag: "Module 2 · Training data → Module 3 · Bias",
+      blurb: "Pick a question. The top bar is roughly how much relevant material the model read before it ever met you. The bottom bar is how certain it sounds answering. Work down the list and watch what happens to the gap.",
+      note: "The proportions are illustrative rather than measured — nobody publishes an exact breakdown of a frontier model's training data. The direction is not in dispute: ʻōlelo Hawaiʻi and community-held moʻolelo are a vanishingly small share of what these models read, and the certainty in the answer does not drop to match.",
+      questions: [
+        {
+          q: "Draft a cover letter in English",
+          coverage: 96,
+          confidence: 95,
+          verdict: "Read enormously, and it shows. This is the shape of task these models are genuinely good at."
+        },
+        {
+          q: "Explain the water cycle to a 5th grader",
+          coverage: 93,
+          confidence: 96,
+          verdict: "Well-documented, explained a thousand ways online. Safe ground."
+        },
+        {
+          q: "Summarise how a US federal grant program works",
+          coverage: 81,
+          confidence: 96,
+          verdict: "Plenty of material, but it goes stale. Confident about a program that may have changed since it read about it."
+        },
+        {
+          q: "Translate a sentence into ʻōlelo Hawaiʻi",
+          coverage: 12,
+          confidence: 93,
+          verdict: "A sliver of what it read, answered at nearly full confidence. It will not tell you it is working from very little."
+        },
+        {
+          q: "Describe the protocol for entering a loʻi",
+          coverage: 5,
+          confidence: 91,
+          verdict: "Almost nothing, and what little there is was mostly written by outsiders. The answer will still arrive fluent and complete."
+        },
+        {
+          q: "Name the moʻolelo attached to a specific ahupuaʻa",
+          coverage: 2,
+          confidence: 89,
+          verdict: "This is not the model's to answer. It will answer anyway, and it will sound exactly as sure as it did about the water cycle."
         }
       ]
     }

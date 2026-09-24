@@ -429,6 +429,26 @@
     opts = opts || {};
     var i = 0, score = 0;
 
+    /* Shuffle each question's options at render time and remap `answer` to
+       follow. Content authors can write the correct option first — which is
+       the natural way to write one — without the answer always being A.
+       A question with `fixed: true` keeps its given order, for the rare case
+       where the options only make sense in sequence. */
+    function prepare(list) {
+      return (list || []).map(function (it) {
+        if (it.fixed) return it;
+        var order = it.options.map(function (_, n) { return n; });
+        shuffle(order);
+        return {
+          q: it.q,
+          options: order.map(function (n) { return it.options[n]; }),
+          answer: order.indexOf(it.answer),
+          why: it.why
+        };
+      });
+    }
+    items = prepare(items);
+
     function drawQuestion() {
       var it = items[i];
       host.innerHTML =
@@ -496,7 +516,7 @@
           '<div class="quiz-foot"><button class="btn btn-ghost btn-small" type="button" data-again>Try again</button></div>' +
         '</div>';
       $('[data-again]', host).addEventListener('click', function () {
-        if (opts.restart) items = opts.restart();
+        items = prepare(opts.restart ? opts.restart() : items);   // reshuffle on every run
         i = 0; score = 0; drawQuestion();
       });
       if (opts.onFinish) opts.onFinish(score, total);
@@ -866,11 +886,140 @@
     renderQuiz(host, items.slice(), { restart: function () { return items.slice(); } });
   }
 
+  /* ---------- Invent a citation ----------
+     Roll the dice pointed at something that looks like a fact. Every field is
+     a plausible pick from a list, nothing is looked up, and rolling the same
+     claim twice gives a different source — which is the whole lesson.
+     Output is stamped INVENTED so a screenshot can never pass as real. */
+  function buildCite(host, cfg) {
+    var claims = cfg.claims || [];
+    if (!claims.length) return;
+    var ci = 0, built = null, rolls = 0;
+
+    function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+    function generate() {
+      var c = claims[ci];
+      var pool = c.authors.slice();
+      var first = pick(pool);
+      pool = pool.filter(function (a) { return a !== first; });   // no "Kahale & Kahale"
+      return {
+        first:   first,
+        second:  pool.length ? pick(pool) : first,
+        title:   pick(c.titles),
+        journal: pick(c.journals),
+        year:    2014 + Math.floor(Math.random() * 12),
+        vol:     8 + Math.floor(Math.random() * 40),
+        issue:   1 + Math.floor(Math.random() * 4),
+        page:    40 + Math.floor(Math.random() * 400)
+      };
+    }
+
+    function draw() {
+      var c = claims[ci];
+      host.innerHTML =
+        '<label class="cite-label" for="claim-' + esc(cfg.id) + '">The claim you want a source for</label>' +
+        '<select class="cite-select" id="claim-' + esc(cfg.id) + '">' +
+          claims.map(function (x, n) {
+            return '<option value="' + n + '"' + (n === ci ? ' selected' : '') + '>' + esc(x.claim) + '</option>';
+          }).join('') +
+        '</select>' +
+        '<div class="cite-out" aria-live="polite"></div>' +
+        '<div class="dice-controls">' +
+          '<button class="btn btn-primary btn-small" type="button" data-gen>' +
+            (built ? 'Ask again' : 'Find me a source') + '</button>' +
+          (built ? '<button class="btn btn-ghost btn-small" type="button" data-reset>Start over</button>' : '') +
+        '</div>' +
+        '<p class="dice-result"></p>';
+
+      $('.cite-select', host).addEventListener('change', function (e) {
+        ci = Number(e.target.value); built = null; rolls = 0; draw();
+      });
+      $('[data-gen]', host).addEventListener('click', function () {
+        built = generate(); rolls++; draw();
+      });
+      var rst = $('[data-reset]', host);
+      if (rst) rst.addEventListener('click', function () { built = null; rolls = 0; draw(); });
+
+      paint(c);
+    }
+
+    function paint(c) {
+      var out = $('.cite-out', host);
+      if (!built) {
+        out.innerHTML = '<p class="practice-note" style="margin:0">No source yet. Press the button and one will appear.</p>';
+        return;
+      }
+      out.innerHTML =
+        '<span class="cite-stamp">Invented</span>' +
+        '<p class="cite-ref">' +
+          '<span class="cite-f">' + esc(built.first) + ', A. &amp; ' + esc(built.second) + ', R.</span> ' +
+          '(<span class="cite-f">' + built.year + '</span>). ' +
+          '<span class="cite-f">' + esc(built.title) + '</span>. ' +
+          '<em><span class="cite-f">' + esc(built.journal) + '</span></em>, ' +
+          '<span class="cite-f">' + built.vol + '</span>(' + built.issue + '), ' +
+          '<span class="cite-f">' + built.page + '–' + (built.page + 14) + '</span>.' +
+        '</p>';
+
+      $('.dice-result', host).innerHTML = rolls < 2
+        ? 'Every highlighted field was picked because it <strong>looked right there</strong>, not because it was found. Press <strong>Ask again</strong>.'
+        : 'Same claim, <strong>' + rolls + ' different sources</strong>. None was looked up. A real model does this with the same fluency, and without the stamp.';
+    }
+
+    draw();
+  }
+
+  /* ---------- How much did it read? ----------
+     Two meters: relevant training material, and stated confidence. Working
+     down the list, the first collapses and the second barely moves. */
+  function buildCorpus(host, cfg) {
+    var qs = cfg.questions || [];
+    if (!qs.length) return;
+    var qi = 0, seen = {};
+
+    function draw() {
+      var q = qs[qi];
+      seen[qi] = true;
+      host.innerHTML =
+        '<ul class="corpus-qs">' +
+          qs.map(function (x, n) {
+            return '<li><button class="corpus-q' + (n === qi ? ' is-active' : '') +
+                   '" type="button" data-n="' + n + '">' + esc(x.q) + '</button></li>';
+          }).join('') +
+        '</ul>' +
+        '<div class="corpus-meters" aria-live="polite">' +
+          meter('How much it read on this', q.coverage, 'read') +
+          meter('How certain it sounds', q.confidence, 'sure') +
+        '</div>' +
+        '<p class="dice-result">' + esc(q.verdict) + '</p>' +
+        (Object.keys(seen).length >= qs.length
+          ? '<p class="corpus-punch">The top bar fell from ' + qs[0].coverage + '% to ' + qs[qs.length - 1].coverage +
+            '%. The bottom bar moved ' + (qs[0].confidence - qs[qs.length - 1].confidence) +
+            ' points. That gap is the whole problem — it does not get less sure when it knows less.</p>'
+          : '');
+
+      $$('.corpus-q', host).forEach(function (btn) {
+        btn.addEventListener('click', function () { qi = Number(btn.getAttribute('data-n')); draw(); });
+      });
+    }
+
+    function meter(label, pct, kind) {
+      return '<div class="corpus-meter">' +
+        '<div class="corpus-meter-top"><span>' + esc(label) + '</span><strong>' + pct + '%</strong></div>' +
+        '<div class="corpus-track"><span class="corpus-fill corpus-' + kind + '" style="width:' + pct + '%"></span></div>' +
+      '</div>';
+    }
+
+    draw();
+  }
+
   var PRACTICE_ENGINES = {
     tokens:    buildTokens,
     predict:   buildPredict,
     match:     buildMatch,
-    scenarios: buildScenarios
+    scenarios: buildScenarios,
+    cite:      buildCite,
+    corpus:    buildCorpus
   };
 
   (function renderPractice() {

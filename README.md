@@ -2,7 +2,7 @@
 
 A single static page for hosting workshop material: lessons, video recordings,
 a prompt library, a glossary, an agenda and links — plus a quiz under every
-lesson, four hands-on activities, and an audience switcher that re-skins the
+lesson, six hands-on activities, and an audience switcher that re-skins the
 whole page depending on who is in the room. No build step, no framework, no
 dependencies. Edit one file, push, done.
 
@@ -161,6 +161,17 @@ gets a small **Checked ✓** flag on its card. Scores live in `localStorage`
 alongside the progress ring — this browser only, never uploaded, and the
 "Reset progress" button clears both.
 
+**Write the correct option first if that is easiest — the page shuffles them.**
+Options are reordered at render time and `answer` is remapped to follow, so the
+right answer lands in a different position on every visit. You never have to
+scatter them by hand, and you cannot accidentally ship a quiz that is passable by
+always clicking A. If a question's options only make sense in a fixed order — a
+sequence of steps, or an "all of the above" — add `fixed: true` to that question
+and it keeps the order you wrote.
+
+This applies to the lesson quizzes, Term match and "Would you send it?" alike,
+since all three run through the same component.
+
 ### Re-skinning the page for a different room
 
 Section 3 is `audiences`. Each one inherits everything in `event` and overrides
@@ -220,8 +231,22 @@ new kind of activity needs code as well as content.
 |---|---|---|
 | `tokens` | Live token-chopping sandbox | `sample` starting text |
 | `predict` | Next-token dice roll with a temperature slider | `rounds: [{ stem, options: [{ word, p }] }]` |
+| `cite` | Builds a fabricated citation field by field | `claims: [{ claim, authors, titles, journals }]` |
+| `corpus` | Training-coverage vs stated-confidence meters | `questions: [{ q, coverage, confidence, verdict }]` |
 | `match` | Definition → term quiz, built from the glossary | `rounds: 6` |
 | `scenarios` | Judgment calls | `items`, same shape as a quiz above |
+
+**On `cite`:** it fabricates academic references on purpose, to show that a
+specific-sounding citation costs the model nothing to invent. Every output is
+stamped "Invented" in the markup itself, not just in the surrounding copy, so a
+screenshot can never be mistaken for a real reference. Keep that stamp if you
+edit the engine. Use generic surnames in `authors` and avoid naming real
+researchers — the widget attributes work to whoever it picks.
+
+**On `corpus`:** the `coverage` and `confidence` numbers are illustrative, not
+measured, and the card says so. Nobody publishes an exact breakdown of a frontier
+model's training data. What is not in dispute is the direction, which is the
+point the activity makes: coverage collapses, confidence does not follow it down.
 
 `scenarios` is the cheap one to extend: it takes the same `{ q, options, answer, why }`
 objects as the lesson quizzes, so adding situations to "Would you send it?" is
@@ -256,7 +281,7 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 - **Audience switcher** — the same knowledge base re-skinned per room. Framing, run of show and starting lessons change; no lesson is ever hidden. Shareable as `?for=<id>`. Live: staff onboarding and partner education. Written but held back behind `draft: true`: community workshop and kupuna outreach.
 - **Check your understanding** — a short quiz under each lesson, with an explanation on every answer, right or wrong.
-- **Practice activities** — four playable widgets: token chopper, next-token dice roll, term match, and a "would you send it?" judgment round.
+- **Practice activities** — six playable widgets: token chopper, next-token dice roll, citation fabricator, training-coverage meters, term match, and a "would you send it?" judgment round.
 - **Dark and light themes** — follows the system setting, with a manual toggle that sticks.
 - **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and agenda items at once.
 - **Track filters and keyword filtering** on the lessons grid.

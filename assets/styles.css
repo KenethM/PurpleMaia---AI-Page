@@ -830,3 +830,50 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
   padding: 3px 8px; border-radius: 999px; background: var(--gold-soft); color: var(--gold);
 }
+
+/* ---------- Invent a citation ---------- */
+.cite-label { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.cite-select {
+  width: 100%; font: inherit; font-size: .92rem; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.cite-select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cite-out {
+  position: relative; padding: 16px; min-height: 84px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.cite-stamp {
+  position: absolute; top: 10px; right: 10px;
+  font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em;
+  color: var(--coral); border: 1.5px solid var(--coral); border-radius: 4px;
+  padding: 2px 7px; transform: rotate(4deg); opacity: .85;
+}
+.cite-ref { margin: 0; padding-right: 76px; font-size: .93rem; line-height: 1.6; color: var(--text); }
+.cite-f {
+  background: var(--gold-soft); color: var(--text);
+  border-radius: 3px; padding: 0 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+
+/* ---------- How much did it read? ---------- */
+.corpus-qs { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.corpus-q {
+  font: inherit; font-size: .84rem; cursor: pointer; text-align: left;
+  padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-2);
+}
+.corpus-q:hover { border-color: var(--border-strong); color: var(--text); }
+.corpus-q.is-active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.corpus-meters { display: flex; flex-direction: column; gap: 12px; }
+.corpus-meter-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 5px; }
+.corpus-meter-top span { font-size: .84rem; color: var(--text-2); }
+.corpus-meter-top strong { font-family: var(--font-display); font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.corpus-track { height: 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+.corpus-fill { display: block; height: 100%; border-radius: 999px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+.corpus-read { background: var(--accent); }
+.corpus-sure { background: var(--coral); }
+.corpus-punch {
+  margin: 0; padding: 13px 15px; border-radius: var(--radius-sm);
+  background: var(--coral-soft); border-left: 3px solid var(--coral);
+  color: var(--text-2); font-size: .91rem; line-height: 1.55;
+}

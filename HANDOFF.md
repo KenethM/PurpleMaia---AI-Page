@@ -16,6 +16,73 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-09-24 — Two more mechanism demos: Bias and Hallucinations
+
+**Who:** Keneth, with Claude Code
+**State:** working tree only, not committed
+**Files:** `content.js`, `index.html`, `assets/app.js`, `assets/styles.css`, `README.md`
+
+### Why
+
+Token chopper and Roll the dice landed well — the ones you manipulate and watch
+behave, rather than the ones that quiz you. Bias and Hallucinations were the two
+heaviest ideas in Module 3 with no demo of their own.
+
+### What changed
+
+**Invent a citation** (`type: "cite"`, Module 3 · Hallucinations). Pick a claim,
+press a button, and a reference assembles itself — author, title, journal, year,
+volume, page range — each field highlighted as a plausible pick. Press again and the
+same claim yields a *different* source. That is the lesson: it is Roll the dice
+pointed at something shaped like a fact, and nothing was ever looked up.
+
+**How much did it read?** (`type: "corpus"`, Module 2 training data → Module 3 bias).
+Six questions, two meters: relevant material the model read, and how certain it
+sounds answering. Work down from "draft a cover letter in English" to "name the
+moʻolelo attached to a specific ahupuaʻa" and coverage falls 96% → 2% while
+confidence drops six points. Once every question has been clicked, the widget says
+the gap out loud. Bias framed as a property of what it read, not of malice.
+
+**Quiz options are now shuffled at render time.** Every one of the 27 lesson questions
+and all 6 scenarios had the correct answer at position A — 100%, not bad luck. The page
+was passable by always clicking the first option, which hollows out the whole point of a
+check. `renderQuiz` now reorders each question's options and remaps `answer` to follow,
+so it is fixed for every future quiz without anyone having to scatter answers by hand.
+Measured distribution across 228 renders: 31% / 37% / 32%. A question can opt out with
+`fixed: true` if its options only make sense in order.
+
+Worth knowing: three tests were selecting options by the authored index and so were
+passing on luck once shuffling landed. They now match on option text. If you write a
+test that touches a quiz, never select by index.
+
+### Decisions worth knowing
+
+- **Every fabricated citation is stamped "Invented" in the markup**, not just in the
+  surrounding copy, so a screenshot cannot pass as a real reference. Keep that stamp.
+  Author surnames are generic on purpose — the widget attributes invented work to
+  whoever it picks, so no real researchers go in that list.
+- **The corpus numbers are illustrative and the card says so.** No one publishes a
+  frontier model's training-data breakdown. The direction is not in dispute, and the
+  direction is the entire point.
+- Both are mechanism demos, not quizzes. That was the ask — the quiz engine already
+  covers Bias and Hallucinations through the lesson checks and "Would you send it?".
+
+### How it was tested
+
+119 assertions, up from 99. The 20 new ones cover citation generation and its stamp,
+that re-rolling yields different sources, that an author is never credited twice in
+one reference, meter values tracking the data, and the punchline appearing only after
+every question has been seen.
+
+Still not visually verified — same caveat as the entry below.
+
+### Open / next
+
+- [ ] Look at both new cards in a browser, desktop and phone.
+- [ ] Commit. The entry below is already committed and pushed.
+
+---
+
 ## 2026-09-24 — Interactive elements, audience modes, per-lesson quizzes
 
 **Who:** Keneth, with Claude Code
