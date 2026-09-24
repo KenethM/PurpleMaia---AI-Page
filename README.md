@@ -1,17 +1,24 @@
 # LLM/NLP 101 — Purple Maiʻa staff learning page
 
 A single static page for hosting workshop material: lessons, video recordings,
-a prompt library, a glossary, an agenda and links. No build step, no framework,
-no dependencies. Edit one file, push, done.
+a prompt library, a glossary, an agenda and links — plus a quiz under every
+lesson, four hands-on activities, and an audience switcher that re-skins the
+whole page depending on who is in the room. No build step, no framework, no
+dependencies. Edit one file, push, done.
 
 ```
 index.html          the page structure (you rarely need to touch this)
 content.js          ← EVERYTHING YOU EDIT LIVES HERE
 assets/styles.css   colours, type, layout
-assets/app.js       rendering, filtering, search, progress tracking
+assets/app.js       rendering, filtering, search, progress, quizzes, activities
 assets/favicon.svg  the little icon in the browser tab
 .nojekyll           tells GitHub Pages to serve the files as-is
+HANDOFF.md          what changed each session, and what is still open
 ```
+
+This README is the reference — how things work and how to edit them.
+[`HANDOFF.md`](HANDOFF.md) is the running log: what changed in each work session,
+why, and what was left open. Start there if you are picking the page up mid-stream.
 
 ---
 
@@ -112,6 +119,116 @@ Drop the PDF into `assets/` and reference it as `assets/your-file.pdf` in a
 lesson's `resources` or in the `resources` section near the bottom of `content.js`.
 Any `url` starting with `http` opens in a new tab; anything else stays in the page.
 
+**Announcing something before it exists.** Add `pending: true` to a resource and it
+renders as a dashed, unclickable row badged "Not up yet" instead of a link that 404s.
+Delete the flag when the file lands.
+
+```js
+{ label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", pending: true, desc: "…" }
+```
+
+**Prefer a file in the repo over a link to a hosted deck.** A Google Slides or Canva
+link looks fine to you because you are signed in as its owner; for a partner or a
+community member with no account it can 403, and you will never see it happen. This
+page is public with no login by design, it works off the filesystem with no external
+dependencies, and the README tells people to fork it — a PDF forks, a link to your
+Drive forks into a dead link. If you want the editable deck available too, add it as a
+separate clearly-labelled item, and host it on a Purple Maiʻa account, not a personal one.
+
+### Adding a check-your-understanding quiz
+
+Section 6 of `content.js` is a `quizzes` object keyed by lesson id. A lesson with
+no entry simply shows no quiz — nothing breaks.
+
+```js
+"m2-tokenization": [
+  {
+    q: "Why is it unreliable at counting the letters in a word?",
+    options: [
+      "It works with token chunks, not individual letters",   // answer: 0
+      "It is bad at arithmetic",
+      "Counting is blocked for safety reasons"
+    ],
+    answer: 0,                       // index of the correct option
+    why: "Same reason it struggles to reverse a word or rhyme on spelling."
+  }
+]
+```
+
+Two to four options each. The `why` is shown whether they got it right or wrong,
+so write it to teach rather than to say "correct". A lesson answered perfectly
+gets a small **Checked ✓** flag on its card. Scores live in `localStorage`
+alongside the progress ring — this browser only, never uploaded, and the
+"Reset progress" button clears both.
+
+### Re-skinning the page for a different room
+
+Section 3 is `audiences`. Each one inherits everything in `event` and overrides
+only what it names, so a new audience is usually twenty lines:
+
+```js
+{
+  id: "funders",
+  label: "Funder briefing",          // the chip at the top of the page
+  blurb: "One line under the chips explaining who this version is for.",
+  badge: "For funders",              // any of: badge, tagline, intro,
+  tagline: "…",                      //   date, time, location, facts,
+  date: "",                          //   pathways, agenda, ctaPrimary/Secondary
+  agenda: [ /* a different run of show */ ],
+  featureLabel: "Funder set",
+  feature: ["m1-map", "m3-bias"]     // lesson ids to lead with
+}
+```
+
+- `""` blanks a field on purpose; leaving it out inherits from `event`.
+- **`feature` never hides anything.** It sorts those lessons to the front, flags
+  them, and adds one extra filter chip. All 19 stay in the grid and in search.
+- The first audience in the array is the default.
+- Switching writes `?for=<id>` into the address bar, and **Copy link to this
+  version** hands you that link. A link beats whatever the visitor last chose,
+  so `…/?for=partners` always opens the partner version.
+- Delete the whole `audiences` array and the switcher disappears; the page falls
+  back to plain `event` content.
+
+#### Holding a version back
+
+`draft: true` on an audience keeps its copy in `content.js` — readable,
+reviewable, diffable — while making it unreachable from the live page. No chip,
+and `?for=<that id>` falls back to the default rather than opening it. A stale
+choice saved in someone's browser falls back too.
+
+```js
+{
+  id: "kupuna",
+  draft: true,        // ← delete this line to publish
+  label: "Kupuna outreach",
+  …
+}
+```
+
+**Community workshop and Kupuna outreach are both held back right now**,
+pending a read from people who run those rooms. Staff onboarding and Partner
+education are live. When a review clears, delete the one line.
+
+### The practice activities
+
+Section 7 is `practice`. Unlike everything else in `content.js`, these are not
+pure data — each entry's `type` names an engine in `assets/app.js`, so a genuinely
+new kind of activity needs code as well as content.
+
+| `type` | What it is | What it needs |
+|---|---|---|
+| `tokens` | Live token-chopping sandbox | `sample` starting text |
+| `predict` | Next-token dice roll with a temperature slider | `rounds: [{ stem, options: [{ word, p }] }]` |
+| `match` | Definition → term quiz, built from the glossary | `rounds: 6` |
+| `scenarios` | Judgment calls | `items`, same shape as a quiz above |
+
+`scenarios` is the cheap one to extend: it takes the same `{ q, options, answer, why }`
+objects as the lesson quizzes, so adding situations to "Would you send it?" is
+pure content. The token chopper is an approximation of byte-pair tokenization,
+deliberately — it is there to make the idea land, and it links out to
+Tiktokenizer for the real thing.
+
 ---
 
 ## 3. Change how it looks
@@ -137,8 +254,11 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 ## 4. What the page does
 
+- **Audience switcher** — the same knowledge base re-skinned per room. Framing, run of show and starting lessons change; no lesson is ever hidden. Shareable as `?for=<id>`. Live: staff onboarding and partner education. Written but held back behind `draft: true`: community workshop and kupuna outreach.
+- **Check your understanding** — a short quiz under each lesson, with an explanation on every answer, right or wrong.
+- **Practice activities** — four playable widgets: token chopper, next-token dice roll, term match, and a "would you send it?" judgment round.
 - **Dark and light themes** — follows the system setting, with a manual toggle that sticks.
-- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, prompts, glossary terms, FAQs and agenda items at once.
+- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and agenda items at once.
 - **Track filters and keyword filtering** on the lessons grid.
 - **Progress tracking** — attendees tick off lessons and see a progress ring. Stored in their own browser via `localStorage`; nothing is uploaded and there is no account. Clearing site data resets it.
 - **Copy buttons** on every prompt.
@@ -154,9 +274,13 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] `assets/social.png` is a 1200×630 card for link previews.
 - [x] The footer's "Source on GitHub" link points at this repo.
 - [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
-- [ ] Add Purple Maiʻa's own module videos as they come out of production — set `video:` on the lesson; until then it shows a “coming soon” placeholder.
+- [ ] Add Purple Maiʻa's own module videos as they come out of production — set `video: "file:assets/<name>.mp4"` on the lesson; until then it shows a “coming soon” placeholder.
+- [x] Every lesson has a check-your-understanding quiz (section 6 of `content.js`).
+- [x] Walk the live audience versions before sending a link out — `?for=partners` and the default.
+- [ ] **Cultural review of the two held-back versions** — Community workshop and Kupuna outreach are written and tested but carry `draft: true`, so nothing on the live site can reach them. Once someone who runs those rooms has read the copy, delete that one line per audience.
 - [x] Every `url: "#"` replaced; all 19 lessons carry resources.
-- [ ] **Export the deck to `assets/llm-nlp-101.pdf`** — the page already links that exact path, so the link 404s until the file is committed.
+- [x] **The deck is in** — `assets/llm-nlp-101.pdf`, 25 slides, 11 MB, linked from "For facilitators".
+- [ ] Three text fixes in the deck itself, in Canva, then re-export over the same filename (see `HANDOFF.md`). Nothing in the repo changes.
 
 ### Content structure
 
@@ -175,7 +299,25 @@ the full Crash Course video during the session. Both numbers show in the hero.
 
 Adding a lesson means adding to `lessons` with one of those three `track` values.
 If you change the lesson count or durations, update the `facts` array in section 1
-so the hero numbers stay honest.
+so the hero numbers stay honest — and in any audience that overrides `facts`.
+
+The numbered sections of `content.js`, in order:
+
+| # | Section | What it drives |
+|---|---|---|
+| 1 | `event` | Hero copy, the hero facts, both CTAs |
+| 2 | `pathways` | The three "where should I start?" cards |
+| 3 | `audiences` | The switcher, and every per-room override |
+| 4 | `tracks` | The filter chips |
+| 5 | `lessons` | The grid and the lesson dialog |
+| 6 | `quizzes` | Check your understanding, keyed by lesson id |
+| 7 | `practice` | The four activities |
+| 8 | `agenda` | Run of show |
+| 9 | `prompts` | Prompt library |
+| 10 | `glossary` | Glossary, and the Term match activity |
+| 11 | `faq` | FAQ |
+| 12 | `resources` | Downloads & links |
+| 13 | `footer` | Footer text and links |
 
 ---
 

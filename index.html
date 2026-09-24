@@ -140,6 +140,7 @@
 
     <nav class="site-nav" aria-label="Sections">
       <a href="#lessons">Lessons</a>
+      <a href="#practice">Practice</a>
       <a href="#agenda">Agenda</a>
       <a href="#prompts">Prompts</a>
       <a href="#glossary">Glossary</a>
@@ -176,6 +177,17 @@
 </header>
 
 <main id="main">
+
+<!-- ===================== AUDIENCE SWITCHER ===================== -->
+<!-- Populated from SITE.audiences. Hidden entirely if there is only one. -->
+<section class="audience-bar" id="audienceBar" aria-labelledby="audienceLabel" hidden>
+  <div class="wrap audience-inner">
+    <span class="audience-label" id="audienceLabel">Viewing as</span>
+    <div class="audience-chips" id="audienceChips" role="group" aria-labelledby="audienceLabel"></div>
+    <button class="audience-share" id="audienceShare" type="button">Copy link to this version</button>
+  </div>
+  <p class="wrap audience-blurb" id="audienceBlurb"></p>
+</section>
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="top">
@@ -252,8 +264,19 @@
   </div>
 </section>
 
+<!-- ===================== PRACTICE ===================== -->
+<section class="section section-alt" id="practice" aria-labelledby="practiceHeading">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="practiceHeading">Practice</h2>
+      <p class="section-sub">Four things to play with instead of being told. Nothing is graded and nothing leaves your browser — the point is to see the behaviour for yourself.</p>
+    </header>
+    <div class="practice-grid" id="practiceGrid"></div>
+  </div>
+</section>
+
 <!-- ===================== AGENDA ===================== -->
-<section class="section section-alt" id="agenda" aria-labelledby="agendaHeading">
+<section class="section" id="agenda" aria-labelledby="agendaHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="agendaHeading">Run of show</h2>
@@ -264,7 +287,7 @@
 </section>
 
 <!-- ===================== PROMPTS ===================== -->
-<section class="section" id="prompts" aria-labelledby="promptsHeading">
+<section class="section section-alt" id="prompts" aria-labelledby="promptsHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="promptsHeading">Prompt library</h2>
@@ -275,7 +298,7 @@
 </section>
 
 <!-- ===================== GLOSSARY ===================== -->
-<section class="section section-alt" id="glossary" aria-labelledby="glossaryHeading">
+<section class="section" id="glossary" aria-labelledby="glossaryHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="glossaryHeading">Plain-language glossary</h2>
@@ -292,7 +315,7 @@
 </section>
 
 <!-- ===================== FAQ ===================== -->
-<section class="section" id="faq" aria-labelledby="faqHeading">
+<section class="section section-alt" id="faq" aria-labelledby="faqHeading">
   <div class="wrap wrap-narrow">
     <header class="section-head">
       <h2 id="faqHeading">Questions people actually ask</h2>
@@ -302,7 +325,7 @@
 </section>
 
 <!-- ===================== RESOURCES ===================== -->
-<section class="section section-alt" id="resources" aria-labelledby="resourcesHeading">
+<section class="section" id="resources" aria-labelledby="resourcesHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="resourcesHeading">Downloads &amp; links</h2>

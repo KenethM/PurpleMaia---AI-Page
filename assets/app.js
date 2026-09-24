@@ -2,6 +2,13 @@
    app.js — renders the page from content.js and wires up
    filtering, search, progress, theme and the lesson dialog.
    No dependencies, no build step.
+
+   Three pieces to know about:
+     audienceView()  merges SITE.event with the active audience's overrides;
+                     everything that renders copy reads through it
+     renderQuiz()    the one quiz component, used by the lesson dialog and
+                     by two of the practice activities
+     PRACTICE_ENGINES  type -> builder for the Practice section
    ============================================================= */
 (function () {
   'use strict';
@@ -54,12 +61,48 @@
 
   /* ---------- simple {{path}} style binding ---------- */
   function valueAt(path) {
-    return path.split('.').reduce(function (o, k) { return o && o[k]; }, S);
+    // "event.*" resolves through the active audience so a switch re-skins the copy.
+    var root = /^event\./.test(path) ? { event: audienceView() } : S;
+    return path.split('.').reduce(function (o, k) { return o && o[k]; }, root);
   }
-  $$('[data-bind]').forEach(function (el) {
-    var v = valueAt(el.getAttribute('data-bind'));
-    if (v != null && v !== '') el.textContent = v;
-  });
+  function applyBindings() {
+    $$('[data-bind]').forEach(function (el) {
+      var v = valueAt(el.getAttribute('data-bind'));
+      if (v != null) el.textContent = v;   // "" blanks a field on purpose
+    });
+  }
+
+  /* =====================================================
+     AUDIENCE — one knowledge base, re-skinned per room
+     ===================================================== */
+  /* `draft: true` holds an audience back completely: no chip, and no way in
+     via ?for= or a saved choice either. The copy stays in content.js for
+     review; the live page simply cannot reach it. */
+  var AUDIENCES = (S.audiences || []).filter(function (a) { return !a.draft; });
+  var AKEY = 'aihub:audience';
+  /* Everything an audience is allowed to override. Anything not listed here
+     is shared by every audience and lives in SITE.event. */
+  var AUD_FIELDS = ['badge', 'tagline', 'intro', 'date', 'time', 'location',
+                    'facts', 'pathways', 'agenda', 'ctaPrimary', 'ctaSecondary'];
+  var audience = null;
+
+  function audienceById(id) {
+    for (var i = 0; i < AUDIENCES.length; i++) if (AUDIENCES[i].id === id) return AUDIENCES[i];
+    return null;
+  }
+  function audienceView() {
+    var ev = S.event || {}, out = {}, k;
+    for (k in ev) if (Object.prototype.hasOwnProperty.call(ev, k)) out[k] = ev[k];
+    // pathways and the run of show live at the top level of content.js, but an
+    // audience overrides them the same way it overrides anything in `event`.
+    out.pathways = S.pathways || [];
+    out.agenda   = S.agenda || [];
+    if (!audience) return out;
+    AUD_FIELDS.forEach(function (f) {
+      if (audience[f] !== undefined) out[f] = audience[f];
+    });
+    return out;
+  }
 
   /* =====================================================
      THEME
@@ -79,8 +122,9 @@
   /* =====================================================
      HERO
      ===================================================== */
-  (function renderHero() {
-    var ev = S.event || {};
+  function renderHero() {
+    var ev = audienceView();
+    applyBindings();
     document.title = (ev.name || 'Learning hub') + (ev.badge ? ' — ' + ev.badge : '');
 
     var meta = [];
@@ -104,27 +148,35 @@
       var b = $('#ctaSecondary');
       b.textContent = ev.ctaSecondary.label; b.href = ev.ctaSecondary.href || '#agenda';
     }
-  })();
+  }
 
   /* =====================================================
      PATHWAYS
      ===================================================== */
-  $('#pathways').innerHTML = (S.pathways || []).map(function (p) {
-    return '<article class="pathway reveal">' +
-             '<div class="pathway-icon">' + icon(p.icon) + '</div>' +
-             '<h3>' + esc(p.title) + '</h3>' +
-             '<p>' + esc(p.body) + '</p>' +
-             (p.action ? '<button type="button" data-goto-track="' + esc(p.action.filter) + '">' +
-                          esc(p.action.label) + '</button>' : '') +
-           '</article>';
-  }).join('');
+  function renderPathways() {
+    var root = $('#pathways');
+    root.innerHTML = (audienceView().pathways || []).map(function (p) {
+      var a = p.action, btn = '';
+      if (a && a.goto)        btn = '<button type="button" data-goto="' + esc(a.goto) + '">' + esc(a.label) + '</button>';
+      else if (a && a.filter) btn = '<button type="button" data-goto-track="' + esc(a.filter) + '">' + esc(a.label) + '</button>';
+      return '<article class="pathway reveal">' +
+               '<div class="pathway-icon">' + icon(p.icon) + '</div>' +
+               '<h3>' + esc(p.title) + '</h3>' +
+               '<p>' + esc(p.body) + '</p>' + btn +
+             '</article>';
+    }).join('');
 
-  $$('[data-goto-track]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      setTrack(btn.getAttribute('data-goto-track'));
-      document.getElementById('lessons').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $$('[data-goto-track]', root).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setTrack(btn.getAttribute('data-goto-track'));
+        goTo('#lessons');
+      });
     });
-  });
+    $$('[data-goto]', root).forEach(function (btn) {
+      btn.addEventListener('click', function () { goTo(btn.getAttribute('data-goto')); });
+    });
+    observeReveals(root);
+  }
 
   /* =====================================================
      PROGRESS (localStorage, best effort)
@@ -138,10 +190,28 @@
     try { localStorage.setItem(PKEY, JSON.stringify(Array.from(done))); } catch (e) {}
   }
 
+  /* Quiz results live alongside progress: this browser only, never uploaded.
+     Shape: { "m2-loop": { score: 2, total: 2 } } */
+  var QKEY = 'aihub:quiz';
+  var quizState = (function () {
+    try { return JSON.parse(localStorage.getItem(QKEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  })();
+  function saveQuizResult(id, score, total) {
+    var prev = quizState[id];
+    if (prev && prev.score >= score) return;     // keep the best run
+    quizState[id] = { score: score, total: total };
+    try { localStorage.setItem(QKEY, JSON.stringify(quizState)); } catch (e) {}
+  }
+  function quizAced(id) {
+    var r = quizState[id];
+    return !!(r && r.total && r.score === r.total);
+  }
+
   var CIRC = 2 * Math.PI * 52;
   function paintProgress() {
-    var total = (S.lessons || []).length;
-    var n = (S.lessons || []).filter(function (l) { return done.has(l.id); }).length;
+    var total = lessons.length;
+    var n = lessons.filter(function (l) { return done.has(l.id); }).length;
     var pct = total ? Math.round((n / total) * 100) : 0;
     $('#ringFill').style.strokeDashoffset = String(CIRC - (CIRC * pct) / 100);
     $('#ringPct').textContent = pct + '%';
@@ -154,13 +224,12 @@
     }
   }
   $('#resetProgress').addEventListener('click', function () {
-    done.clear(); saveProgress(); paintProgress();
-    $$('.lesson-card').forEach(function (c) { c.classList.remove('is-done'); });
-    $$('.done-toggle').forEach(function (b) {
-      b.setAttribute('aria-pressed', 'false');
-      b.querySelector('.label').textContent = 'Mark done';
-    });
-    toast('Progress cleared');
+    done.clear(); saveProgress();
+    quizState = {};
+    try { localStorage.removeItem(QKEY); } catch (e) {}
+    renderLessons();
+    paintProgress();
+    toast('Progress and quiz results cleared');
   });
 
   /* =====================================================
@@ -205,26 +274,48 @@
   /* =====================================================
      LESSONS
      ===================================================== */
-  var lessons = S.lessons || [];
+  var lessons = (S.lessons || []).slice();
   var trackLabel = {};
   (S.tracks || []).forEach(function (t) { trackLabel[t.id] = t.label; });
 
   var activeTrack = 'all';
   var lessonQuery = '';
+  var featured = [];   // lesson ids this audience leads with, in order
 
-  (function renderFilters() {
+  /* Reorders `lessons` so the audience's starting set comes first. Nothing is
+     dropped — every lesson stays in the list and in search. */
+  function orderLessons() {
+    featured = (audience && audience.feature) || [];
+    var rank = {};
+    featured.forEach(function (id, i) { rank[id] = i; });
+    var source = S.lessons || [];
+    lessons = source.slice().sort(function (a, b) {
+      var ra = rank[a.id] === undefined ? Infinity : rank[a.id];
+      var rb = rank[b.id] === undefined ? Infinity : rank[b.id];
+      if (ra !== rb) return ra - rb;
+      return source.indexOf(a) - source.indexOf(b);
+    });
+  }
+  function isFeatured(id) { return featured.indexOf(id) > -1; }
+  function featureLabel() { return (audience && audience.featureLabel) || 'Start here'; }
+
+  function renderFilters() {
     var counts = { all: lessons.length };
     lessons.forEach(function (l) { counts[l.track] = (counts[l.track] || 0) + 1; });
     var chips = [{ id: 'all', label: 'All lessons' }].concat(S.tracks || []);
+    if (featured.length) {
+      counts.feature = featured.length;
+      chips.splice(1, 0, { id: 'feature', label: featureLabel(), extra: 'chip-feature' });
+    }
     $('#trackFilters').innerHTML = chips.map(function (c) {
-      return '<button type="button" class="chip" data-track="' + esc(c.id) + '" aria-pressed="' +
-             (c.id === 'all') + '">' + esc(c.label) +
-             '<span class="chip-count">' + (counts[c.id] || 0) + '</span></button>';
+      return '<button type="button" class="chip' + (c.extra ? ' ' + c.extra : '') +
+             '" data-track="' + esc(c.id) + '" aria-pressed="' + (c.id === activeTrack) + '">' +
+             esc(c.label) + '<span class="chip-count">' + (counts[c.id] || 0) + '</span></button>';
     }).join('');
     $$('#trackFilters .chip').forEach(function (chip) {
       chip.addEventListener('click', function () { setTrack(chip.getAttribute('data-track')); });
     });
-  })();
+  }
 
   function setTrack(id) {
     activeTrack = id;
@@ -250,6 +341,8 @@
       '<div class="lesson-body">' +
         '<div class="lesson-tags">' +
           '<span class="tag tag-track">' + esc(trackLabel[l.track] || l.track) + '</span>' +
+          (isFeatured(l.id) ? '<span class="tag tag-feature">' + esc(featureLabel()) + '</span>' : '') +
+          (quizAced(l.id) ? '<span class="tag tag-check">Checked ✓</span>' : '') +
           (l.level ? '<span class="tag">' + esc(l.level) + '</span>' : '') +
         '</div>' +
         '<h3><button type="button" data-open="' + esc(l.id) + '">' + esc(l.title) + '</button></h3>' +
@@ -268,7 +361,8 @@
   function renderLessons() {
     var q = lessonQuery.trim().toLowerCase();
     var list = lessons.filter(function (l) {
-      if (activeTrack !== 'all' && l.track !== activeTrack) return false;
+      if (activeTrack === 'feature') { if (!isFeatured(l.id)) return false; }
+      else if (activeTrack !== 'all' && l.track !== activeTrack) return false;
       if (!q) return true;
       var hay = [l.title, l.summary, l.level, trackLabel[l.track], (l.takeaways || []).join(' ')].join(' ').toLowerCase();
       return hay.indexOf(q) > -1;
@@ -322,6 +416,96 @@
     setTrack('all');
   });
 
+  /* =====================================================
+     QUIZ ENGINE
+     One component, three homes: the check under each lesson,
+     Term match, and Would you send it? Give it a host element
+     and a list of { q, options, answer, why }.
+     opts.onFinish(score, total)  — called once, at the end
+     opts.restart()               — return fresh items for "Try again"
+     opts.doneLabel               — heading on the final card
+     ===================================================== */
+  function renderQuiz(host, items, opts) {
+    opts = opts || {};
+    var i = 0, score = 0;
+
+    function drawQuestion() {
+      var it = items[i];
+      host.innerHTML =
+        '<div class="quiz">' +
+          '<div class="quiz-head">' +
+            '<p class="quiz-q">' + esc(it.q) + '</p>' +
+            (items.length > 1 ? '<span class="quiz-step">' + (i + 1) + ' / ' + items.length + '</span>' : '') +
+          '</div>' +
+          '<ul class="quiz-options">' +
+            it.options.map(function (o, n) {
+              return '<li><button class="quiz-option" type="button" data-n="' + n + '">' +
+                       '<span class="mark">' + String.fromCharCode(65 + n) + '</span>' +
+                       '<span>' + esc(o) + '</span>' +
+                     '</button></li>';
+            }).join('') +
+          '</ul>' +
+          '<div class="quiz-foot" data-foot hidden></div>' +
+        '</div>';
+
+      $$('.quiz-option', host).forEach(function (btn) {
+        btn.addEventListener('click', function () { answer(Number(btn.getAttribute('data-n'))); });
+      });
+    }
+
+    function answer(n) {
+      var it = items[i];
+      var right = n === it.answer;
+      if (right) score++;
+
+      $$('.quiz-option', host).forEach(function (btn, idx) {
+        btn.disabled = true;
+        if (idx === it.answer) {
+          btn.classList.add('is-correct');
+          btn.querySelector('.mark').textContent = '✓';
+        } else if (idx === n) {
+          btn.classList.add('is-wrong');
+          btn.querySelector('.mark').textContent = '✕';
+        }
+      });
+
+      var last = i === items.length - 1;
+      var why = document.createElement('p');
+      why.className = 'quiz-why';
+      why.innerHTML = '<strong>' + (right ? 'Yes.' : 'Not quite.') + '</strong> ' + esc(it.why);
+      $('.quiz-options', host).insertAdjacentElement('afterend', why);
+
+      var foot = $('[data-foot]', host);
+      foot.hidden = false;
+      foot.innerHTML = '<button class="btn btn-primary btn-small" type="button" data-next>' +
+                       (last ? 'See how you did' : 'Next question') + '</button>';
+      $('[data-next]', foot).addEventListener('click', function () {
+        if (last) { drawDone(); return; }
+        i++; drawQuestion();
+      });
+    }
+
+    function drawDone() {
+      var total = items.length;
+      host.innerHTML =
+        '<div class="quiz">' +
+          '<p class="quiz-score"><strong>' + score + ' of ' + total + '</strong> — ' +
+            esc(score === total ? 'all of them. You can explain this to somebody else now.'
+                                : score >= total - 1 ? 'close. The one you missed is worth a re-read.'
+                                : 'worth another pass through the takeaways above.') + '</p>' +
+          '<div class="quiz-foot"><button class="btn btn-ghost btn-small" type="button" data-again>Try again</button></div>' +
+        '</div>';
+      $('[data-again]', host).addEventListener('click', function () {
+        if (opts.restart) items = opts.restart();
+        i = 0; score = 0; drawQuestion();
+      });
+      if (opts.onFinish) opts.onFinish(score, total);
+    }
+
+    if (!items || !items.length) { host.innerHTML = ''; return; }
+    drawQuestion();
+  }
+
   /* ---------- lesson dialog ---------- */
   var dlg = $('#lessonDialog');
   var dlgScroll = $('#dialogScroll');
@@ -331,12 +515,11 @@
     if (!l) return;
     var isDone = done.has(l.id);
     var n = lessons.indexOf(l) + 1;
+    var quiz = ((S.quizzes || {})[l.id]) || [];
+    var prev = quizState[l.id];
 
-    var res = (l.resources || []).map(function (r) {
-      return '<li><a class="resource-link" href="' + esc(r.url || '#') + '"' +
-             (/^https?:/.test(r.url || '') ? ' target="_blank" rel="noopener"' : '') + '>' +
-             icon('link') + '<span><strong>' + esc(r.label) + '</strong></span></a></li>';
-    }).join('');
+    // Same renderer as the Resources section, so `pending` behaves the same here.
+    var res = (l.resources || []).map(resourceItem).join('');
 
     dlgScroll.innerHTML =
       (l.video ? embedFor(l.video, l.title) : MISSING_VIDEO) +
@@ -352,6 +535,11 @@
           ? '<h3>What to take away</h3><ul class="takeaways">' +
             l.takeaways.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
           : '') +
+        (quiz.length
+          ? '<h3>Check your understanding' +
+            (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
+            '</h3><div id="lessonQuiz"></div>'
+          : '') +
         (res ? '<h3>Handouts &amp; links</h3><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">' + res + '</ul>' : '') +
         '<div class="dialog-actions">' +
           '<button class="btn btn-primary btn-small" type="button" data-dlg-done="' + esc(l.id) + '">' +
@@ -360,6 +548,15 @@
           (n < lessons.length ? '<button class="btn btn-ghost btn-small" type="button" data-next="' + esc(lessons[n].id) + '">Next lesson →</button>' : '') +
         '</div>' +
       '</div>';
+
+    if (quiz.length) {
+      renderQuiz($('#lessonQuiz', dlgScroll), quiz, {
+        onFinish: function (score, total) {
+          saveQuizResult(l.id, score, total);
+          renderLessons();   // repaint the "Checked ✓" flag on the card behind the dialog
+        }
+      });
+    }
 
     var doneBtn = $('[data-dlg-done]', dlgScroll);
     if (doneBtn) doneBtn.addEventListener('click', function () {
@@ -386,17 +583,17 @@
     if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeLesson();
   });
 
-  renderLessons();
-  paintProgress();
+  /* The lessons grid, the hero and the agenda are all painted by
+     applyAudience() at the bottom of this file, once everything exists. */
 
   /* =====================================================
      AGENDA
      ===================================================== */
-  (function renderAgenda() {
-    var ev = S.event || {};
+  function renderAgenda() {
+    var ev = audienceView();
     var sub = $('#agendaSub');
     sub.textContent = [ev.date, ev.time, ev.location].filter(Boolean).join(' · ');
-    $('#timeline').innerHTML = (S.agenda || []).map(function (a) {
+    $('#timeline').innerHTML = (ev.agenda || []).map(function (a) {
       return '<li class="reveal">' +
         '<span class="t-time">' + esc(a.time) + '</span>' +
         '<div class="t-body">' +
@@ -405,7 +602,7 @@
         '</div></li>';
     }).join('');
     observeReveals($('#timeline'));
-  })();
+  }
 
   /* =====================================================
      PROMPTS
@@ -461,6 +658,251 @@
   }
 
   /* =====================================================
+     PRACTICE — the playable half of the page.
+     Each entry in SITE.practice names a `type`; the engine for
+     that type gets the card's body element and the entry.
+     ===================================================== */
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  /* ---------- Token chopper ----------
+     An approximation of how byte-pair tokenizers behave: short words stay
+     whole, long ones break into pieces, punctuation stands alone, and the
+     space rides along with the word that follows it. Close enough to make
+     the point; Tiktokenizer is linked on the card for the real thing. */
+  var TOK_WORD = /[A-Za-z0-9ʻ‘’'À-ɏ]+/;
+  var TOK_SPLIT = /[A-Za-z0-9ʻ‘’'À-ɏ]+|[^A-Za-z0-9ʻ‘’'À-ɏ]/g;
+
+  function chopTokens(text) {
+    var out = [];
+    var re = /(\s*)(\S+)/g, m;
+    while ((m = re.exec(text)) !== null) {
+      var lead = m[1], parts = m[2].match(TOK_SPLIT) || [m[2]];
+      parts.forEach(function (part, idx) {
+        var pre = idx === 0 ? lead : '';
+        if (!(TOK_WORD.test(part) && part.length > 5)) { out.push(pre + part); return; }
+        var at = 0;
+        while (at < part.length) {
+          var size = 4;
+          if (part.length - (at + size) === 1) size = 5;   // never leave a one-letter tail
+          out.push((at === 0 ? pre : '') + part.slice(at, at + size));
+          at += size;
+        }
+      });
+    }
+    return out;
+  }
+
+  function buildTokens(host, cfg) {
+    host.innerHTML =
+      '<textarea class="tok-field" spellcheck="false" aria-label="Text to chop into tokens"></textarea>' +
+      '<div class="tok-out" aria-live="polite"></div>' +
+      '<p class="tok-stats">' +
+        '<span class="tok-stat"><strong data-n-tok>0</strong> tokens</span>' +
+        '<span class="tok-stat"><strong data-n-chr>0</strong> characters</span>' +
+        '<span class="tok-stat"><strong data-n-avg>0</strong> characters per token</span>' +
+      '</p>';
+
+    var field = $('.tok-field', host);
+    var out = $('.tok-out', host);
+
+    function paint() {
+      var text = field.value;
+      var toks = chopTokens(text);
+      out.innerHTML = toks.length
+        ? toks.map(function (t, i) { return '<span class="tok tok-' + (i % 4) + '">' + esc(t) + '</span>'; }).join('')
+        : '<span class="practice-note">Type something above.</span>';
+      $('[data-n-tok]', host).textContent = toks.length;
+      $('[data-n-chr]', host).textContent = text.length;
+      $('[data-n-avg]', host).textContent = toks.length ? (text.length / toks.length).toFixed(1) : '0';
+    }
+
+    field.addEventListener('input', paint);
+    field.value = cfg.sample || '';
+    paint();
+  }
+
+  /* ---------- Roll the dice ---------- */
+  function tempered(options, t) {
+    var raised = options.map(function (o) { return Math.pow(o.p / 100, 1 / t); });
+    var sum = raised.reduce(function (a, b) { return a + b; }, 0) || 1;
+    return raised.map(function (r) { return r / sum; });
+  }
+  function sampleFrom(probs) {
+    var r = Math.random(), acc = 0;
+    for (var i = 0; i < probs.length; i++) {
+      acc += probs[i];
+      if (r <= acc) return i;
+    }
+    return probs.length - 1;
+  }
+
+  function buildPredict(host, cfg) {
+    var rounds = cfg.rounds || [];
+    if (!rounds.length) return;
+    var ri = 0, temp = 1, pick = null, rolled = null;
+
+    function draw() {
+      var r = rounds[ri];
+      pick = null; rolled = null;
+      host.innerHTML =
+        '<p class="dice-stem">' + esc(r.stem) + ' <span class="caret">▍</span></p>' +
+        '<ul class="dice-options">' +
+          r.options.map(function (o, n) {
+            return '<li><button class="dice-option" type="button" data-n="' + n + '">' +
+                     '<span class="fill"></span>' +
+                     '<span class="word">' + esc(o.word) + '</span>' +
+                     '<span class="pct"></span>' +
+                   '</button></li>';
+          }).join('') +
+        '</ul>' +
+        '<div class="dice-controls">' +
+          '<span class="dice-temp">' +
+            '<label for="temp-' + esc(cfg.id) + '">Temperature</label>' +
+            '<input id="temp-' + esc(cfg.id) + '" type="range" min="0.2" max="1.8" step="0.1" value="' + temp + '">' +
+            '<span class="val">' + temp.toFixed(1) + '</span>' +
+          '</span>' +
+          '<button class="btn btn-primary btn-small" type="button" data-roll>Roll once</button>' +
+          '<button class="btn btn-ghost btn-small" type="button" data-roll20>Roll 20 ×</button>' +
+          (rounds.length > 1 ? '<button class="btn btn-ghost btn-small" type="button" data-stem>New sentence</button>' : '') +
+        '</div>' +
+        '<p class="dice-result">Pick the word you think comes next, then roll.</p>' +
+        '<p class="dice-tally"></p>';
+
+      $$('.dice-option', host).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          pick = Number(btn.getAttribute('data-n'));
+          paint();
+        });
+      });
+      $('.dice-temp input', host).addEventListener('input', function (e) {
+        temp = Number(e.target.value);
+        $('.dice-temp .val', host).textContent = temp.toFixed(1);
+        paint();
+      });
+      $('[data-roll]', host).addEventListener('click', function () { roll(1); });
+      $('[data-roll20]', host).addEventListener('click', function () { roll(20); });
+      var stemBtn = $('[data-stem]', host);
+      if (stemBtn) stemBtn.addEventListener('click', function () {
+        ri = (ri + 1) % rounds.length;
+        draw();
+      });
+
+      paint();
+    }
+
+    function paint() {
+      var r = rounds[ri];
+      var probs = tempered(r.options, temp);
+      $$('.dice-option', host).forEach(function (btn, n) {
+        var pct = probs[n] * 100;
+        $('.fill', btn).style.width = pct.toFixed(1) + '%';
+        $('.pct', btn).textContent = pct.toFixed(0) + '%';
+        btn.classList.toggle('is-picked', pick === n);
+        btn.classList.toggle('is-rolled', rolled === n);
+      });
+    }
+
+    function roll(times) {
+      var r = rounds[ri];
+      var probs = tempered(r.options, temp);
+      var counts = r.options.map(function () { return 0; });
+      var last = 0;
+      for (var i = 0; i < times; i++) { last = sampleFrom(probs); counts[last]++; }
+      rolled = times === 1 ? last : null;
+      paint();
+
+      var res = $('.dice-result', host);
+      var tally = $('.dice-tally', host);
+      if (times === 1) {
+        var word = r.options[last].word;
+        res.innerHTML = pick === null
+          ? 'The model wrote <strong>' + esc(word) + '</strong>. Roll again — same prompt, same odds, possibly a different word.'
+          : (pick === last
+              ? 'You said <strong>' + esc(r.options[pick].word) + '</strong> and so did the model. That will not happen every time.'
+              : 'You said <strong>' + esc(r.options[pick].word) + '</strong>. The model wrote <strong>' + esc(word) + '</strong>.');
+        tally.textContent = '';
+      } else {
+        res.innerHTML = '<strong>' + times + ' rolls</strong> at temperature ' + temp.toFixed(1) +
+                        ' — same prompt every time.';
+        tally.textContent = counts.map(function (c, n) {
+          return r.options[n].word + ' ×' + c;
+        }).join('  ·  ');
+      }
+    }
+
+    draw();
+  }
+
+  /* ---------- Term match (built from the glossary) ---------- */
+  function matchItems(n) {
+    var terms = (S.glossary || []).slice();
+    if (terms.length < 4) return [];
+    shuffle(terms);
+    return terms.slice(0, Math.min(n, terms.length)).map(function (g) {
+      var others = shuffle(terms.filter(function (t) { return t !== g; })).slice(0, 3);
+      var opts = shuffle(others.map(function (t) { return t.term; }).concat([g.term]));
+      return {
+        q: g.def,
+        options: opts,
+        answer: opts.indexOf(g.term),
+        why: 'The term is “' + g.term + '”. Every one of these is in the glossary further down the page.'
+      };
+    });
+  }
+  function buildMatch(host, cfg) {
+    var make = function () { return matchItems(cfg.rounds || 6); };
+    renderQuiz(host, make(), { restart: make });
+  }
+
+  /* ---------- Would you send it? ---------- */
+  function buildScenarios(host, cfg) {
+    var items = cfg.items || [];
+    renderQuiz(host, items.slice(), { restart: function () { return items.slice(); } });
+  }
+
+  var PRACTICE_ENGINES = {
+    tokens:    buildTokens,
+    predict:   buildPredict,
+    match:     buildMatch,
+    scenarios: buildScenarios
+  };
+
+  (function renderPractice() {
+    var grid = $('#practiceGrid');
+    if (!grid) return;
+    var items = (S.practice || []).filter(function (p) { return PRACTICE_ENGINES[p.type]; });
+    if (!items.length) { $('#practice').hidden = true; return; }
+
+    grid.innerHTML = items.map(function (p) {
+      var foot = '';
+      if (p.note || p.link) {
+        foot = '<div class="practice-foot">' +
+          (p.note ? '<p class="practice-note">' + esc(p.note) + '</p>' : '') +
+          (p.link ? '<a href="' + esc(p.link.url) + '" target="_blank" rel="noopener">' + esc(p.link.label) + ' →</a>' : '') +
+          '</div>';
+      }
+      return '<article class="practice-card reveal" data-practice="' + esc(p.id) + '">' +
+        (p.tag ? '<span class="practice-tag">' + esc(p.tag) + '</span>' : '') +
+        '<h3>' + esc(p.title) + '</h3>' +
+        '<p class="practice-blurb">' + esc(p.blurb) + '</p>' +
+        '<div class="practice-body"></div>' + foot +
+      '</article>';
+    }).join('');
+
+    items.forEach(function (p) {
+      var card = grid.querySelector('[data-practice="' + p.id + '"]');
+      if (card) PRACTICE_ENGINES[p.type]($('.practice-body', card), p);
+    });
+    observeReveals(grid);
+  })();
+
+  /* =====================================================
      GLOSSARY
      ===================================================== */
   function renderGlossary(q) {
@@ -498,15 +940,25 @@
   /* =====================================================
      RESOURCES + FOOTER
      ===================================================== */
+  /* An item marked `pending: true` is announced but not linked. Better an
+     honest "not up yet" than a link that 404s — same idea as the missing-video
+     placeholder. Delete the flag the moment the file lands. */
+  function resourceItem(it) {
+    var inner = icon(it.pending ? 'clock' : 'link') +
+                '<span><strong>' + esc(it.label) + '</strong>' +
+                (it.desc ? '<span>' + esc(it.desc) + '</span>' : '') + '</span>';
+    if (it.pending) {
+      return '<li><span class="resource-link is-pending">' + inner +
+             '<span class="pending-badge">Not up yet</span></span></li>';
+    }
+    var ext = /^https?:/.test(it.url || '');
+    return '<li><a class="resource-link" href="' + esc(it.url || '#') + '"' +
+           (ext ? ' target="_blank" rel="noopener"' : '') + '>' + inner + '</a></li>';
+  }
+
   $('#resourceGrid').innerHTML = (S.resources || []).map(function (g) {
     return '<div class="resource-group reveal"><h3>' + esc(g.group) + '</h3><ul>' +
-      (g.items || []).map(function (it) {
-        var ext = /^https?:/.test(it.url || '');
-        return '<li><a class="resource-link" href="' + esc(it.url || '#') + '"' +
-               (ext ? ' target="_blank" rel="noopener"' : '') + '>' + icon('link') +
-               '<span><strong>' + esc(it.label) + '</strong>' +
-               (it.desc ? '<span>' + esc(it.desc) + '</span>' : '') + '</span></a></li>';
-      }).join('') + '</ul></div>';
+      (g.items || []).map(resourceItem).join('') + '</ul></div>';
   }).join('');
   observeReveals($('#resourceGrid'));
 
@@ -519,21 +971,28 @@
      SEARCH PALETTE
      ===================================================== */
   var index = [];
-  lessons.forEach(function (l, i) {
-    index.push({ kind: 'Lesson', title: l.title, sub: l.duration || '', body: l.summary + ' ' + (l.takeaways || []).join(' '), open: function () { closePalette(); openLesson(l.id); } });
-  });
-  (S.prompts || []).forEach(function (p) {
-    index.push({ kind: 'Prompt', title: p.title, sub: '', body: p.use + ' ' + p.text, open: function () { closePalette(); goTo('#prompts'); } });
-  });
-  (S.glossary || []).forEach(function (g) {
-    index.push({ kind: 'Term', title: g.term, sub: '', body: g.def, open: function () { closePalette(); $('#glossarySearch').value = g.term; renderGlossary(g.term); goTo('#glossary'); } });
-  });
-  (S.faq || []).forEach(function (f) {
-    index.push({ kind: 'Question', title: f.q, sub: '', body: f.a, open: function () { closePalette(); goTo('#faq'); } });
-  });
-  (S.agenda || []).forEach(function (a) {
-    index.push({ kind: 'Agenda', title: a.title, sub: a.time, body: a.detail, open: function () { closePalette(); goTo('#agenda'); } });
-  });
+  /* Rebuilt whenever the audience changes, because the run of show does too. */
+  function buildIndex() {
+    index = [];
+    lessons.forEach(function (l) {
+      index.push({ kind: 'Lesson', title: l.title, sub: l.duration || '', body: l.summary + ' ' + (l.takeaways || []).join(' '), open: function () { closePalette(); openLesson(l.id); } });
+    });
+    (S.practice || []).forEach(function (p) {
+      index.push({ kind: 'Practice', title: p.title, sub: p.tag || '', body: p.blurb || '', open: function () { closePalette(); goTo('#practice'); } });
+    });
+    (S.prompts || []).forEach(function (p) {
+      index.push({ kind: 'Prompt', title: p.title, sub: '', body: p.use + ' ' + p.text, open: function () { closePalette(); goTo('#prompts'); } });
+    });
+    (S.glossary || []).forEach(function (g) {
+      index.push({ kind: 'Term', title: g.term, sub: '', body: g.def, open: function () { closePalette(); $('#glossarySearch').value = g.term; renderGlossary(g.term); goTo('#glossary'); } });
+    });
+    (S.faq || []).forEach(function (f) {
+      index.push({ kind: 'Question', title: f.q, sub: '', body: f.a, open: function () { closePalette(); goTo('#faq'); } });
+    });
+    (audienceView().agenda || []).forEach(function (a) {
+      index.push({ kind: 'Agenda', title: a.title, sub: a.time, body: a.detail, open: function () { closePalette(); goTo('#agenda'); } });
+    });
+  }
 
   var backdrop = $('#paletteBackdrop');
   var pInput = $('#paletteInput');
@@ -697,6 +1156,81 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
   }
+
+  /* =====================================================
+     AUDIENCE SWITCHER
+     Everything above renders from audienceView(); this is what
+     decides which audience that is and repaints on a change.
+     ===================================================== */
+  function paintAudienceBar() {
+    var bar = $('#audienceBar');
+    if (!bar) return;
+    $('#audienceChips').innerHTML = AUDIENCES.map(function (a) {
+      return '<button type="button" class="audience-chip" data-aud="' + esc(a.id) + '" aria-pressed="' +
+             (audience && a.id === audience.id) + '">' + esc(a.label) + '</button>';
+    }).join('');
+    $$('#audienceChips .audience-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () { applyAudience(btn.getAttribute('data-aud')); });
+    });
+    $('#audienceBlurb').textContent = (audience && audience.blurb) || '';
+  }
+
+  function audienceUrl(id) {
+    var url = new URL(location.href);
+    url.hash = '';
+    if (AUDIENCES.length && id === AUDIENCES[0].id) url.searchParams.delete('for');
+    else url.searchParams.set('for', id);
+    return url.toString();
+  }
+
+  function applyAudience(id, initial) {
+    var next = audienceById(id) || AUDIENCES[0] || null;
+    if (!next) return;
+    audience = next;
+
+    orderLessons();
+    activeTrack = 'all';
+    renderHero();
+    renderPathways();
+    renderFilters();
+    renderLessons();
+    paintProgress();
+    renderAgenda();
+    buildIndex();
+    paintAudienceBar();
+
+    try { localStorage.setItem(AKEY, audience.id); } catch (e) {}
+    try { history.replaceState(null, '', audienceUrl(audience.id) + location.hash); } catch (e) {}
+    if (!initial) toast('Now showing the ' + audience.label.toLowerCase() + ' version');
+  }
+
+  (function initAudience() {
+    var bar = $('#audienceBar');
+    if (!AUDIENCES.length) {            // no audiences defined: plain page, no switcher
+      orderLessons(); renderHero(); renderPathways(); renderFilters();
+      renderLessons(); paintProgress(); renderAgenda(); buildIndex();
+      return;
+    }
+    if (bar) bar.hidden = AUDIENCES.length < 2;
+
+    var param = null, saved = null;
+    try { param = new URL(location.href).searchParams.get('for'); } catch (e) {}
+    try { saved = localStorage.getItem(AKEY); } catch (e) {}
+
+    // A link wins over what this browser last chose — that is the point of the link.
+    var id = (param && audienceById(param) && param) ||
+             (saved && audienceById(saved) && saved) ||
+             AUDIENCES[0].id;
+    applyAudience(id, true);
+
+    var share = $('#audienceShare');
+    if (share) share.addEventListener('click', function () {
+      copyText(audienceUrl(audience.id), function (ok) {
+        toast(ok ? 'Link copied — it opens on the ' + audience.label.toLowerCase() + ' version'
+                 : 'Could not copy. The address bar already has the link.');
+      });
+    });
+  })();
 
   /* ---------- deep link: #lesson-l3 opens that lesson ---------- */
   if (/^#lesson-/.test(location.hash)) {

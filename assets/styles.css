@@ -591,6 +591,148 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- AUDIENCE SWITCHER ---------- */
+.audience-bar { background: var(--bg-alt); border-bottom: 1px solid var(--border); padding: 11px 0 12px; }
+.audience-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.audience-label {
+  font-size: .71rem; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 700; color: var(--muted); flex-shrink: 0;
+}
+.audience-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.audience-chip {
+  font: inherit; font-size: .855rem; font-weight: 500; cursor: pointer;
+  padding: 5px 13px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-2); transition: border-color .15s ease, color .15s ease;
+}
+.audience-chip:hover { border-color: var(--border-strong); color: var(--text); }
+.audience-chip[aria-pressed="true"] {
+  background: var(--violet-soft); border-color: color-mix(in srgb, var(--violet) 55%, var(--border));
+  color: var(--violet); font-weight: 600;
+}
+.audience-share {
+  margin-left: auto; font: inherit; font-size: .82rem; font-weight: 500;
+  background: none; border: 0; cursor: pointer; color: var(--muted); white-space: nowrap;
+}
+.audience-share:hover { color: var(--accent); }
+.audience-blurb { margin: 8px auto 0; color: var(--muted); font-size: .86rem; }
+
+/* "Start here" flag on the lessons an audience leads with */
+.tag-feature { background: var(--violet-soft); color: var(--violet); }
+.tag-check { background: var(--gold-soft); color: var(--gold); }
+.chip-feature[aria-pressed="false"] { border-color: color-mix(in srgb, var(--violet) 40%, var(--border)); color: var(--violet); }
+.chip-feature[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: #fff; }
+
+/* ---------- CHECK YOUR UNDERSTANDING ---------- */
+/* One component, three homes: the lesson dialog, Term match and Would you send it? */
+.quiz { display: flex; flex-direction: column; gap: 14px; }
+.quiz-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.quiz-step { font-size: .76rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.quiz-q { font-weight: 600; font-size: 1rem; margin: 0; line-height: 1.45; }
+.quiz-options { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.quiz-option {
+  width: 100%; text-align: left; font: inherit; font-size: .93rem; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-2); transition: border-color .15s ease, background .15s ease;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option .mark {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px; margin-top: 1px;
+  border: 1px solid var(--border-strong); display: grid; place-items: center;
+  font-size: .72rem; font-weight: 700; color: var(--muted);
+}
+.quiz-option.is-correct { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.quiz-option.is-correct .mark { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.quiz-option.is-wrong { border-color: var(--coral); background: var(--coral-soft); color: var(--text); }
+.quiz-option.is-wrong .mark { background: var(--coral); border-color: var(--coral); color: #fff; }
+.quiz-why {
+  margin: 0; padding: 13px 15px; border-radius: var(--radius-sm);
+  background: var(--surface-2); border-left: 3px solid var(--accent);
+  color: var(--text-2); font-size: .91rem; line-height: 1.55;
+}
+.quiz-why strong { color: var(--text); }
+.quiz-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.quiz-score { font-size: .88rem; color: var(--muted); margin: 0; }
+.quiz-score strong { color: var(--text); font-family: var(--font-display); font-size: 1.05rem; }
+
+/* ---------- PRACTICE ---------- */
+.practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px; }
+.practice-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 22px; display: flex; flex-direction: column; gap: 12px;
+}
+.practice-card > h3 { font-size: 1.16rem; margin: 0; }
+.practice-tag {
+  align-self: flex-start; font-size: .69rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; padding: 3px 9px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+}
+.practice-blurb { color: var(--text-2); font-size: .93rem; margin: 0; }
+.practice-body { display: flex; flex-direction: column; gap: 13px; }
+.practice-note { color: var(--muted); font-size: .8rem; margin: 0; line-height: 1.5; }
+.practice-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: auto; padding-top: 4px; }
+.practice-foot a { font-size: .84rem; font-weight: 600; color: var(--accent); }
+
+/* Token chopper */
+.tok-field {
+  width: 100%; min-height: 88px; resize: vertical; padding: 12px 14px;
+  font: inherit; font-size: .95rem; color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.tok-field:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.tok-out {
+  display: flex; flex-wrap: wrap; gap: 3px; padding: 13px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  min-height: 56px; align-content: flex-start;
+}
+.tok {
+  font-family: var(--font-mono); font-size: .82rem; padding: 2px 5px;
+  border-radius: 4px; white-space: pre; color: var(--text);
+}
+.tok-0 { background: var(--accent-soft); }
+.tok-1 { background: var(--gold-soft); }
+.tok-2 { background: var(--violet-soft); }
+.tok-3 { background: var(--coral-soft); }
+.tok-stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; }
+.tok-stat { display: flex; align-items: baseline; gap: 7px; font-size: .84rem; color: var(--muted); }
+.tok-stat strong { font-family: var(--font-display); font-size: 1.25rem; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* Roll the dice */
+.dice-stem {
+  font-family: var(--font-mono); font-size: .92rem; padding: 12px 14px; margin: 0;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.dice-stem .caret { color: var(--accent); font-weight: 700; }
+.dice-options { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.dice-option {
+  position: relative; width: 100%; font: inherit; font-size: .9rem; cursor: pointer; text-align: left;
+  padding: 9px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.dice-option:hover:not(:disabled) { border-color: var(--accent); }
+.dice-option:disabled { cursor: default; }
+.dice-option .fill {
+  position: absolute; inset: 0 auto 0 0; background: var(--accent-soft);
+  transition: width .4s ease; z-index: 0;
+}
+.dice-option .word, .dice-option .pct { position: relative; z-index: 1; }
+.dice-option .word { font-weight: 500; }
+.dice-option .pct { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .82rem; }
+.dice-option.is-picked { border-color: var(--accent); }
+.dice-option.is-picked .word::after { content: " ← your pick"; color: var(--muted); font-size: .78rem; font-weight: 400; }
+.dice-option.is-rolled { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.dice-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.dice-temp { display: flex; align-items: center; gap: 9px; flex: 1 1 220px; min-width: 180px; }
+.dice-temp label { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.dice-temp input { flex: 1; accent-color: var(--accent); min-width: 90px; }
+.dice-temp .val { font-family: var(--font-mono); font-size: .82rem; color: var(--text); width: 2.4em; text-align: right; }
+.dice-result { margin: 0; font-size: .91rem; color: var(--text-2); }
+.dice-result strong { color: var(--text); }
+.dice-tally { margin: 0; font-size: .84rem; color: var(--muted); }
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 980px) {
   .hero-inner { grid-template-columns: 1fr; gap: 34px; }
@@ -634,7 +776,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 }
 
 @media print {
-  .site-header, .hero-glow, .progress-card, .toolbar, .to-top, .palette-backdrop, .toast, .skip-link { display: none !important; }
+  .site-header, .hero-glow, .progress-card, .toolbar, .to-top, .palette-backdrop, .toast, .skip-link, .audience-bar, #practice { display: none !important; }
   body { background: #fff; color: #000; }
   .section { padding: 18px 0; page-break-inside: avoid; }
   .lesson-card, .prompt-card, .term-card { break-inside: avoid; }
@@ -656,3 +798,35 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 /* small note under the "no recording yet" placeholder, aimed at whoever runs the page */
 .facilitator-hint { font-size: .78rem; color: var(--muted); margin: 4px 0 0; }
 .facilitator-hint code { font-size: .74rem; }
+
+/* audience switcher + practice cards on narrow screens */
+@media (max-width: 760px) {
+  .audience-inner { gap: 8px 10px; }
+  .audience-share { margin-left: 0; }
+  .practice-grid { grid-template-columns: 1fr; }
+  .practice-card { padding: 18px; }
+  .dice-temp { flex-basis: 100%; }
+}
+
+/* Seven nav items need more room than six. Between the mobile menu and a
+   wide desktop, tighten the links and drop the search label. */
+@media (min-width: 761px) and (max-width: 1040px) {
+  .site-nav a { padding: 7px 8px; font-size: .875rem; }
+  .search-trigger-text, .search-trigger kbd { display: none; }
+  .search-trigger { padding: 8px; }
+}
+
+/* the "best so far" note sits inside an uppercase dialog heading */
+.dialog-body h3 .quiz-step { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* a resource that is announced but not linked yet (pending: true) */
+.resource-link.is-pending { border-style: dashed; color: var(--muted); cursor: default; }
+.resource-link.is-pending:hover { transform: none; border-color: var(--border); }
+.resource-link.is-pending svg { color: var(--muted); }
+.resource-link.is-pending strong { font-weight: 600; }
+/* needs .resource-link in the selector to outrank `.resource-link span` above */
+.resource-link .pending-badge {
+  margin-left: auto; align-self: flex-start; flex-shrink: 0; white-space: nowrap;
+  font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  padding: 3px 8px; border-radius: 999px; background: var(--gold-soft); color: var(--gold);
+}
