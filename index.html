@@ -238,6 +238,9 @@
       <p class="section-sub">Three honest answers. Pick the one that sounds like you.</p>
     </header>
     <div class="pathways" id="pathways"></div>
+    <!-- Three questions that point at one of the pathways above. Rendered from
+         SITE.placement; the whole block hides if that key is absent. -->
+    <div class="placement" id="placement" hidden></div>
   </div>
 </section>
 
@@ -260,6 +263,8 @@
     </div>
 
     <div class="lesson-grid" id="lessonGrid"></div>
+    <!-- module recap: the one thing to carry out, shown when a single track is filtered -->
+    <aside class="lesson-recap" id="lessonRecap" hidden></aside>
     <p class="empty-state" id="lessonEmpty" hidden>Nothing matches that. <button class="linklike" id="clearFilters">Clear the filters</button></p>
   </div>
 </section>

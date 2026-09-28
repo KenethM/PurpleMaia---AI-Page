@@ -179,6 +179,91 @@
   }
 
   /* =====================================================
+     PLACEMENT — three questions that pick a pathway
+     For people who read all three cards and still are not
+     sure which one is them.
+     ===================================================== */
+  function renderPlacement() {
+    var P = S.placement;
+    var host = $('#placement');
+    if (!host || !P || !(P.questions || []).length) { if (host) host.hidden = true; return; }
+    host.hidden = false;
+
+    var i = 0, votes = {};
+
+    function closed() {
+      host.innerHTML =
+        '<div class="placement-open">' +
+          '<p>' + esc(P.prompt) + '</p>' +
+          '<button class="btn btn-ghost btn-small" type="button" data-begin>' + esc(P.cta) + '</button>' +
+        '</div>';
+      $('[data-begin]', host).addEventListener('click', function () {
+        i = 0; votes = {}; question();
+      });
+    }
+
+    function question() {
+      var q = P.questions[i];
+      var order = q.options.map(function (_, n) { return n; });
+      shuffle(order);
+      host.innerHTML =
+        '<div class="placement-card">' +
+          '<div class="quiz-head">' +
+            '<p class="quiz-q">' + esc(q.q) + '</p>' +
+            '<span class="quiz-step">' + (i + 1) + ' / ' + P.questions.length + '</span>' +
+          '</div>' +
+          '<ul class="quiz-options">' +
+            order.map(function (n) {
+              return '<li><button class="quiz-option" type="button" data-track="' + esc(q.options[n].track) + '">' +
+                       '<span class="mark">•</span><span>' + esc(q.options[n].label) + '</span></button></li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+      $$('.quiz-option', host).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var t = b.getAttribute('data-track');
+          votes[t] = (votes[t] || 0) + 1;
+          i++;
+          if (i < P.questions.length) question(); else result();
+        });
+      });
+    }
+
+    // Ties fall to the earlier module — nobody gets sent in over their head.
+    function winner() {
+      var order = (S.tracks || []).map(function (t) { return t.id; });
+      var best = order[0], bestN = -1;
+      order.forEach(function (id) {
+        var n = votes[id] || 0;
+        if (n > bestN) { best = id; bestN = n; }
+      });
+      return best;
+    }
+
+    function result() {
+      var id = winner();
+      var r = (P.results || {})[id] || {};
+      host.innerHTML =
+        '<div class="placement-card placement-result">' +
+          '<span class="practice-tag">' + esc(trackLabel[id] || id) + '</span>' +
+          '<h3>' + esc(r.title || 'Start here') + '</h3>' +
+          '<p>' + esc(r.body || '') + '</p>' +
+          '<div class="quiz-foot">' +
+            '<button class="btn btn-primary btn-small" type="button" data-go>' + esc(r.label || 'Take me there') + '</button>' +
+            '<button class="btn btn-ghost btn-small" type="button" data-restart>' + esc(P.restart || 'Start over') + '</button>' +
+          '</div>' +
+        '</div>';
+      $('[data-go]', host).addEventListener('click', function () {
+        setTrack(id);
+        goTo('#lessons');
+      });
+      $('[data-restart]', host).addEventListener('click', closed);
+    }
+
+    closed();
+  }
+
+  /* =====================================================
      PROGRESS (localStorage, best effort)
      ===================================================== */
   var PKEY = 'aihub:progress';
@@ -278,6 +363,12 @@
   var trackLabel = {};
   (S.tracks || []).forEach(function (t) { trackLabel[t.id] = t.label; });
 
+  function trackById(id) {
+    var list = S.tracks || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
   var activeTrack = 'all';
   var lessonQuery = '';
   var featured = [];   // lesson ids this audience leads with, in order
@@ -373,6 +464,21 @@
       return lessonCard(l, lessons.indexOf(l));
     }).join('');
     $('#lessonEmpty').hidden = list.length !== 0;
+
+    /* The one thing to carry out of this module, shown once the whole module is
+       on screen — filtered to a single track, and not mid-search. */
+    var recapEl = $('#lessonRecap');
+    if (recapEl) {
+      var t = trackById(activeTrack);
+      if (t && t.recap && !q && list.length) {
+        recapEl.innerHTML = '<p class="recap-label">The one thing to carry out of ' + esc(t.label) + '</p>' +
+                            '<p class="recap-body">' + esc(t.recap) + '</p>';
+        recapEl.hidden = false;
+      } else {
+        recapEl.hidden = true;
+        recapEl.innerHTML = '';
+      }
+    }
 
     $$('[data-open]', grid).forEach(function (btn) {
       btn.addEventListener('click', function (e) {
@@ -538,6 +644,18 @@
     var quiz = ((S.quizzes || {})[l.id]) || [];
     var prev = quizState[l.id];
 
+    /* If this is the last lesson of its module, show the module's one takeaway
+       here — the point being to pa'a it before moving on to the next module. */
+    var sameTrack = lessons.filter(function (x) { return x.track === l.track; });
+    var atModuleEnd = sameTrack.length && sameTrack[sameTrack.length - 1].id === l.id;
+    var tr = trackById(l.track);
+    var recapHtml = (atModuleEnd && tr && tr.recap)
+      ? '<div class="dialog-recap">' +
+          '<p class="recap-label">That is ' + esc(tr.label) + '. The one thing to carry out of it</p>' +
+          '<p class="recap-body">' + esc(tr.recap) + '</p>' +
+        '</div>'
+      : '';
+
     // Same renderer as the Resources section, so `pending` behaves the same here.
     var res = (l.resources || []).map(resourceItem).join('');
 
@@ -561,6 +679,7 @@
             '</h3><div id="lessonQuiz"></div>'
           : '') +
         (res ? '<h3>Handouts &amp; links</h3><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">' + res + '</ul>' : '') +
+        recapHtml +
         '<div class="dialog-actions">' +
           '<button class="btn btn-primary btn-small" type="button" data-dlg-done="' + esc(l.id) + '">' +
             (isDone ? 'Marked as done ✓' : 'Mark as done') + '</button>' +
@@ -1147,28 +1266,40 @@
           (p.link ? '<a href="' + esc(p.link.url) + '" target="_blank" rel="noopener">' + esc(p.link.label) + ' →</a>' : '') +
           '</div>';
       }
+      var kind = (p.group || 'demo') === 'quiz'
+        ? '<span class="practice-kind is-quiz">Check yourself</span>'
+        : '<span class="practice-kind is-demo">Try it</span>';
       return '<article class="practice-card reveal" data-practice="' + esc(p.id) + '">' +
-        (p.tag ? '<span class="practice-tag">' + esc(p.tag) + '</span>' : '') +
+        '<div class="practice-tags">' + kind +
+          (p.tag ? '<span class="practice-tag">' + esc(p.tag) + '</span>' : '') +
+        '</div>' +
         '<h3>' + esc(p.title) + '</h3>' +
         '<p class="practice-blurb">' + esc(p.blurb) + '</p>' +
         '<div class="practice-body"></div>' + foot +
       '</article>';
     }
 
-    /* Demos and quizzes teach differently, so they do not sit in one grid.
-       Anything without a group falls in with the demos. */
-    var GROUPS = [
-      { id: 'demo', title: 'Try it',        sub: 'Move something and watch what the machinery does.' },
-      { id: 'quiz', title: 'Check yourself', sub: 'Answer, then find out why. Nothing is scored anywhere but here.' }
-    ];
-    grid.innerHTML = GROUPS.map(function (g) {
-      var mine = items.filter(function (p) { return (p.group || 'demo') === g.id; });
+    /* One band per module, in lesson order, so each module's activities get a
+       row of their own rather than competing in one grid. Whether something is
+       a demo or a quiz is now a chip on the card, not the top-level split. */
+    var bands = (S.tracks || []).map(function (t) {
+      return { id: t.id, title: t.label, sub: t.recap || '' };
+    });
+    bands.push({
+      id: 'all',
+      title: 'Across all three',
+      sub: 'Vocabulary from every module, drawn fresh from the glossary each time.'
+    });
+
+    grid.innerHTML = bands.map(function (b) {
+      var mine = items.filter(function (p) { return (p.module || 'all') === b.id; });
       if (!mine.length) return '';
       return '<section class="practice-group">' +
         '<header class="practice-group-head">' +
-          '<h3>' + esc(g.title) + '</h3><p>' + esc(g.sub) + '</p>' +
+          '<h3>' + esc(b.title) + '</h3>' +
+          (b.sub ? '<p>' + esc(b.sub) + '</p>' : '') +
         '</header>' +
-        '<div class="practice-grid-inner">' + mine.map(card).join('') + '</div>' +
+        '<div class="practice-rows">' + mine.map(card).join('') + '</div>' +
       '</section>';
     }).join('');
 
@@ -1469,6 +1600,7 @@
     activeTrack = 'all';
     renderHero();
     renderPathways();
+    renderPlacement();
     renderFilters();
     renderLessons();
     paintProgress();
@@ -1484,7 +1616,7 @@
   (function initAudience() {
     var bar = $('#audienceBar');
     if (!AUDIENCES.length) {            // no audiences defined: plain page, no switcher
-      orderLessons(); renderHero(); renderPathways(); renderFilters();
+      orderLessons(); renderHero(); renderPathways(); renderPlacement(); renderFilters();
       renderLessons(); paintProgress(); renderAgenda(); buildIndex();
       return;
     }

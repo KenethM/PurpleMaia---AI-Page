@@ -969,3 +969,51 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .ref.is-fake .ref-verdict { border: 1.5px solid var(--coral); color: var(--coral); }
 .ref.is-picked { box-shadow: 0 0 0 2px var(--border-strong); }
 .ref.is-fake.is-picked { box-shadow: 0 0 0 2px var(--coral); }
+
+/* ---------- Placement: three questions to pick a pathway ---------- */
+.placement { margin-top: 18px; }
+.placement-open {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding: 15px 18px; border: 1px dashed var(--border-strong); border-radius: var(--radius);
+  background: var(--surface);
+}
+.placement-open p { margin: 0; color: var(--text-2); font-size: .95rem; }
+.placement-open .btn { margin-left: auto; }
+.placement-card {
+  padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--surface); display: flex; flex-direction: column; gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.placement-card .quiz-option .mark { border: 0; font-size: 1rem; }
+.placement-result h3 { font-size: 1.2rem; margin: 0; }
+.placement-result p { margin: 0; color: var(--text-2); font-size: .95rem; }
+.placement-result .practice-tag { align-self: flex-start; }
+
+/* ---------- Module recap ---------- */
+.lesson-recap, .dialog-recap {
+  border-left: 3px solid var(--accent); background: var(--surface-2);
+  border-radius: var(--radius-sm); padding: 15px 18px; margin-top: 22px;
+}
+.dialog-recap { margin-top: 26px; }
+.recap-label {
+  margin: 0 0 5px; font-size: .71rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--accent);
+}
+.recap-body { margin: 0; color: var(--text-2); font-size: .95rem; line-height: 1.6; }
+
+/* ---------- Practice: one band per module, one row per activity ---------- */
+.practice-rows { display: flex; flex-direction: column; gap: 16px; }
+.practice-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.practice-kind {
+  font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em;
+  padding: 3px 9px; border-radius: 999px;
+}
+.practice-kind.is-demo { background: var(--accent); color: var(--accent-ink); }
+.practice-kind.is-quiz { background: var(--violet-soft); color: var(--violet); border: 1px solid color-mix(in srgb, var(--violet) 35%, transparent); }
+.practice-group-head h3 { font-size: .95rem; text-transform: none; letter-spacing: 0; color: var(--text); font-family: var(--font-display); }
+.practice-group-head p { max-width: 74ch; }
+
+/* At desktop width a full-width card can breathe two-up inside itself */
+@media (min-width: 900px) {
+  .practice-card { padding: 24px 26px; }
+}

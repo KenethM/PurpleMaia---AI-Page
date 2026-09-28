@@ -62,6 +62,64 @@ window.SITE = {
     }
   ],
 
+  /* ---------- 2b. PLACEMENT ----------
+     Three questions that point somebody at one of the pathways above, for
+     people who read all three cards and still are not sure. Each option votes
+     for a track; the most votes wins, ties fall to the earlier module so
+     nobody gets sent in over their head.
+  --------------------------------------------------------------- */
+  placement: {
+    prompt: "Read all three and still not sure?",
+    cta: "Answer three questions",
+    restart: "Start over",
+    questions: [
+      {
+        q: "Someone asks you, in a meeting, what an LLM actually is. What happens?",
+        options: [
+          { label: "I change the subject",                                  track: "overview" },
+          { label: "I give a rough answer and hope nobody digs",            track: "overview" },
+          { label: "I can explain what it does, but not how",              track: "how-it-works" },
+          { label: "I can explain it and roughly how it works",            track: "using-llms" }
+        ]
+      },
+      {
+        q: "How often do you actually use one?",
+        options: [
+          { label: "Barely — I have opened one a couple of times",         track: "overview" },
+          { label: "Now and then, for small things",                       track: "how-it-works" },
+          { label: "Most weeks, for real work",                            track: "how-it-works" },
+          { label: "Daily, and other people rely on what I produce",       track: "using-llms" }
+        ]
+      },
+      {
+        q: "When will you next talk about AI where being wrong would cost something?",
+        options: [
+          { label: "Not planned",                                          track: "overview" },
+          { label: "Internally, with colleagues",                          track: "how-it-works" },
+          { label: "With funders, community or haumāna",                   track: "using-llms" },
+          { label: "I already have, and it did not go well",               track: "using-llms" }
+        ]
+      }
+    ],
+    results: {
+      overview: {
+        title: "Start at the beginning",
+        body: "You are the audience this was written for. Module 1 takes about twenty-five minutes and nothing in it assumes you have used any of these tools.",
+        label: "Go to Module 1"
+      },
+      "how-it-works": {
+        title: "Start with the machinery",
+        body: "You have the gist and want the mechanism. Module 2 is the longest of the three and the one that makes everything in Module 3 make sense.",
+        label: "Go to Module 2"
+      },
+      "using-llms": {
+        title: "Start with the limits",
+        body: "You are already using these in earnest, so the risk is not what you cannot do — it is what you might say with confidence. Module 3 is the one that matters for you, and Module 2 is there when you want the why.",
+        label: "Go to Module 3"
+      }
+    }
+  },
+
   /* ---------- 3. AUDIENCES ----------
      The same knowledge base, re-skinned for whoever is in the room.
      Every audience inherits everything in `event` above and overrides only
@@ -244,11 +302,26 @@ window.SITE = {
     }
   ],
 
-  /* ---------- 4. TRACKS (the filter chips) ---------- */
+  /* ---------- 4. TRACKS (the filter chips) ----------
+     `recap` is the one thing to carry out of that module. It shows at the end
+     of the module's lessons and again when you finish the last lesson in the
+     dialog — the idea being to pa'a the concept before moving to the next. */
   tracks: [
-    { id: "overview",     label: "1 · Overview" },
-    { id: "how-it-works", label: "2 · How an LLM works" },
-    { id: "using-llms",   label: "3 · Using LLMs well" }
+    {
+      id: "overview",
+      label: "1 · Overview",
+      recap: "These five words nest inside each other rather than competing: AI, then machine learning, then NLP, then generative AI, then LLMs. Being able to say which one you mean puts you ahead of most of the conversation."
+    },
+    {
+      id: "how-it-works",
+      label: "2 · How an LLM works",
+      recap: "Everything it does is one loop, run once per word: chop the text into tokens, turn them into positions in a meaning space, weigh which ones matter, rank what could come next, pick one. There is no lookup step and no fact-check step in that loop — which is precisely why Module 3 exists."
+    },
+    {
+      id: "using-llms",
+      label: "3 · Using LLMs well",
+      recap: "It drafts, you decide. Give it the context it could not possibly guess, treat every confident claim as unverified until you have checked it, and keep a person who actually knows the subject between the draft and the door."
+    }
   ],
 
   /* ---------- 5. LESSONS ----------
@@ -932,7 +1005,75 @@ window.SITE = {
   --------------------------------------------------------------- */
   practice: [
     {
+      id: "which",
+      module: "overview",
+      group: "quiz",
+      type: "scenarios",
+      title: "Which one is it?",
+      tag: "Module 1 · AI, ML, NLP, generative AI, LLMs",
+      blurb: "Five everyday things. For each one, name the narrowest label that actually fits. The point is not the vocabulary — it is noticing that these nest inside each other, so more than one label is often technically true and only one is useful.",
+      note: "Every one of these is machine learning, and everything inside NLP is also machine learning. The question is always which ring you are standing in.",
+      items: [
+        {
+          q: "Your photo app quietly groups every picture of the same person together.",
+          options: [
+            "Machine learning — but nothing to do with language",
+            "NLP",
+            "Generative AI, but not a language model",
+            "An LLM"
+          ],
+          answer: 0,
+          why: "It learned the pattern from data rather than being programmed face by face, so it is machine learning — but it is looking at pixels, not language. NLP is the ring inside machine learning that deals with words."
+        },
+        {
+          q: "Live captions appear under a speaker on a video call.",
+          options: [
+            "NLP",
+            "Machine learning — but nothing to do with language",
+            "Generative AI, but not a language model",
+            "An LLM"
+          ],
+          answer: 0,
+          why: "Speech turned into text is language work, so it is NLP. Nothing new is being created — it is transcribing what was said. This is the ring most people have been using for years without calling it AI."
+        },
+        {
+          q: "Your phone fixes \"teh\" to \"the\" before you notice.",
+          options: [
+            "NLP",
+            "Machine learning — but nothing to do with language",
+            "Generative AI, but not a language model",
+            "An LLM"
+          ],
+          answer: 0,
+          why: "Also NLP, and also nothing to do with LLMs. Autocorrect predates ChatGPT by decades. If you have used spell-check, translation or voice-to-text, you have been using NLP the whole time."
+        },
+        {
+          q: "You type a sentence into Canva and it produces an image.",
+          options: [
+            "Generative AI, but not a language model",
+            "An LLM",
+            "NLP",
+            "Machine learning — but nothing to do with language"
+          ],
+          answer: 0,
+          why: "It is creating something new, so it is generative AI — but what comes out is an image, not text. LLMs are the part of generative AI that produces language. This is the pair people merge most often."
+        },
+        {
+          q: "Claude drafts your monthly funder update from notes you pasted in.",
+          options: [
+            "An LLM",
+            "Generative AI, but not a language model",
+            "NLP",
+            "Machine learning — but nothing to do with language"
+          ],
+          answer: 0,
+          why: "The innermost ring. It is an LLM, which makes it generative AI, which makes it NLP, which makes it machine learning — all four are true at once. \"LLM\" is just the most specific and therefore the most useful thing to say."
+        }
+      ]
+    },
+    {
       id: "tokens",
+      module: "how-it-works",
       group: "demo",
       type: "tokens",
       title: "Token chopper",
@@ -944,6 +1085,7 @@ window.SITE = {
     },
     {
       id: "dice",
+      module: "how-it-works",
       group: "demo",
       type: "predict",
       title: "Roll the dice",
@@ -985,6 +1127,7 @@ window.SITE = {
     },
     {
       id: "match",
+      module: "all",
       group: "quiz",
       type: "match",
       title: "Term match",
@@ -993,65 +1136,8 @@ window.SITE = {
       rounds: 6
     },
     {
-      id: "judge",
-      group: "quiz",
-      type: "scenarios",
-      title: "Would you send it?",
-      tag: "Module 3 · Oversight",
-      blurb: "Six real situations, the kind that come up in a week of actual work. There is a defensible answer to each one — and the reasoning matters more than the score.",
-      items: [
-        {
-          q: "An LLM drafts your monthly funder update. The numbers match the ones you pasted in. What now?",
-          options: ["Read it, fix the tone, send it", "Send it as written — the numbers check out", "Do not use AI for funder communication at all"],
-          answer: 0,
-          why: "This is close to the ideal use: you supplied the facts, it did the drafting, a person signs off. Grounded in your own source material, with a human between the draft and the door."
-        },
-        {
-          q: "You ask for the protocol around a specific Hawaiian cultural practice. The answer is detailed and confident.",
-          options: [
-            "Do not use it — take the question to people who hold that ʻike",
-            "Use it as a first draft and lightly fact-check",
-            "Use it; the detail suggests it found real sources"
-          ],
-          answer: 0,
-          why: "Underrepresented in training data and answered with full confidence anyway. Cultural authority sits with community and Native sources, not with a model, and “lightly fact-check” is not a real safeguard here."
-        },
-        {
-          q: "It cites a 2019 study with an author, a journal and a page number to support a grant claim.",
-          options: ["Find the study before the claim goes anywhere", "Cite it — that detail is too specific to be invented", "Drop the claim entirely"],
-          answer: 0,
-          why: "Invented citations look exactly like this: specific, formatted, plausible. It might well be real. You will not know until you look, and a funder proposal is the wrong place to find out."
-        },
-        {
-          q: "You paste in meeting notes and ask for action items. Two of them have no owner named anywhere in the notes.",
-          options: [
-            "Good — you told it to write UNASSIGNED rather than guess",
-            "Let it assign the most likely person",
-            "Rewrite the notes so every item has an owner"
-          ],
-          answer: 0,
-          why: "Left to itself, it will fill the gap with a plausible name, because a name is the plausible next token. Telling it to mark gaps explicitly turns invisible guessing into a visible hole you can go fill."
-        },
-        {
-          q: "Asked to explain a haumāna's assessment result, it produces a step-by-step chain of reasoning ending in a recommendation.",
-          options: [
-            "Treat the steps as a draft argument and check each one yourself",
-            "Follow the recommendation — the reasoning is right there",
-            "Ask it to check its own reasoning, then follow it"
-          ],
-          answer: 0,
-          why: "Visible steps are generated text like everything else, and asking it to grade its own work generates more of the same. A tidy chain can land on the wrong answer, and this decision is about a real person."
-        },
-        {
-          q: "A partner asks whether you used AI on a document you sent them.",
-          options: ["Tell them what it did and who reviewed it", "Say no — a person edited it, so it counts as yours", "Avoid the question"],
-          answer: 0,
-          why: "The honest answer is usually the easy one: it drafted, a named person reviewed and is accountable for it. That is the standard we are asking others to hold too."
-        }
-      ]
-    },
-    {
       id: "cite",
+      module: "using-llms",
       group: "demo",
       type: "cite",
       title: "Spot the real one",
@@ -1123,6 +1209,7 @@ window.SITE = {
     },
     {
       id: "corpus",
+      module: "using-llms",
       group: "demo",
       type: "corpus",
       title: "How much did it read?",
@@ -1165,6 +1252,65 @@ window.SITE = {
           coverage: 2,
           confidence: 89,
           verdict: "This is not the model's to answer. It will answer anyway, and it will sound exactly as sure as it did about the water cycle."
+        }
+      ]
+    },
+    {
+      id: "judge",
+      module: "using-llms",
+      group: "quiz",
+      type: "scenarios",
+      title: "Would you send it?",
+      tag: "Module 3 · Oversight",
+      blurb: "Six real situations, the kind that come up in a week of actual work. There is a defensible answer to each one — and the reasoning matters more than the score.",
+      items: [
+        {
+          q: "An LLM drafts your monthly funder update. The numbers match the ones you pasted in. What now?",
+          options: ["Read it, fix the tone, send it", "Send it as written — the numbers check out", "Do not use AI for funder communication at all"],
+          answer: 0,
+          why: "This is close to the ideal use: you supplied the facts, it did the drafting, a person signs off. Grounded in your own source material, with a human between the draft and the door."
+        },
+        {
+          q: "You ask for the protocol around a specific Hawaiian cultural practice. The answer is detailed and confident.",
+          options: [
+            "Do not use it — take the question to people who hold that ʻike",
+            "Use it as a first draft and lightly fact-check",
+            "Use it; the detail suggests it found real sources"
+          ],
+          answer: 0,
+          why: "Underrepresented in training data and answered with full confidence anyway. Cultural authority sits with community and Native sources, not with a model, and “lightly fact-check” is not a real safeguard here."
+        },
+        {
+          q: "It cites a 2019 study with an author, a journal and a page number to support a grant claim.",
+          options: ["Find the study before the claim goes anywhere", "Cite it — that detail is too specific to be invented", "Drop the claim entirely"],
+          answer: 0,
+          why: "Invented citations look exactly like this: specific, formatted, plausible. It might well be real. You will not know until you look, and a funder proposal is the wrong place to find out."
+        },
+        {
+          q: "You paste in meeting notes and ask for action items. Two of them have no owner named anywhere in the notes.",
+          options: [
+            "Good — you told it to write UNASSIGNED rather than guess",
+            "Let it assign the most likely person",
+            "Rewrite the notes so every item has an owner"
+          ],
+          answer: 0,
+          why: "Left to itself, it will fill the gap with a plausible name, because a name is the plausible next token. Telling it to mark gaps explicitly turns invisible guessing into a visible hole you can go fill."
+        },
+        {
+          q: "Asked to explain a haumāna's assessment result, it produces a step-by-step chain of reasoning ending in a recommendation.",
+          options: [
+            "Treat the steps as a draft argument and check each one yourself",
+            "Follow the recommendation — the reasoning is right there",
+            "Ask it to check its own reasoning, then follow it"
+          ],
+          answer: 0,
+          why: "Visible steps are generated text like everything else, and asking it to grade its own work generates more of the same. A tidy chain can land on the wrong answer, and this decision is about a real person."
+        },
+        {
+          q: "A partner asks whether you used AI on a document you sent them.",
+          options: ["Tell them what it did and who reviewed it", "Say no — a person edited it, so it counts as yours", "Avoid the question"],
+          answer: 0,
+          why: "The honest answer is usually the easy one: it drafted, a named person reviewed and is accountable for it. That is the standard we are asking others to hold too."
         }
       ]
     }
