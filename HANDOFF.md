@@ -16,6 +16,70 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-01 — Re-skinned to Purple Maiʻa's brand
+
+**Who:** Keneth, with Claude Code
+**State:** working tree only, not committed
+**Files:** `index.html`, `assets/styles.css`, `assets/favicon.svg`, `README.md`,
+plus four new PNGs in `assets/`
+
+### Why
+
+Feedback that the page should look like it belongs to Purple Maiʻa rather than
+like a generic course template. The layout was explicitly kept — the ask was to
+keep the structure and lean purple, not to rebuild.
+
+### What changed
+
+**The palette is now Purple Maiʻa's, measured rather than guessed.** The brand
+colours were sampled pixel-by-pixel out of the logo artwork: purple `#1a002d`,
+navy `#081659`, green `#006838`, tan `#c3996b`, red `#ec1c24`, cyan `#00adee`,
+amber `#faaf40`, lime `#8bc53f`. purplemaia.org itself was read for the rest of
+the system — it is a Framer site, so the values are inline: Montserrat headings
+over Inter body, near-black on off-white, a 16px corner radius, and headings set
+on tight negative tracking.
+
+`#1a002d` is an ink, not an accent — far too dark to carry buttons and links. So
+`--accent` is a lightened step off that purple, `#6b2f96`, picked against numbers
+instead of by eye: OKLCH L 0.439, 8.2:1 on `--bg`, 8.5:1 under white button text.
+Dark mode mirrors it at `#c9a4ef`.
+
+**`--violet` was renamed `--ocean`** and now carries the brand cyan. With the
+accent itself purple, a second token called "violet" holding a different purple
+was going to confuse whoever edited this next.
+
+**The chart pair moved too.** `--viz-read` went teal → `#6b2f96` / `#a86fd6` so
+the meters read as part of the same family. Both steps were kept inside the
+dataviz lightness bands (light 0.43–0.77, dark 0.48–0.67) and well separated in
+hue from `--viz-sure`, which did not need to move.
+
+**Real logo, not a stand-in.** The generic sparkle glyph in the header is gone,
+replaced by the Purple Maiʻa mark, and the footer carries the full lockup. Each
+ships in a colour and a white variant because the mark's deep purple cells
+disappear against a dark page; the swap is pure CSS. The source exports are
+2000px, which is absurd for a 32px header slot, so they were downscaled to
+3–8KB each. The favicon is now the mark's triangular lattice in brand purple.
+
+### Checks
+
+161 assertions pass across both suites, unchanged from before the re-skin. Every
+local asset reference in `index.html` and `styles.css` was walked and resolves.
+No stale hex from the old teal palette survives anywhere in the repo.
+
+### Open / next
+
+- **Still not viewed in a browser.** Everything here is verified by test and by
+  reading computed values; nobody has looked at the rendered page. Worth ten
+  minutes before this is shown to anyone.
+- The deck is still on the old teal styling. If the run-through on 10/6 is being
+  recorded, the slides and the page will not match.
+- `assets/social.png` is the old palette and will look wrong in link previews.
+- Deck items still Keneth's: learning-outcomes slide, in-deck checkpoints, the
+  draft run-through before 10/6, and the recording plan.
+
+---
+
+
 ## 2026-09-24 — Accuracy pass on the practice activities
 
 **Who:** Keneth, with Claude Code

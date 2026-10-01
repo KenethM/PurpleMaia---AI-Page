@@ -3,41 +3,48 @@
    Colours live as tokens in :root. Change them once, here.
    ============================================================= */
 
-/* ---------- TOKENS: LIGHT ---------- */
+/* ---------- TOKENS: LIGHT ----------
+   Palette is Purple Maiʻa's own, sampled from the brand logo:
+     purple #1a002d · navy #081659 · green #006838 · tan #c3996b
+     red #ec1c24 · cyan #00adee · amber #faaf40 · lime #8bc53f
+   purplemaia.org pairs Montserrat headings with Inter body text,
+   near-black on off-white, and a 16px corner radius. Same here.
+   Accent values are tuned for contrast, not picked by eye:
+   --accent is 8.2:1 on --bg and 8.5:1 under white button text.      */
 :root {
-  --bg:            #fbfaf8;
-  --bg-alt:        #f4f2ee;
+  --bg:            #fbfafc;
+  --bg-alt:        #f4f1f7;
   --surface:       #ffffff;
-  --surface-2:     #f7f6f3;
-  --border:        #e6e2db;
-  --border-strong: #d6d1c7;
+  --surface-2:     #f8f6fa;
+  --border:        #e7e2ec;
+  --border-strong: #d5cdde;
 
-  --text:          #1b1a17;
-  --text-2:        #4a463f;
-  --muted:         #77726a;
+  --text:          #15031f;
+  --text-2:        #463a52;
+  --muted:         #776c82;
 
-  --accent:        #0d7c72;
-  --accent-hover:  #0a655d;
-  --accent-soft:   #e2f2f0;
+  --accent:        #6b2f96;
+  --accent-hover:  #5b2a82;
+  --accent-soft:   #f2e9fa;
   --accent-ink:    #ffffff;
 
-  --coral:         #cf5f3f;
+  --coral:         #b4452c;
   --coral-soft:    #fbeae4;
-  --gold:          #a97f22;
+  --gold:          #946a0c;
   --gold-soft:     #f8f0dc;
-  --violet:        #6b5bd2;
-  --violet-soft:   #eceafb;
+  --ocean:         #0d6f99;
+  --ocean-soft:    #e4f1f8;
 
-  --shadow-sm: 0 1px 2px rgba(27,26,23,.05), 0 1px 3px rgba(27,26,23,.05);
-  --shadow-md: 0 2px 4px rgba(27,26,23,.04), 0 8px 24px rgba(27,26,23,.07);
-  --shadow-lg: 0 8px 16px rgba(27,26,23,.06), 0 24px 64px rgba(27,26,23,.14);
+  --shadow-sm: 0 1px 2px rgba(26,0,45,.05), 0 1px 3px rgba(26,0,45,.05);
+  --shadow-md: 0 2px 4px rgba(26,0,45,.04), 0 8px 24px rgba(26,0,45,.08);
+  --shadow-lg: 0 8px 16px rgba(26,0,45,.07), 0 24px 64px rgba(26,0,45,.15);
 
-  --radius:    14px;
-  --radius-sm: 9px;
-  --radius-lg: 22px;
+  --radius:    16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
 
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-mono:    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   --header-h: 62px;
@@ -47,28 +54,28 @@
 /* ---------- TOKENS: DARK ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:            #0e1116;
-    --bg-alt:        #12161d;
-    --surface:       #161b23;
-    --surface-2:     #1c222c;
-    --border:        #272e3a;
-    --border-strong: #38414f;
+    --bg:            #120a18;
+    --bg-alt:        #180e20;
+    --surface:       #1d1226;
+    --surface-2:     #251830;
+    --border:        #33243f;
+    --border-strong: #46334f;
 
-    --text:          #eef1f5;
-    --text-2:        #c2c8d2;
-    --muted:         #8b93a1;
+    --text:          #f3eef7;
+    --text-2:        #cfc4d8;
+    --muted:         #9b8fa6;
 
-    --accent:        #4ecdc0;
-    --accent-hover:  #6fdbd0;
-    --accent-soft:   #17302f;
-    --accent-ink:    #06201e;
+    --accent:        #c9a4ef;
+    --accent-hover:  #dcc0f8;
+    --accent-soft:   #2a1838;
+    --accent-ink:    #1a002d;
 
-    --coral:         #f08a66;
-    --coral-soft:    #2e1d18;
-    --gold:          #dcb75f;
-    --gold-soft:     #2b2413;
-    --violet:        #a99bf5;
-    --violet-soft:   #211f36;
+    --coral:         #f0876a;
+    --coral-soft:    #33201a;
+    --gold:          #e8a33d;
+    --gold-soft:     #2f2411;
+    --ocean:         #4cc6f5;
+    --ocean-soft:    #102b38;
 
     --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
     --shadow-md: 0 2px 6px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
@@ -77,28 +84,28 @@
 }
 
 :root[data-theme="dark"] {
-  --bg:            #0e1116;
-  --bg-alt:        #12161d;
-  --surface:       #161b23;
-  --surface-2:     #1c222c;
-  --border:        #272e3a;
-  --border-strong: #38414f;
+  --bg:            #120a18;
+  --bg-alt:        #180e20;
+  --surface:       #1d1226;
+  --surface-2:     #251830;
+  --border:        #33243f;
+  --border-strong: #46334f;
 
-  --text:          #eef1f5;
-  --text-2:        #c2c8d2;
-  --muted:         #8b93a1;
+  --text:          #f3eef7;
+  --text-2:        #cfc4d8;
+  --muted:         #9b8fa6;
 
-  --accent:        #4ecdc0;
-  --accent-hover:  #6fdbd0;
-  --accent-soft:   #17302f;
-  --accent-ink:    #06201e;
+  --accent:        #c9a4ef;
+  --accent-hover:  #dcc0f8;
+  --accent-soft:   #2a1838;
+  --accent-ink:    #1a002d;
 
-  --coral:         #f08a66;
-  --coral-soft:    #2e1d18;
-  --gold:          #dcb75f;
-  --gold-soft:     #2b2413;
-  --violet:        #a99bf5;
-  --violet-soft:   #211f36;
+  --coral:         #f0876a;
+  --coral-soft:    #33201a;
+  --gold:          #e8a33d;
+  --gold-soft:     #2f2411;
+  --ocean:         #4cc6f5;
+  --ocean-soft:    #102b38;
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
   --shadow-md: 0 2px 6px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
@@ -125,7 +132,58 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; letter-spacing: -.012em; margin: 0; }
+/* ---------- ʻOhe kāpala texture ----------
+   The stamp motif the Purple Maiʻa deck uses, bled into the margins either
+   side of the 1180px column. It ships as a *mask*, not as a
+   coloured image, so a single file tints itself from --accent and follows
+   the theme instead of needing a light and a dark copy.
+
+   The file keeps a real alpha channel on purpose: the default mask-mode is
+   alpha, so this never depends on mask-mode:luminance, which older Chrome
+   ignores — and ignoring it would paint a solid square.
+
+   body gets its own stacking context so the ::before can sit at z-index -1,
+   which puts it above body's background but below every bit of content. */
+body { position: relative; z-index: 0; }
+
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: none;              /* only drawn when there is margin to draw in */
+  background-color: var(--accent);
+  opacity: .06;
+
+  --stamp: url("stamp.png");
+  -webkit-mask-image: var(--stamp), var(--stamp), var(--stamp), var(--stamp), var(--stamp);
+          mask-image: var(--stamp), var(--stamp), var(--stamp), var(--stamp), var(--stamp);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-size: 420px, 340px, 380px, 460px, 360px;
+          mask-size: 420px, 340px, 380px, 460px, 360px;
+  /* Pushed mostly off-canvas; only an edge bleeds in, so it reads as
+     texture rather than as clip art sitting in the margin. */
+  -webkit-mask-position:
+    left -150px top 7%,  right -120px top 26%, left -110px top 48%,
+    right -170px top 70%, left -140px top 90%;
+          mask-position:
+    left -150px top 7%,  right -120px top 26%, left -110px top 48%,
+    right -170px top 70%, left -140px top 90%;
+}
+
+@media (min-width: 1240px) { body::before { display: block; } }
+
+/* Light purple on a near-black page needs a little more to register. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before { opacity: .085; }
+}
+:root[data-theme="dark"] body::before { opacity: .085; }
+
+@media print { body::before { display: none; } }
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; letter-spacing: -.022em; margin: 0; }
 p { margin: 0 0 1em; }
 a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 3px; }
 a:hover { color: var(--accent-hover); }
@@ -166,13 +224,18 @@ code { font-family: var(--font-mono); font-size: .88em; background: var(--surfac
 
 .header-inner { display: flex; align-items: center; gap: 18px; height: var(--header-h); }
 
-.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); font-weight: 600; flex-shrink: 0; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 600; flex-shrink: 0; }
+/* Purple Maiʻa mark. Two files rather than one tinted file: the mark is
+   nine brand colours, and its deep purple cells vanish on a dark page. */
 .brand-mark {
-  width: 30px; height: 30px; display: grid; place-items: center;
-  background: var(--accent); color: var(--accent-ink); border-radius: 9px;
+  width: 32px; height: 26px; flex-shrink: 0;
+  background: url("pm-mark.png") center/contain no-repeat;
 }
-.brand-mark svg { width: 18px; height: 18px; }
-.brand-text { font-family: var(--font-display); font-size: 1.04rem; letter-spacing: -.01em; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .brand-mark { background-image: url("pm-mark-white.png"); }
+}
+:root[data-theme="dark"] .brand-mark { background-image: url("pm-mark-white.png"); }
+.brand-text { font-family: var(--font-display); font-size: 1.04rem; letter-spacing: -.02em; }
 
 .site-nav { display: flex; gap: 2px; margin-left: auto; }
 .site-nav a {
@@ -229,7 +292,7 @@ kbd {
   position: absolute; inset: -40% -20% auto -20%; height: 620px; pointer-events: none;
   background:
     radial-gradient(48% 46% at 22% 40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
-    radial-gradient(40% 44% at 78% 26%, color-mix(in srgb, var(--violet) 18%, transparent), transparent 70%),
+    radial-gradient(40% 44% at 78% 26%, color-mix(in srgb, var(--ocean) 18%, transparent), transparent 70%),
     radial-gradient(36% 40% at 56% 76%, color-mix(in srgb, var(--coral) 14%, transparent), transparent 70%);
   filter: blur(14px);
 }
@@ -319,7 +382,7 @@ kbd {
 .pathway-icon svg { width: 21px; height: 21px; }
 .pathway:nth-child(1) .pathway-icon { background: var(--accent-soft); color: var(--accent); }
 .pathway:nth-child(2) .pathway-icon { background: var(--gold-soft); color: var(--gold); }
-.pathway:nth-child(3) .pathway-icon { background: var(--violet-soft); color: var(--violet); }
+.pathway:nth-child(3) .pathway-icon { background: var(--ocean-soft); color: var(--ocean); }
 .pathway h3 { font-size: 1.16rem; }
 .pathway p { color: var(--text-2); font-size: .95rem; margin: 0; flex-grow: 1; }
 .pathway button {
@@ -365,7 +428,7 @@ kbd {
 
 .thumb {
   position: relative; width: 100%; aspect-ratio: 16 / 9; border: 0; padding: 0; cursor: pointer;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface-2)), color-mix(in srgb, var(--violet) 13%, var(--surface-2)));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--surface-2)), color-mix(in srgb, var(--ocean) 13%, var(--surface-2)));
   display: grid; place-items: center; border-bottom: 1px solid var(--border);
 }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -503,6 +566,11 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .site-footer { border-top: 1px solid var(--border); padding: 46px 0 28px; background: var(--bg); }
 .footer-inner { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; align-items: flex-start; }
 .footer-inner > div { max-width: 46ch; }
+.footer-logo { display: block; width: 200px; height: auto; margin-bottom: 14px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .footer-logo { content: url("pm-lockup-white.png"); }
+}
+:root[data-theme="dark"] .footer-logo { content: url("pm-lockup-white.png"); }
 .footer-org { font-family: var(--font-display); font-size: 1.14rem; font-weight: 600; margin-bottom: 6px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .footer-links a { color: var(--text-2); text-decoration: none; font-size: .93rem; font-weight: 500; }
@@ -533,7 +601,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .video-frame iframe, .video-frame video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .video-missing {
   width: 100%; aspect-ratio: 16/9; display: grid; place-items: center; align-content: center; gap: 10px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface-2)), color-mix(in srgb, var(--violet) 12%, var(--surface-2)));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface-2)), color-mix(in srgb, var(--ocean) 12%, var(--surface-2)));
   border-bottom: 1px solid var(--border); text-align: center; padding: 20px;
 }
 .video-missing svg { width: 34px; height: 34px; color: var(--accent); }
@@ -606,8 +674,8 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 }
 .audience-chip:hover { border-color: var(--border-strong); color: var(--text); }
 .audience-chip[aria-pressed="true"] {
-  background: var(--violet-soft); border-color: color-mix(in srgb, var(--violet) 55%, var(--border));
-  color: var(--violet); font-weight: 600;
+  background: var(--ocean-soft); border-color: color-mix(in srgb, var(--ocean) 55%, var(--border));
+  color: var(--ocean); font-weight: 600;
 }
 .audience-share {
   margin-left: auto; font: inherit; font-size: .82rem; font-weight: 500;
@@ -617,10 +685,10 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .audience-blurb { margin: 8px auto 0; color: var(--muted); font-size: .86rem; }
 
 /* "Start here" flag on the lessons an audience leads with */
-.tag-feature { background: var(--violet-soft); color: var(--violet); }
+.tag-feature { background: var(--ocean-soft); color: var(--ocean); }
 .tag-check { background: var(--gold-soft); color: var(--gold); }
-.chip-feature[aria-pressed="false"] { border-color: color-mix(in srgb, var(--violet) 40%, var(--border)); color: var(--violet); }
-.chip-feature[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: #fff; }
+.chip-feature[aria-pressed="false"] { border-color: color-mix(in srgb, var(--ocean) 40%, var(--border)); color: var(--ocean); }
+.chip-feature[aria-pressed="true"] { background: var(--ocean); border-color: var(--ocean); color: #fff; }
 
 /* ---------- CHECK YOUR UNDERSTANDING ---------- */
 /* One component, three homes: the lesson dialog, Term match and Would you send it? */
@@ -692,7 +760,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 }
 .tok-0 { background: var(--accent-soft); }
 .tok-1 { background: var(--gold-soft); }
-.tok-2 { background: var(--violet-soft); }
+.tok-2 { background: var(--ocean-soft); }
 .tok-3 { background: var(--coral-soft); }
 .tok-stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; }
 .tok-stat { display: flex; align-items: baseline; gap: 7px; font-size: .84rem; color: var(--muted); }
@@ -894,13 +962,13 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
    those fail the colourblind-separation and chroma checks as a data pair.
    These steps pass all six checks of the dataviz validator against each
    mode's surface. Re-run it before changing them:
-     node scripts/validate_palette.js "#0d9488,#b4452c" --mode light
-     node scripts/validate_palette.js "#17a894,#d4634a" --mode dark      */
-:root { --viz-read: #0d9488; --viz-sure: #b4452c; }
+     node scripts/validate_palette.js "#6b2f96,#b4452c" --mode light
+     node scripts/validate_palette.js "#a86fd6,#d4634a" --mode dark      */
+:root { --viz-read: #6b2f96; --viz-sure: #b4452c; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --viz-read: #17a894; --viz-sure: #d4634a; }
+  :root:not([data-theme="light"]) { --viz-read: #a86fd6; --viz-sure: #d4634a; }
 }
-:root[data-theme="dark"] { --viz-read: #17a894; --viz-sure: #d4634a; }
+:root[data-theme="dark"] { --viz-read: #a86fd6; --viz-sure: #d4634a; }
 
 /* ---------- How much did it read? ---------- */
 .sr-only {
@@ -1009,7 +1077,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   padding: 3px 9px; border-radius: 999px;
 }
 .practice-kind.is-demo { background: var(--accent); color: var(--accent-ink); }
-.practice-kind.is-quiz { background: var(--violet-soft); color: var(--violet); border: 1px solid color-mix(in srgb, var(--violet) 35%, transparent); }
+.practice-kind.is-quiz { background: var(--ocean-soft); color: var(--ocean); border: 1px solid color-mix(in srgb, var(--ocean) 35%, transparent); }
 .practice-group-head h3 { font-size: .95rem; text-transform: none; letter-spacing: 0; color: var(--text); font-family: var(--font-display); }
 .practice-group-head p { max-width: 74ch; }
 

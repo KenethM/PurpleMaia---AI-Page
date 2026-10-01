@@ -263,8 +263,8 @@ all six checks in both modes; if you change them, re-run the validator rather th
 eyeballing it:
 
 ```
-node scripts/validate_palette.js "#0d9488,#b4452c" --mode light
-node scripts/validate_palette.js "#17a894,#d4634a" --mode dark
+node scripts/validate_palette.js "#6b2f96,#b4452c" --mode light
+node scripts/validate_palette.js "#a86fd6,#d4634a" --mode dark
 ```
 
 `scenarios` is the cheap one to extend: it takes the same `{ q, options, answer, why }`
@@ -282,14 +282,27 @@ change these two blocks (light values in `:root`, dark ones in the two dark-them
 blocks below it):
 
 ```css
---accent:       #0d7c72;   /* buttons, links, highlights */
---accent-soft:  #e2f2f0;   /* tinted backgrounds          */
---accent-ink:   #ffffff;   /* text sitting on the accent   */
+--accent:       #6b2f96;   /* buttons, links, highlights  */
+--accent-soft:  #f2e9fa;   /* tinted backgrounds          */
+--accent-ink:   #ffffff;   /* text sitting on the accent  */
 ```
 
 Fonts are set in `--font-display` (headings) and `--font-body` (everything else).
 They load from Google Fonts in `index.html`; delete that `<link>` and the system
 font stack takes over cleanly.
+
+**The palette is Purple Maiʻa's own**, sampled straight from the brand logo:
+purple `#1a002d`, navy `#081659`, green `#006838`, tan `#c3996b`, red `#ec1c24`,
+cyan `#00adee`, amber `#faaf40`, lime `#8bc53f`. `--accent` is a lightened step
+off that purple chosen for contrast, not by eye: 8.2:1 on `--bg` and 8.5:1 under
+white button text. purplemaia.org pairs Montserrat headings with Inter body copy
+on a 16px radius, and this page follows it.
+
+**Logo files** live in `assets/` as four PNGs — `pm-mark` (header) and
+`pm-lockup` (footer), each with a `-white` variant for dark mode. The swap is
+pure CSS, so there is no JavaScript to keep in sync. They are downscaled from
+the full-size brand exports; regenerate them at a different size rather than
+scaling these up.
 
 Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 `<meta name="description">` at the top of `index.html`.
