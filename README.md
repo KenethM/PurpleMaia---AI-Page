@@ -304,6 +304,23 @@ pure CSS, so there is no JavaScript to keep in sync. They are downscaled from
 the full-size brand exports; regenerate them at a different size rather than
 scaling these up.
 
+**The ʻohe kāpala texture** in the side margins is `assets/stamp.png`, applied in
+`body::before` as a CSS *mask* rather than as a background image. That is what
+lets one file tint itself from `--accent` and follow the theme, instead of
+needing a light and a dark copy like the logos do.
+
+Two things about it that look like mistakes but are not. The PNG keeps a real
+alpha channel, which costs about 10KB over plain greyscale — but the default
+`mask-mode` is `alpha`, so this never has to rely on `mask-mode: luminance`,
+which Chrome only supported from v120 and which fails *loudly*: ignore it and
+the mask becomes a solid square. And `body` carries `position: relative;
+z-index: 0` purely so the texture can sit at `z-index: -1`, above the page
+background but under every bit of content.
+
+It is drawn only at ≥1240px, where there is actually margin to draw in, and is
+hidden in print. To move the stamps, edit the `mask-position` list; the vertical
+offsets are percentages so they redistribute themselves as the page grows.
+
 Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 `<meta name="description">` at the top of `index.html`.
 

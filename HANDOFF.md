@@ -19,9 +19,9 @@ who needs context before reading a diff, or you in three months. The git log say
 ## 2026-10-01 — Re-skinned to Purple Maiʻa's brand
 
 **Who:** Keneth, with Claude Code
-**State:** working tree only, not committed
+**State:** committed as `08c81ab`, merged to `main`, pushed, and verified live
 **Files:** `index.html`, `assets/styles.css`, `assets/favicon.svg`, `README.md`,
-plus four new PNGs in `assets/`
+plus five new PNGs in `assets/`
 
 ### Why
 
@@ -56,9 +56,29 @@ hue from `--viz-sure`, which did not need to move.
 **Real logo, not a stand-in.** The generic sparkle glyph in the header is gone,
 replaced by the Purple Maiʻa mark, and the footer carries the full lockup. Each
 ships in a colour and a white variant because the mark's deep purple cells
-disappear against a dark page; the swap is pure CSS. The source exports are
-2000px, which is absurd for a 32px header slot, so they were downscaled to
-3–8KB each. The favicon is now the mark's triangular lattice in brand purple.
+disappear against a dark page; the swap is pure CSS, so it follows the manual
+theme toggle and not just the OS setting. The source exports are 2000px, which is
+absurd for a 32px header slot, so they were downscaled to 3–8KB each. The favicon
+is now the mark's triangular lattice in brand purple.
+
+**ʻOhe kāpala texture in the margins.** The stamp motif from the deck now bleeds
+into the empty space either side of the 1180px column — five of them, 340–460px,
+scattered down both margins at percentage offsets so they distribute themselves
+however long the page gets. They are pushed mostly off-canvas so only an edge
+shows, which reads as texture rather than as clip art parked in the margin.
+
+Two decisions inside that worth keeping:
+
+- It ships as a **mask**, not a coloured image, so one file tints itself from
+  `--accent` and follows the theme. No light and dark copy to keep in sync.
+- The file keeps a **real alpha channel** even though that costs ~10KB. The
+  tempting version is plain greyscale with `mask-mode: luminance`, but Chrome
+  only supported `mask-mode` from v120, and when it is ignored you do not get a
+  subtle miss — you get a solid purple square in the margin.
+
+It only draws at ≥1240px, where there is margin to draw in, and is suppressed in
+print. `body` gained its own stacking context so the texture can sit at
+`z-index: -1`: above the background, below every bit of content.
 
 ### Checks
 
@@ -66,19 +86,36 @@ disappear against a dark page; the swap is pure CSS. The source exports are
 local asset reference in `index.html` and `styles.css` was walked and resolves.
 No stale hex from the old teal palette survives anywhere in the repo.
 
+Viewed rendered for the first time, on a local server — the first time this page
+has been looked at rather than only tested. After the push, all ten files were
+re-checked against the live Pages URL: every one returns 200, the deployed
+stylesheet carries the new palette and the renamed token, and zero old teal
+tokens survive in what is actually being served.
+
+### Also shipped in this push
+
+`9a8193d` went out alongside it. That is the boss-feedback work — placement quiz,
+Practice banded by module, module recaps — which had been sitting unmerged on the
+`boss-feedback` branch since that session. Both commits are now on `main`.
+
+The Kupuna and Community workshop copy was checked before pushing: it was already
+on `origin/main` from the earlier auto-sync incident, so this push exposed nothing
+new. `draft: true` still keeps both off the rendered page, and they stay
+unreachable until someone deletes that line.
+
 ### Open / next
 
-- **Still not viewed in a browser.** Everything here is verified by test and by
-  reading computed values; nobody has looked at the rendered page. Worth ten
-  minutes before this is shown to anyone.
 - The deck is still on the old teal styling. If the run-through on 10/6 is being
-  recorded, the slides and the page will not match.
+  recorded, the slides and the page will not match. Five days out.
 - `assets/social.png` is the old palette and will look wrong in link previews.
+- Not yet opened on a phone. The page is below the 1240px texture threshold
+  there, so the kāpala should correctly not appear — worth confirming.
+- The long-form handbook the boss asked for is still unbuilt, and is still the
+  biggest outstanding ask.
 - Deck items still Keneth's: learning-outcomes slide, in-deck checkpoints, the
   draft run-through before 10/6, and the recording plan.
 
 ---
-
 
 ## 2026-09-24 — Accuracy pass on the practice activities
 
