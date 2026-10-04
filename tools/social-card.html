@@ -1,0 +1,63 @@
+<!-- Source for assets/social.png (the og:image). Re-render after any rebrand
+     so link previews match the site. From the repo root:
+
+       chrome --headless --disable-gpu --disable-lcd-text --hide-scrollbars
+              --force-device-scale-factor=1 --window-size=1200,630
+              --virtual-time-budget=6000
+              --screenshot=assets/social.png tools/social-card.html
+
+     --disable-lcd-text is not optional: without it Windows renders text with
+     subpixel antialiasing and every letter picks up colour fringing in the PNG.
+
+     The kapala stamps are plain background layers here, not masks like they are
+     on the page. Chrome would not resolve a mask-image over file://, and the
+     stamp is white-on-transparent anyway, so it tints itself against the purple. -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  .card{
+    position:relative; width:1200px; height:630px; overflow:hidden;
+    background:#1a002d; color:#fff;
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+    padding:72px 80px; display:flex; flex-direction:column;
+  }
+  /* Same kāpala motif as the page, same masking trick. */
+  /* The stamp PNG is white-on-transparent, so it needs no mask here —
+     plain background layers tint themselves against the purple. */
+  .tex{
+    position:absolute; inset:0; opacity:.11;
+    background-image:url("../assets/stamp.png"),url("../assets/stamp.png"),url("../assets/stamp.png");
+    background-repeat:no-repeat;
+    background-size:520px,380px,300px;
+    background-position:right -90px top -120px, right 150px bottom -150px, left -110px bottom -60px;
+  }
+  .logo{position:relative; height:44px; width:auto; align-self:flex-start; margin-bottom:auto}
+  h1{
+    position:relative; font-family:'Montserrat',sans-serif; font-weight:700;
+    font-size:132px; line-height:1; letter-spacing:-.04em; margin:0 0 22px;
+  }
+  .sub{
+    position:relative; margin:0 0 30px; font-size:30px; font-weight:500;
+    letter-spacing:-.01em; color:#d9c9e8;
+  }
+  .strip{position:relative; display:flex; height:9px; width:360px; border-radius:99px; overflow:hidden; margin-bottom:26px}
+  .strip i{flex:1}
+  .foot{position:relative; margin:0; font-size:23px; font-weight:500; color:#b9a6c9}
+</style></head><body>
+<div class="card">
+  <div class="tex"></div>
+  <img class="logo" src="../assets/pm-lockup-white.png" alt="">
+  <h1>LLM/NLP 101</h1>
+  <p class="sub">Large Language Models · Natural Language Processing</p>
+  <!-- the logo's own eight colours, in logo order -->
+  <div class="strip">
+    <i style="background:#081659"></i><i style="background:#faaf40"></i>
+    <i style="background:#006838"></i><i style="background:#c3996b"></i>
+    <i style="background:#ec1c24"></i><i style="background:#3b2314"></i>
+    <i style="background:#8bc53f"></i><i style="background:#00adee"></i>
+  </div>
+  <p class="foot">A staff learning asset from Purple Maiʻa</p>
+</div></body></html>

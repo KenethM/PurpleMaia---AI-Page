@@ -1,0 +1,8 @@
+.git
+.github
+.nojekyll
+node_modules
+*.md
+Dockerfile
+.dockerignore
+tools

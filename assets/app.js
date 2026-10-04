@@ -331,18 +331,31 @@
     if (p && p.kind === 'youtube') return 'https://i.ytimg.com/vi/' + encodeURIComponent(p.ref) + '/hqdefault.jpg';
     return null;
   }
+  /* Every embed on the page is still an outside explainer standing in for a
+     Purple Maiʻa animation that has not been made yet. The notice is keyed to
+     the video *kind*, not to a flag someone has to remember to clear: the
+     in-house animations will arrive as `file:`, so the moment a lesson
+     switches over, its stand-in notice disappears on its own. */
+  var STANDIN_NOTE =
+    '<p class="video-standin">' +
+    '<strong>Standing in until ours is made.</strong> An outside explainer, ' +
+    'picked for this topic and for how well it has been received. Purple Maiʻa’s ' +
+    'own animation will replace it right here.</p>';
+
   function embedFor(v, title) {
     var p = parseVideo(v);
     if (!p) return '';
     if (p.kind === 'youtube') {
       return '<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/' +
         encodeURIComponent(p.ref) + '?autoplay=1&rel=0" title="' + esc(title) +
-        '" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>';
+        '" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
+        STANDIN_NOTE;
     }
     if (p.kind === 'vimeo') {
       return '<div class="video-frame"><iframe src="https://player.vimeo.com/video/' +
         encodeURIComponent(p.ref) + '?autoplay=1" title="' + esc(title) +
-        '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>';
+        '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>' +
+        STANDIN_NOTE;
     }
     if (p.kind === 'file') {
       return '<div class="video-frame"><video src="' + esc(p.ref) + '" controls autoplay playsinline></video></div>';
@@ -427,7 +440,10 @@
           '<span class="play">' + icon('play') + '</span>' +
           (thumb ? '' : '<span class="thumb-note">Video coming soon</span>') +
         '</span>' +
-        (l.duration ? '<span class="duration-badge">' + esc(l.duration) + '</span>' : '') +
+        /* No time on the thumbnail. `duration` is self-paced time for the whole
+           lesson, which in that corner reads as the video's runtime and is not
+           it; `videoLength` is the real runtime but the two clocks have not been
+           reconciled yet. Recorded in content.js, deliberately not shown. */
       '</button>' +
       '<div class="lesson-body">' +
         '<div class="lesson-tags">' +

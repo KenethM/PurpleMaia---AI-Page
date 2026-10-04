@@ -12,6 +12,11 @@ content.js          ← EVERYTHING YOU EDIT LIVES HERE
 assets/styles.css   colours, type, layout
 assets/app.js       rendering, filtering, search, progress, quizzes, activities
 assets/favicon.svg  the little icon in the browser tab
+assets/stamp.png    the ʻohe kāpala texture in the page margins (a CSS mask)
+assets/pm-*.png     Purple Maiʻa mark and lockup, each with a -white variant
+Dockerfile          Dokku deploy for sandbox.purplemaia.org (nginx, no build)
+deploy/nginx.conf   gzip, cache headers and try_files for that container
+tools/              source for assets/social.png — re-render after a rebrand
 .nojekyll           tells GitHub Pages to serve the files as-is
 HANDOFF.md          what changed each session, and what is still open
 ```
@@ -35,6 +40,31 @@ A minute later it is live at:
 `https://kenethm.github.io/PurpleMaia---AI-Page/`
 
 Every `git push` after that republishes automatically — usually within a minute.
+
+### It also runs on Purple Maiʻa's own box
+
+`sandbox.purplemaia.org` is a Dokku host, and **that URL is the canonical one** —
+every absolute reference on the page points at it. The Pages copy serves the same
+`index.html`, so it self-identifies as a duplicate of sandbox rather than
+competing with it in search. One file, correct on both hosts.
+
+Dokku auto-detects the `Dockerfile` and skips buildpacks. There is no build step
+to run — nginx just serves the repo, which is what GitHub Pages does too. On the
+server side it is:
+
+```
+dokku apps:create ai-page
+dokku domains:set ai-page sandbox.purplemaia.org
+git remote add dokku dokku@sandbox.purplemaia.org:ai-page   # then: git push dokku main
+```
+
+`.dockerignore` keeps `.git` and the internal Markdown out of the image, so
+`HANDOFF.md` is not sitting in a public web root. Build and check it locally
+before pushing anything:
+
+```
+docker build -t ai-page . && docker run --rm -p 8899:80 ai-page
+```
 
 > **A custom domain?** Settings → Pages → Custom domain, then add a `CNAME` file
 > here containing just the domain. Point a CNAME DNS record at
@@ -108,6 +138,33 @@ The `video` field takes a prefix:
 
 YouTube videos use `youtube-nocookie.com` and only load **after** someone clicks
 play, so no tracking scripts run for people who never watch. The page is fast either way.
+
+### Every video right now is a stand-in
+
+All 19 lessons carry an outside explainer, each picked for that specific topic
+and for how well it has been received, and each verified against live YouTube
+rather than recalled — a made-up video id on a page that teaches people about
+invented citations would be a bad joke. Purple Maiʻa's own animations replace
+them as they are produced.
+
+A notice saying so renders under every embed. **It is keyed to the video's kind,
+not to a flag anyone has to remember to clear.** The in-house animations arrive
+as `file:`, so the moment a lesson switches over, its stand-in notice disappears
+by itself. Swap the one field and you are done:
+
+```js
+video: "youtube:gV0_raKR2UQ",   // stand-in, notice shows
+video: "file:assets/bias.mp4",  // ours, notice gone
+```
+
+**`videoLength` is recorded but nothing renders it.** It is the real runtime,
+read off YouTube. It used to sit bottom-right of the thumbnail — except what was
+drawn there was `duration`, which is self-paced time for the *whole lesson*, in
+the one corner every viewer reads as the video's length. Two different clocks.
+They are still unreconciled: `duration` is documented below as including video
+time, and those values predate 16 of the 19 videos, so the per-lesson figures,
+the hero's self-paced total and the module table are all understated. Nothing on
+the cards shows a time until that is settled.
 
 **On MP4s:** GitHub warns above 50 MB per file and hard-blocks at 100 MB, and Pages
 serves a 1 GB site with a soft 100 GB/month bandwidth limit. For anything longer than
@@ -370,6 +427,14 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 and includes any video on the card, which is why Module 1 reads 25 min against a
 10-12 min live budget. The `agenda` tags carry the live run; you would not play
 the full Crash Course video during the session. Both numbers show in the hero.
+
+> ⚠️ **Those self-paced numbers are stale, and the table above with them.** They
+> were written when 3 lessons had a video. All 19 do now, and the stand-ins come
+> to 3h52m, so under the rule in this paragraph the true total is about 4h57m
+> rather than ~95 min. Nothing on the page displays a per-lesson time while this
+> is unsettled, but the hero's `facts` still carry the old figure. Decide first
+> whether a stand-in counts toward self-paced time at all — they are explicitly
+> labelled as not-ours — then recompute `duration`, `facts` and this table together.
 
 Adding a lesson means adding to `lessons` with one of those three `track` values.
 If you change the lesson count or durations, update the `facts` array in section 1

@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kenethm.github.io/PurpleMaia---AI-Page/sitemap.xml
+Sitemap: https://sandbox.purplemaia.org/sitemap.xml

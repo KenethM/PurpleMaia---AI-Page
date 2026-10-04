@@ -126,7 +126,7 @@ window.SITE = {
      what it needs. Nothing is ever hidden: `feature` reorders the lessons
      and flags a starting set, but all 19 stay reachable.
 
-     Share a pre-set link:  .../PurpleMaia---AI-Page/?for=partners
+     Share a pre-set link:  https://sandbox.purplemaia.org/?for=partners
      Overridable fields: badge, tagline, intro, date, time, location,
                          facts, pathways, agenda, featureLabel, feature.
      Use "" (empty string) to blank a field out rather than inherit it.
@@ -330,6 +330,14 @@ window.SITE = {
              "vimeo:123456789"       -> Vimeo
              "file:assets/clip.mp4"  -> a video file committed to the repo
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
+     videoLength: the embedded video's real runtime, read off YouTube rather
+             than estimated. Nothing renders it today. It used to sit bottom-right
+             of the thumbnail, but `duration` was what was being drawn there —
+             self-paced time for the whole lesson, in the one corner every viewer
+             reads as the video's length. Two different clocks, and they have not
+             been reconciled since the stand-in videos landed: `duration` is
+             documented as including video time, and those values predate 16 of
+             the 19 videos. Fix the clocks, then decide what the card shows.
   --------------------------------------------------------------- */
   lessons: [
 
@@ -342,6 +350,7 @@ window.SITE = {
       duration: "20 min",
       summary: "Five words people use interchangeably that are not interchangeable. They nest inside each other.",
       video: "youtube:oi0JXuL19TA",
+      videoLength: "13:29",
       slides: "",
       takeaways: [
         "AI is the umbrella term. Machine learning is a way of building AI: systems learn patterns from data instead of being programmed rule by rule.",
@@ -360,7 +369,8 @@ window.SITE = {
       level: "Module 1",
       duration: "5 min",
       summary: "You already use all three. Naming which is which is most of the literacy.",
-      video: "",
+      video: "youtube:oJC8VIDSx_Q",
+      videoLength: "3:23",
       takeaways: [
         "NLP: live captions and transcription, translation tools, grammar and spell-check, voice-to-text.",
         "Generative AI: social graphics, first-draft copy, meeting summaries, curriculum brainstorming.",
@@ -382,6 +392,7 @@ window.SITE = {
       duration: "13 min",
       summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
       video: "youtube:NKnZYvZA7w4",
+      videoLength: "9:24",
       takeaways: [
         "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
@@ -399,7 +410,8 @@ window.SITE = {
       level: "Module 2 · Pre-training",
       duration: "4 min",
       summary: "The massive body of text a model reads. The single most important idea in this module.",
-      video: "",
+      video: "youtube:-4Oso9-9KTQ",
+      videoLength: "27:39",
       takeaways: [
         "Websites, books, articles and code. It is the source of both what the model knows and what it does not.",
         "If something is underrepresented in training data — ʻōlelo Hawaiʻi, for example — the model will be weaker on it.",
@@ -418,6 +430,7 @@ window.SITE = {
       duration: "11 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
       video: "youtube:LPZh9BOjkQs",
+      videoLength: "7:58",
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
         "Change the parameters and you change those probabilities for the same input.",
@@ -434,7 +447,8 @@ window.SITE = {
       level: "Module 2",
       duration: "2 min",
       summary: "The one distinction that clears up most confusion about whether it is \"learning from you\".",
-      video: "",
+      video: "youtube:XtT5i0ZeHHE",
+      videoLength: "10:41",
       takeaways: [
         "Pre-training happens once, up front. The model reads enormous amounts of text and adjusts its parameters.",
         "Inference is every time you send a message. The model applies what it already learned.",
@@ -453,7 +467,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "The model does not see words. It sees numbered chunks.",
-      video: "",
+      video: "youtube:-0HRzXk8vlk",
+      videoLength: "25:22",
       takeaways: [
         "Text is chopped into tokens, and every token gets a number — a token ID.",
         "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
@@ -470,7 +485,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "Turning tokens into coordinates in a space where distance means similarity of meaning.",
-      video: "",
+      video: "youtube:viZrOnJclY0",
+      videoLength: "16:11",
       takeaways: [
         "Each token becomes a vector — a position in a \"meaning space\".",
         "Words used in similar ways land close together. \"King\" sits near \"queen\".",
@@ -487,7 +503,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "For every token, the model decides which other tokens matter most.",
-      video: "",
+      video: "youtube:wjZofJX0v4M",
+      videoLength: "27:14",
       takeaways: [
         "Attention is the model weighting the relationships between tokens — some links are strong, some barely matter.",
         "In \"The honu swam toward the ocean\", honu and swam are a strong link; the second \"the\" barely matters.",
@@ -506,7 +523,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "The heart of it. Given everything so far, guess the single most likely next token — then do it again.",
-      video: "",
+      video: "youtube:5sLYAQS9sWQ",
+      videoLength: "5:33",
       takeaways: [
         "The output is a ranked list of probabilities, not an answer: ocean 45%, shore 20%, reef 15%, current 12%, sky 8%.",
         "It is optimizing for \"plausible next token\", never for \"true statement\". That is where hallucination comes from.",
@@ -523,7 +541,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "2 min",
       summary: "Why asking the same question twice gives you two different answers — and why that is normal.",
-      video: "",
+      video: "youtube:MkaazQttbpc",
+      videoLength: "14:51",
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
@@ -542,7 +561,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "2 min",
       summary: "How much the model can hold in view at once — and what happens when you go past it.",
-      video: "",
+      video: "youtube:-QVoIxEpFkM",
+      videoLength: "11:30",
       takeaways: [
         "The window covers your prompt, the conversation so far, and any documents you have shared.",
         "Once something falls outside the window, the model cannot see it at all.",
@@ -561,7 +581,8 @@ window.SITE = {
       level: "Module 3",
       duration: "4 min",
       summary: "The most immediately useful thing in this whole session. Treat it like a capable new hire.",
-      video: "",
+      video: "youtube:jC4v5AS4RIM",
+      videoLength: "8:30",
       takeaways: [
         "It has vast general knowledge and knows nothing about your specific situation. Be explicit about audience, format and tone.",
         "Hand it the source material. Do not expect it to already know your program, your people or your numbers.",
@@ -579,7 +600,8 @@ window.SITE = {
       level: "Module 3",
       duration: "3 min",
       summary: "Fluent, confident, and simply wrong. Straight back to next-token prediction.",
-      video: "",
+      video: "youtube:005JLRt3gXI",
+      videoLength: "5:13",
       takeaways: [
         "It is built to predict the next plausible word, not to verify truth. Invented citations, wrong dates, quotes nobody said.",
         "Ask for the exact page number of a quote and it may hand you a specific-sounding page and citation that does not exist.",
@@ -596,7 +618,8 @@ window.SITE = {
       level: "Module 3",
       duration: "3 min",
       summary: "Pairing the model with real, retrievable sources — and checking what comes back.",
-      video: "",
+      video: "youtube:T-D1OfcDW1M",
+      videoLength: "6:35",
       takeaways: [
         "Cross-check anything presented as fact. Numbers, quotes and names are the highest-risk items.",
         "Treat AI output as a draft, not a finished fact.",
@@ -613,7 +636,8 @@ window.SITE = {
       level: "Module 3",
       duration: "7 min",
       summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
-      video: "",
+      video: "youtube:gV0_raKR2UQ",
+      videoLength: "11:20",
       takeaways: [
         "Training data reflects the internet's existing skews: whose voices, languages and stories are well represented, and whose are not.",
         "A model can reproduce and amplify those gaps rather than flag them.",
@@ -633,7 +657,8 @@ window.SITE = {
       level: "Module 3",
       duration: "2 min",
       summary: "A corrective to the instinct that \"it showed its work, so it must be right\".",
-      video: "",
+      video: "youtube:enLbj0igyx4",
+      videoLength: "8:37",
       takeaways: [
         "When a model shows step-by-step reasoning, it is still generating plausible-sounding text, one step at a time.",
         "Visible steps are not proof of correctness, and they are not human reasoning or understanding.",
@@ -650,7 +675,8 @@ window.SITE = {
       level: "Module 3",
       duration: "3 min",
       summary: "The clearest, most actionable takeaway of the entire session.",
-      video: "",
+      video: "youtube:9iS-YYLIXiw",
+      videoLength: "10:44",
       takeaways: [
         "AI drafts, explores and accelerates. A person stays responsible for what actually goes out the door.",
         "That goes double for anything public-facing, and anything touching culture or community.",
@@ -667,7 +693,8 @@ window.SITE = {
       level: "Module 3",
       duration: "2 min",
       summary: "Just enough to follow a conversation without getting lost. Not benchmark comparison.",
-      video: "",
+      video: "youtube:KrV6ldHymwQ",
+      videoLength: "7:15",
       takeaways: [
         "Different companies build different models: ChatGPT from OpenAI, Claude from Anthropic, Gemini from Google.",
         "A \"family\" is versions of the same model line released over time — GPT-4 and GPT-5, the way iPhone 15 and iPhone 16 are versions.",
@@ -1407,7 +1434,7 @@ window.SITE = {
     { q: "Are the quizzes graded, and does anyone see my score?",
       a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere." },
     { q: "Where are the Purple Maiʻa videos?",
-      a: "Being animated from these scripts now. Lessons without one yet say so on the card, and the video appears in place as each one lands. The outside videos already embedded are credited under Downloads & links." },
+      a: "Being animated from these scripts now. In the meantime every lesson carries a stand-in — an outside explainer chosen for that specific topic and for how well it has been received, labelled as a stand-in under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
       a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
   ],
@@ -1451,7 +1478,7 @@ window.SITE = {
          video: "file:assets/<name>.mp4" — the placeholder disappears on its own. */
       group: "Purple Maiʻa originals",
       items: [
-        { label: "Short-form animations — in production", url: "#lessons", desc: "Animated from the LLM/NLP 101 scripts. Lessons without a video yet are marked on the card." },
+        { label: "Short-form animations — in production", url: "#lessons", desc: "Animated from the LLM/NLP 101 scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
         { label: "Scripts these are built from", url: "#lessons", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
       ]
     },

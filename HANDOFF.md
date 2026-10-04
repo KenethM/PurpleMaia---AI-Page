@@ -16,6 +16,104 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-04 — Dokku target, a video on every lesson, new social card
+
+**Who:** Keneth, with Claude Code
+**State:** committed and pushed to `main`
+**Files:** `content.js`, `assets/app.js`, `assets/styles.css`, `assets/social.png`,
+`index.html`, `sitemap.xml`, `robots.txt`, `README.md`, plus new `Dockerfile`,
+`deploy/nginx.conf`, `.dockerignore`, `tools/social-card.html`
+
+### Why
+
+David offered a Dokku app on `sandbox.purplemaia.org`. Separately: every lesson
+card needed a video that actually matches its topic, and `social.png` was still
+the old teal and had started showing up against a purple site in link previews.
+
+### What changed
+
+**A Dokku deploy that is three files and no build step.** `Dockerfile` puts
+nginx in front of the repo — which is what GitHub Pages does — so Dokku skips
+buildpacks entirely. It was built and run locally rather than hoped at: every
+asset serves including the 11MB PDF, gzip takes the stylesheet from 57.7KB to
+16.2KB, and `README.md` / `HANDOFF.md` / `VIDEO-SCRIPTS.md` correctly 404,
+which matters because this file has candid notes in it.
+
+**sandbox.purplemaia.org is now the canonical URL.** The page had 12 hardcoded
+GitHub Pages URLs — canonical, og:url, og:image, twitter:image, four JSON-LD
+fields, sitemap, robots. Assets were all relative so the page rendered anywhere,
+but that metadata was pinned: deployed as-is, the canonical tag would have told
+Google the Pages copy was the real one and sandbox would never have indexed.
+Both hosts serve the same `index.html`, so the Pages copy now self-identifies as
+a duplicate of sandbox. One file, correct on both, nothing to keep in sync.
+
+**All 19 lessons carry a video; 3 did before.** Each was picked for its specific
+topic and for how well it has been received, and **every id was verified against
+live YouTube** rather than recalled — a fabricated video id on the page that
+teaches people about invented citations would have been indefensible. Highlights:
+3Blue1Brown's transformers chapter (11.3M) on Transformers, Jeff Su's prompt
+formula (3.8M) on Prompts, IBM's RAG explainer (2.0M) on Grounding, Anthropic's
+own hallucination video on Hallucinations. No video is reused across lessons.
+
+Two picks are deliberate deviations. Tokenization takes a 25-minute Computerphile
+piece over shorter options because "why tokens are expensive" lands the ʻōlelo
+Hawaiʻi token-cost argument directly. Sampling is the weak one at 30K views —
+a genuinely niche topic with no popular treatment, so precision beat reach.
+
+**The stand-in notice is keyed to the video's kind, not to a flag.** In-house
+animations arrive as `file:`, so the moment a lesson switches over its notice
+disappears on its own. Nobody has to remember to clear anything. Tested
+explicitly by swapping a lesson to `file:` and asserting the notice is gone.
+
+**New `social.png`**, rendered in headless Chrome so it uses the real Montserrat
+and Inter and the actual logo: brand purple, kāpala corners matching the deck,
+the logo's own eight colours as a strip. Source kept at `tools/social-card.html`
+with the regenerate command in a comment, including the one gotcha —
+`--disable-lcd-text`, without which Windows subpixel-antialiases the text and
+every letter picks up colour fringing in the PNG.
+
+### The regression this surfaced
+
+Adding 16 videos broke the thumbnail badge, and the cause is not what it looks
+like. The badge was never showing a wrong video length — it was showing
+`duration`, which this repo documents as self-paced time *for the whole lesson,
+including its video*. A real number, drawn in the one corner of a video
+thumbnail that every viewer reads as runtime. Survivable at 3 videos.
+At 19 it meant `m2-tokenization` claiming "3 min" over a 25-minute video.
+
+Keneth's call was to take the time off the thumbnail for now, so there is no time
+figure on the lesson cards at all. A self-paced tag added mid-fix was pulled back
+out — it only relocated a number we had just agreed is stale. `duration` still
+shows inside the dialog, where it reads as lesson time.
+
+`videoLength` is now recorded on all 19 — real runtimes, read off YouTube.
+Nothing renders it. The schema comment in `content.js` explains the field, that
+it is deliberately unused, and why the two clocks are unreconciled.
+
+### Checks
+
+175 assertions across four suites, no failures. The two new suites cover video
+coverage, the kind-keyed notice, and that no time renders on a card.
+
+### Open / next
+
+- **The self-paced clocks are still wrong and this is the biggest live issue.**
+  `duration`, the hero's "~95 min" and the README module table were written when
+  3 lessons had video. True total is ~4h57m under the documented rule. Decide
+  first whether a stand-in counts toward self-paced time — they are explicitly
+  labelled as not-ours — then recompute `duration`, `facts` and the table
+  together. The README carries a warning at that table.
+- `ai.purplemaia.org` instead of `sandbox` — Keneth is asking David Monday. If
+  it moves, the 12 absolute references move with it.
+- David still has to create the Dokku app before anything can be pushed to it.
+- The deck is still teal. The 10/6 run-through is two days out, and if it is
+  recorded the slides and the site will not match.
+- Deck items still Keneth's: learning-outcomes slide, in-deck checkpoints, the
+  run-through, the recording plan.
+- The long-form handbook the boss asked for is still unbuilt.
+
+---
+
 ## 2026-10-01 — Re-skinned to Purple Maiʻa's brand
 
 **Who:** Keneth, with Claude Code
