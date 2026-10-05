@@ -1488,7 +1488,7 @@ window.SITE = {
         { label: "Fork this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page/fork", desc: "Run the same session for your own group." },
         /* A PDF in the repo rather than a hosted deck link on purpose: no sign-in
            wall for people outside the org, and it survives being forked. */
-        { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 25 slides, as presented. 11 MB." },
+        { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 35 slides, as presented. 15 MB." },
         { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." },
         /* Regenerate with tools/make-qr.js if the canonical URL ever moves. A QR
            is the one asset that cannot be redirected once it is on a printed slide. */

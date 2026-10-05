@@ -1,2 +1,7 @@
 node_modules/
 tools/node_modules/
+
+# Working drafts: the video scripts and the white paper source.
+# Kept local on purpose, not published to GitHub or the web root.
+VIDEO-SCRIPTS.md
+WHITEPAPER.md

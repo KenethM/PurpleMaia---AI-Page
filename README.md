@@ -451,7 +451,7 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] Walk the live audience versions before sending a link out — `?for=partners` and the default.
 - [ ] **Cultural review of the two held-back versions** — Community workshop and Kupuna outreach are written and tested but carry `draft: true`, so nothing on the live site can reach them. Once someone who runs those rooms has read the copy, delete that one line per audience.
 - [x] Every `url: "#"` replaced; all 19 lessons carry resources.
-- [x] **The deck is in** — `assets/llm-nlp-101.pdf`, 25 slides, 11 MB, linked from "For facilitators".
+- [x] **The deck is in** — `assets/llm-nlp-101.pdf`, 35 slides, 15 MB, linked from "For facilitators".
 - [ ] Three text fixes in the deck itself, in Canva, then re-export over the same filename (see `HANDOFF.md`). Nothing in the repo changes.
 
 ### Content structure
