@@ -14,7 +14,7 @@ assets/app.js       rendering, filtering, search, progress, quizzes, activities
 assets/favicon.svg  the little icon in the browser tab
 assets/stamp.png    the ʻohe kāpala texture in the page margins (a CSS mask)
 assets/pm-*.png     Purple Maiʻa mark and lockup, each with a -white variant
-Dockerfile          Dokku deploy for sandbox.purplemaia.org (nginx, no build)
+Dockerfile          Dokku deploy — nginx, no build step (see section 1)
 deploy/nginx.conf   gzip, cache headers and try_files for that container
 tools/              source for assets/social.png — re-render after a rebrand
 .nojekyll           tells GitHub Pages to serve the files as-is
@@ -43,19 +43,38 @@ Every `git push` after that republishes automatically — usually within a minut
 
 ### It also runs on Purple Maiʻa's own box
 
-`sandbox.purplemaia.org` is a Dokku host, and **that URL is the canonical one** —
-every absolute reference on the page points at it. The Pages copy serves the same
-`index.html`, so it self-identifies as a duplicate of sandbox rather than
-competing with it in search. One file, correct on both hosts.
-
-Dokku auto-detects the `Dockerfile` and skips buildpacks. There is no build step
-to run — nginx just serves the repo, which is what GitHub Pages does too. On the
-server side it is:
+`dokku-pmf-sandbox.westus2.cloudapp.azure.com` is the PMF Dokku VM. You do not
+run a local `dokku` binary — every command is an ssh call to that host, and your
+public key has to be on it first (ask David or Jaden). Check you are already on:
 
 ```
-dokku apps:create ai-page
-dokku domains:set ai-page sandbox.purplemaia.org
-git remote add dokku dokku@sandbox.purplemaia.org:ai-page   # then: git push dokku main
+ssh dokku@dokku-pmf-sandbox.westus2.cloudapp.azure.com apps:list
+```
+
+Dokku's global domain is `sandbox.purplemaia.org` and `*.sandbox.purplemaia.org`
+is a wildcard pointing straight at the VM, so **an app is reachable the moment it
+is created — no DNS request needed.** An app called `ai-page` answers on
+`ai-page.sandbox.purplemaia.org`, and **that is the canonical URL** — every
+absolute reference on the page points at it. The Pages copy serves the same
+`index.html`, so it self-identifies as a duplicate rather than competing in
+search. One file, correct on both hosts.
+
+A bare `purplemaia.org` subdomain is a separate, manual DNS record; `bill-tracker`
+has one alongside its sandbox vhost. That is the route to something like
+`ai.purplemaia.org`, and it needs David.
+
+Dokku auto-detects the `Dockerfile` and skips buildpacks. There is no build step —
+nginx just serves the repo, which is what GitHub Pages does too.
+
+```
+H=dokku@dokku-pmf-sandbox.westus2.cloudapp.azure.com
+
+ssh $H apps:create ai-page
+git remote add dokku $H:ai-page
+git push dokku main
+
+ssh $H letsencrypt:enable ai-page      # HTTPS once it is answering
+ssh $H domains:add ai-page ai.purplemaia.org   # later, after David adds the DNS
 ```
 
 `.dockerignore` keeps `.git` and the internal Markdown out of the image, so

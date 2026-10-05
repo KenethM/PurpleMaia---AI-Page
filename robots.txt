@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sandbox.purplemaia.org/sitemap.xml
+Sitemap: https://ai-page.sandbox.purplemaia.org/sitemap.xml

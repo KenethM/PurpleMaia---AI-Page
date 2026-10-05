@@ -126,7 +126,7 @@ window.SITE = {
      what it needs. Nothing is ever hidden: `feature` reorders the lessons
      and flags a starting set, but all 19 stay reachable.
 
-     Share a pre-set link:  https://sandbox.purplemaia.org/?for=partners
+     Share a pre-set link:  https://ai-page.sandbox.purplemaia.org/?for=partners
      Overridable fields: badge, tagline, intro, date, time, location,
                          facts, pathways, agenda, featureLabel, feature.
      Use "" (empty string) to blank a field out rather than inherit it.
