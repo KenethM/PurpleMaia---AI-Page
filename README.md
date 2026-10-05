@@ -16,7 +16,8 @@ assets/stamp.png    the ʻohe kāpala texture in the page margins (a CSS mask)
 assets/pm-*.png     Purple Maiʻa mark and lockup, each with a -white variant
 Dockerfile          Dokku deploy — nginx, no build step (see section 1)
 deploy/nginx.conf   gzip, cache headers and try_files for that container
-tools/              source for assets/social.png — re-render after a rebrand
+tools/              generators: social card, QR code — re-run after a rebrand
+assets/qr*.png|svg  QR to this page, plain and as a projectable slide
 .nojekyll           tells GitHub Pages to serve the files as-is
 HANDOFF.md          what changed each session, and what is still open
 ```
@@ -88,6 +89,27 @@ docker build -t ai-page . && docker run --rm -p 8899:80 ai-page
 > **A custom domain?** Settings → Pages → Custom domain, then add a `CNAME` file
 > here containing just the domain. Point a CNAME DNS record at
 > `kenethm.github.io` and tick "Enforce HTTPS" once the certificate is issued.
+
+### The QR code
+
+`assets/qr-slide.png` is a 16:9 card to drop straight into the deck — people
+scan it and open this page on their own phone. `assets/qr.png` is the code alone
+with the mark in the middle, and `assets/qr.svg` is plain vector for print at any
+size. All three are listed under Downloads on the page itself.
+
+They encode the canonical URL, so **they have to be regenerated if that URL ever
+moves** — a QR is the one asset that cannot be redirected once it is printed on
+something. Change `SITE_URL` in `tools/make-qr.js` and re-run it; it prints the
+two Chrome commands for the PNGs.
+
+Error correction is level H, 30% recoverable, which is what buys room for the
+logo in the middle without breaking the read. **Always rescan after changing
+anything** — `tools/check-qr.js` round-trips the PNGs back to text and fails
+loudly if a code has stopped being readable:
+
+```
+node tools/check-qr.js assets/qr.png assets/qr-slide.png
+```
 
 ### Being findable
 

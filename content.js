@@ -1489,7 +1489,10 @@ window.SITE = {
         /* A PDF in the repo rather than a hosted deck link on purpose: no sign-in
            wall for people outside the org, and it survives being forked. */
         { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 25 slides, as presented. 11 MB." },
-        { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." }
+        { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." },
+        /* Regenerate with tools/make-qr.js if the canonical URL ever moves. A QR
+           is the one asset that cannot be redirected once it is on a printed slide. */
+        { label: "QR code for this page", url: "assets/qr-slide.png", desc: "A slide to project — people scan it and open this page on their own phone." }
       ]
     }
   ],

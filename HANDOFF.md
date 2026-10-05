@@ -16,61 +16,90 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
-## 2026-10-04 — Dokku target, a video on every lesson, new social card
+## 2026-10-04 — Live on Purple Maiʻa's own box, a video on every lesson, QR
 
 **Who:** Keneth, with Claude Code
-**State:** committed and pushed to `main`
+**State:** pushed to `main` and deployed. Live at
+`https://ai-page.sandbox.purplemaia.org/` with HTTPS, and mirrored on Pages.
+**Commits:** `f159181`, `9f06e71`, and this one
 **Files:** `content.js`, `assets/app.js`, `assets/styles.css`, `assets/social.png`,
-`index.html`, `sitemap.xml`, `robots.txt`, `README.md`, plus new `Dockerfile`,
-`deploy/nginx.conf`, `.dockerignore`, `tools/social-card.html`
+`assets/qr*`, `index.html`, `sitemap.xml`, `robots.txt`, `README.md`, new
+`Dockerfile`, `deploy/nginx.conf`, `.dockerignore`, `.gitignore`, `tools/`
 
 ### Why
 
-David offered a Dokku app on `sandbox.purplemaia.org`. Separately: every lesson
-card needed a video that actually matches its topic, and `social.png` was still
-the old teal and had started showing up against a purple site in link previews.
+David offered a Dokku app on the PMF sandbox VM. Separately: every lesson card
+needed a video that actually matches its topic, `social.png` was still teal
+against a purple site, and the 10/6 session needs a way to get people onto the
+page from a room.
 
-### What changed
+### It is deployed
 
-**A Dokku deploy that is three files and no build step.** `Dockerfile` puts
-nginx in front of the repo — which is what GitHub Pages does — so Dokku skips
-buildpacks entirely. It was built and run locally rather than hoped at: every
-asset serves including the 11MB PDF, gzip takes the stylesheet from 57.7KB to
-16.2KB, and `README.md` / `HANDOFF.md` / `VIDEO-SCRIPTS.md` correctly 404,
-which matters because this file has candid notes in it.
+`ai-page` on `dokku-pmf-sandbox.westus2.cloudapp.azure.com`, HTTPS via
+Let's Encrypt, HTTP 301s to it, HSTS on. Everything serves including the 11MB
+PDF, and `README.md` / `HANDOFF.md` / `VIDEO-SCRIPTS.md` 404 — which matters,
+because this file has candid notes in it and should not sit in a public web
+root. `Dockerfile` puts nginx in front of the repo, so Dokku skips buildpacks
+and there is no build step. It was built and run locally before being pushed.
 
-**sandbox.purplemaia.org is now the canonical URL.** The page had 12 hardcoded
-GitHub Pages URLs — canonical, og:url, og:image, twitter:image, four JSON-LD
-fields, sitemap, robots. Assets were all relative so the page rendered anywhere,
-but that metadata was pinned: deployed as-is, the canonical tag would have told
-Google the Pages copy was the real one and sandbox would never have indexed.
-Both hosts serve the same `index.html`, so the Pages copy now self-identifies as
-a duplicate of sandbox. One file, correct on both, nothing to keep in sync.
+Two things that made it easier than the doc suggests. **Keneth's SSH key was
+already authorized** — `apps:list` answered immediately, so nothing was ever
+blocked on David. And **`*.sandbox.purplemaia.org` is a wildcard** pointing
+straight at the VM, so an app is reachable the moment it is created and no DNS
+request is needed.
 
-**All 19 lessons carry a video; 3 did before.** Each was picked for its specific
-topic and for how well it has been received, and **every id was verified against
-live YouTube** rather than recalled — a fabricated video id on the page that
-teaches people about invented citations would have been indefensible. Highlights:
-3Blue1Brown's transformers chapter (11.3M) on Transformers, Jeff Su's prompt
-formula (3.8M) on Prompts, IBM's RAG explainer (2.0M) on Grounding, Anthropic's
-own hallucination video on Hallucinations. No video is reused across lessons.
+### The canonical URL was wrong, twice
 
-Two picks are deliberate deviations. Tokenization takes a 25-minute Computerphile
-piece over shorter options because "why tokens are expensive" lands the ʻōlelo
-Hawaiʻi token-cost argument directly. Sampling is the weak one at 30K views —
-a genuinely niche topic with no popular treatment, so precision beat reach.
+Worth reading before touching those references again.
+
+The first pass pointed all 12 at `https://sandbox.purplemaia.org/`. That is
+Dokku's **global domain** — its default vhost, the bare nginx welcome page. Apps
+answer one level down. So every absolute reference on the page was aimed at
+something that is not this site, and the og:image 404'd, which broke link
+previews for a day.
+
+They now point at `https://ai-page.sandbox.purplemaia.org/`, verified inside a
+built container before deploying rather than after. Both hosts serve the same
+`index.html`, so the Pages copy self-identifies as a duplicate rather than
+competing in search. One file, correct on both.
+
+The lesson for next time: a bare `purplemaia.org` subdomain is a separate,
+manual DNS record. `bill-tracker` has one alongside its sandbox vhost. That is
+the route to `ai.purplemaia.org`, and it is the only remaining flip.
+
+### A verified video on every lesson
+
+All 19 carry one; 3 did before. Each was picked for its specific topic and for
+how well it has been received, and **every id was checked against live YouTube**
+rather than recalled — a fabricated video id on the page that teaches people
+about invented citations would have been indefensible. 3Blue1Brown's transformers
+chapter (11.3M) on Transformers, Jeff Su's prompt formula (3.8M) on Prompts,
+IBM's RAG explainer (2.0M) on Grounding, Anthropic's own on Hallucinations. No
+video is reused.
+
+Two deliberate deviations from pure view count. Tokenization takes a 25-minute
+Computerphile piece because "why tokens are expensive" lands the ʻōlelo Hawaiʻi
+token-cost argument directly. Sampling is the weak one at 30K views — a genuinely
+niche topic with no popular treatment, so precision beat reach.
 
 **The stand-in notice is keyed to the video's kind, not to a flag.** In-house
-animations arrive as `file:`, so the moment a lesson switches over its notice
-disappears on its own. Nobody has to remember to clear anything. Tested
-explicitly by swapping a lesson to `file:` and asserting the notice is gone.
+animations arrive as `file:`, so a lesson's notice disappears by itself the
+moment it switches over. Tested by swapping a lesson to `file:` and asserting
+the notice is gone.
 
-**New `social.png`**, rendered in headless Chrome so it uses the real Montserrat
-and Inter and the actual logo: brand purple, kāpala corners matching the deck,
-the logo's own eight colours as a strip. Source kept at `tools/social-card.html`
-with the regenerate command in a comment, including the one gotcha —
-`--disable-lcd-text`, without which Windows subpixel-antialiases the text and
-every letter picks up colour fringing in the PNG.
+### Social card and QR
+
+`social.png` rebuilt in headless Chrome so it uses the real Montserrat and Inter
+and the actual logo. `assets/qr-slide.png` is a 16:9 card for the deck,
+`qr.png` the code alone with the mark in it, `qr.svg` plain vector for print.
+Both generators live in `tools/` with their Chrome commands recorded.
+
+Two gotchas kept there so nobody rediscovers them: `--disable-lcd-text`, without
+which Windows subpixel-antialiases the text and every letter picks up colour
+fringing in the PNG; and QR error correction level H, 30% recoverable, which is
+what buys room for the logo in the middle. **Every code is decoded back to text
+before it ships** — `tools/check-qr.js` round-trips the PNGs and fails loudly if
+one has stopped being readable.
 
 ### The regression this surfaced
 
@@ -78,22 +107,19 @@ Adding 16 videos broke the thumbnail badge, and the cause is not what it looks
 like. The badge was never showing a wrong video length — it was showing
 `duration`, which this repo documents as self-paced time *for the whole lesson,
 including its video*. A real number, drawn in the one corner of a video
-thumbnail that every viewer reads as runtime. Survivable at 3 videos.
-At 19 it meant `m2-tokenization` claiming "3 min" over a 25-minute video.
+thumbnail that every viewer reads as runtime. Survivable at 3 videos. At 19 it
+meant `m2-tokenization` claiming "3 min" over a 25-minute video.
 
-Keneth's call was to take the time off the thumbnail for now, so there is no time
-figure on the lesson cards at all. A self-paced tag added mid-fix was pulled back
-out — it only relocated a number we had just agreed is stale. `duration` still
-shows inside the dialog, where it reads as lesson time.
-
-`videoLength` is now recorded on all 19 — real runtimes, read off YouTube.
-Nothing renders it. The schema comment in `content.js` explains the field, that
-it is deliberately unused, and why the two clocks are unreconciled.
+Keneth's call was to take the time off the thumbnail for now, so no lesson card
+shows a time at all. A self-paced tag added mid-fix was pulled back out — it only
+relocated a number we had just agreed is stale. `videoLength` is now recorded on
+all 19 as the real runtime; nothing renders it, and the schema comment in
+`content.js` says so and says why.
 
 ### Checks
 
-175 assertions across four suites, no failures. The two new suites cover video
-coverage, the kind-keyed notice, and that no time renders on a card.
+175 assertions across four suites, no failures. Both QR PNGs rescan to the right
+URL. The deployed container was checked asset by asset over HTTPS.
 
 ### Open / next
 
@@ -103,9 +129,10 @@ coverage, the kind-keyed notice, and that no time renders on a card.
   first whether a stand-in counts toward self-paced time — they are explicitly
   labelled as not-ours — then recompute `duration`, `facts` and the table
   together. The README carries a warning at that table.
-- `ai.purplemaia.org` instead of `sandbox` — Keneth is asking David Monday. If
-  it moves, the 12 absolute references move with it.
-- David still has to create the Dokku app before anything can be pushed to it.
+- **`ai.purplemaia.org` needs a DNS record from David** — Keneth is asking
+  Monday. It is the last canonical flip, and it means regenerating the QR codes,
+  which is why nothing should be *printed* until the domain is settled.
+  Projecting the slide is safe; handouts are not.
 - The deck is still teal. The 10/6 run-through is two days out, and if it is
   recorded the slides and the site will not match.
 - Deck items still Keneth's: learning-outcomes slide, in-deck checkpoints, the
