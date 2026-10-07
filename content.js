@@ -21,8 +21,15 @@ window.SITE = {
     name: "LLM/NLP 101",
     shortName: "LLM/NLP 101",
     tagline: "What an LLM actually is, how it generates a response, and where it falls short — at a 101 level, for the whole team.",
-    date: "Tuesday, October 6, 2026",
-    time: "First Tuesday session",
+    /* `date` and `time` are deliberately empty. They used to carry
+       "Tuesday, October 6, 2026" and "First Tuesday session", which was right
+       up until the session happened and then started telling every new reader
+       about a date in the past. The hero drops any of these three that is
+       blank, so there is no stray separator left behind.
+       Fill them in again when the next session is booked, and remember the
+       CourseInstance in index.html, which is the machine-readable copy. */
+    date: "",
+    time: "",
     location: "Purple Maiʻa all-staff",
     badge: "Staff learning asset",
     intro:
@@ -1344,7 +1351,24 @@ window.SITE = {
   ],
 
   /* ---------- 8. RUN OF SHOW ----------
-     Times are minutes from the start of the session, not clock times. */
+     Times are minutes from the start of the session, not clock times.
+
+     `agendaHidden` takes the whole section off the page without deleting a
+     word of it. The nav link, the hero's second button and the search
+     entries all follow the flag, so nothing is left pointing at a section
+     that is not on the page.
+
+     Everything below, and the three per-audience versions in section 3,
+     stay exactly as written. The October 6 2026 session has happened and a
+     run of show is no use to somebody reading afterwards, but it is the
+     first thing you want back when the next one is booked. Set this to
+     false and the section returns, timings intact.
+
+     While it is hidden the hero's second button needs somewhere else to
+     go, which is what `ctaSecondaryAlt` is for. */
+  agendaHidden: true,
+  ctaSecondaryAlt: { label: "Try the practice activities", href: "#practice" },
+
   agenda: [
     { time: "0:00", title: "Why we are doing this",       detail: "Our AI footprint is growing and we all end up speaking about it publicly. This is the shared baseline.", tag: "All" },
     { time: "0:03", title: "Module 1 — Overview",         detail: "AI, ML, NLP, generative AI and LLMs, and where each already shows up in your day.", tag: "10-12 min live" },
@@ -1430,7 +1454,7 @@ window.SITE = {
     { q: "Why isn't fine-tuning, RLHF, agents or open weights covered?",
       a: "Deliberately held back. Those belong with the Sovereign Stack work and a 200-level follow-up, alongside the community responsibility material — governance, data provenance and consent, Indigenous data sovereignty, cultural authority. This asset is the 101 baseline." },
     { q: "What does the “Viewing as” switcher at the top do?",
-      a: "It re-skins the same knowledge base for whoever is in the room — staff onboarding, a partner briefing, and more versions as we add them. The framing, the run of show and the suggested starting lessons change; nothing is ever hidden, and all 19 lessons stay reachable in every mode. The switcher writes itself into the address bar, so you can copy the link and send somebody straight into the right version." },
+      a: "It re-skins the same knowledge base for whoever is in the room — staff onboarding, a partner briefing, and more versions as we add them. The framing and the suggested starting lessons change; nothing is ever hidden, and all 19 lessons stay reachable in every mode. The switcher writes itself into the address bar, so you can copy the link and send somebody straight into the right version." },
     { q: "Are the quizzes graded, and does anyone see my score?",
       a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere. The feedback button is the single exception on this page, and it sends only what you type into it, only when you press send." },
     { q: "What does the feedback button send?",

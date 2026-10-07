@@ -144,9 +144,15 @@
       var a = $('#ctaPrimary');
       a.textContent = ev.ctaPrimary.label; a.href = ev.ctaPrimary.href || '#lessons';
     }
-    if (ev.ctaSecondary) {
-      var b = $('#ctaSecondary');
-      b.textContent = ev.ctaSecondary.label; b.href = ev.ctaSecondary.href || '#agenda';
+    // With the run of show hidden, the second button cannot point at it.
+    var second = (S.agendaHidden && S.ctaSecondaryAlt) ? S.ctaSecondaryAlt : ev.ctaSecondary;
+    var b = $('#ctaSecondary');
+    if (second && b) {
+      b.hidden = false;
+      b.textContent = second.label;
+      b.href = second.href || '#lessons';
+    } else if (b) {
+      b.hidden = true;
     }
   }
 
@@ -746,6 +752,19 @@
      ===================================================== */
   function renderAgenda() {
     var ev = audienceView();
+
+    // One flag in content.js takes the section, its nav link and its search
+    // entries together. The data is left alone so the next session only has
+    // to flip it back.
+    var sec = $('#agenda');
+    var nav = $('.site-nav a[href="#agenda"]');
+    if (S.agendaHidden) {
+      if (sec) sec.hidden = true;
+      if (nav) nav.remove();
+      return;
+    }
+    if (sec) sec.hidden = false;
+
     var sub = $('#agendaSub');
     sub.textContent = [ev.date, ev.time, ev.location].filter(Boolean).join(' · ');
     $('#timeline').innerHTML = (ev.agenda || []).map(function (a) {
@@ -1413,9 +1432,13 @@
     (S.faq || []).forEach(function (f) {
       index.push({ kind: 'Question', title: f.q, sub: '', body: f.a, open: function () { closePalette(); goTo('#faq'); } });
     });
-    (audienceView().agenda || []).forEach(function (a) {
-      index.push({ kind: 'Agenda', title: a.title, sub: a.time, body: a.detail, open: function () { closePalette(); goTo('#agenda'); } });
-    });
+    // Skipped while the run of show is hidden: a search hit that scrolls to
+    // a section which is not rendered is worse than no hit at all.
+    if (!S.agendaHidden) {
+      (audienceView().agenda || []).forEach(function (a) {
+        index.push({ kind: 'Agenda', title: a.title, sub: a.time, body: a.detail, open: function () { closePalette(); goTo('#agenda'); } });
+      });
+    }
   }
 
   var backdrop = $('#paletteBackdrop');

@@ -426,11 +426,12 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 ## 4. What the page does
 
-- **Audience switcher** — the same knowledge base re-skinned per room. Framing, run of show and starting lessons change; no lesson is ever hidden. Shareable as `?for=<id>`. Live: staff onboarding and partner education. Written but held back behind `draft: true`: community workshop and kupuna outreach.
+- **Audience switcher** — the same knowledge base re-skinned per room. Framing and starting lessons change; no lesson is ever hidden. Shareable as `?for=<id>`. Live: staff onboarding and partner education. Written but held back behind `draft: true`: community workshop and kupuna outreach.
+- **Run of show** — off the page right now. `agendaHidden: true` in `content.js` takes the section, its nav link, the hero's second button and its search entries together, without deleting any of the timings. The October 6 2026 session has happened; set the flag to `false` when the next one is booked and it all comes back. While it is hidden, `ctaSecondaryAlt` decides where the hero's second button points instead.
 - **Check your understanding** — a short quiz under each lesson, with an explanation on every answer, right or wrong.
 - **Practice activities** — six playable widgets: token chopper, next-token dice roll, citation fabricator, training-coverage meters, term match, and a "would you send it?" judgment round.
 - **Dark and light themes** — follows the system setting, with a manual toggle that sticks.
-- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and agenda items at once.
+- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and, when it is showing, agenda items at once.
 - **Track filters and keyword filtering** on the lessons grid.
 - **Progress tracking** — attendees tick off lessons and see a progress ring. Stored in their own browser via `localStorage`; nothing is uploaded and there is no account. Clearing site data resets it.
 - **Feedback widget** — the button in the bottom-right corner. The one thing on this page that transmits anything, and only when somebody presses send. See section 6.
@@ -442,7 +443,7 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 ## 5. Before you share the link
 
-- [x] Section 1 of `content.js` carries the real event (LLM/NLP 101, First Tuesday, Oct 6 2026).
+- [x] Section 1 of `content.js` carries the event name. `date` and `time` are intentionally blank: the Oct 6 2026 session has run, and a past date on a live page misleads every reader after it. If you book another, fill them in **and** restore `startDate` on the `CourseInstance` in `index.html` — that one is machine-readable, so a stale value there is read by search engines and seen by nobody.
 - [x] `<title>`, `<meta name="description">` and the JSON-LD in `index.html` match.
 - [x] `assets/social.png` is a 1200×630 card for link previews.
 - [x] The footer's "Source on GitHub" link points at this repo.
@@ -493,7 +494,7 @@ The numbered sections of `content.js`, in order:
 | 5 | `lessons` | The grid and the lesson dialog |
 | 6 | `quizzes` | Check your understanding, keyed by lesson id |
 | 7 | `practice` | The four activities |
-| 8 | `agenda` | Run of show |
+| 8 | `agenda` | Run of show — currently hidden by `agendaHidden: true` |
 | 9 | `prompts` | Prompt library |
 | 10 | `glossary` | Glossary, and the Term match activity |
 | 11 | `faq` | FAQ |
