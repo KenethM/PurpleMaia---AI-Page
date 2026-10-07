@@ -1432,7 +1432,9 @@ window.SITE = {
     { q: "What does the “Viewing as” switcher at the top do?",
       a: "It re-skins the same knowledge base for whoever is in the room — staff onboarding, a partner briefing, and more versions as we add them. The framing, the run of show and the suggested starting lessons change; nothing is ever hidden, and all 19 lessons stay reachable in every mode. The switcher writes itself into the address bar, so you can copy the link and send somebody straight into the right version." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere." },
+      a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere. The feedback button is the single exception on this page, and it sends only what you type into it, only when you press send." },
+    { q: "What does the feedback button send?",
+      a: "Exactly what the dialog shows you before you press send, and you can open ‘What gets sent’ to read the whole thing. Your note, which of the three kinds you picked, your name if you chose to fill it in, which lesson or section you were looking at, which audience version you had on, and your browser and window size so a layout bug can be reproduced. No account, no cookie, no tracking, and no raw device fingerprint. It lands in a spreadsheet in Purple Maiʻa’s own Drive and turns into a write-up every Friday." },
     { q: "Where are the Purple Maiʻa videos?",
       a: "Being animated from these scripts now. In the meantime every lesson carries a stand-in — an outside explainer chosen for that specific topic and for how well it has been received, labelled as a stand-in under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
@@ -1506,5 +1508,40 @@ window.SITE = {
       { label: "Source on GitHub", url: "https://github.com/KenethM/PurpleMaia---AI-Page" },
       { label: "Report a problem", url: "https://github.com/KenethM/PurpleMaia---AI-Page/issues" }
     ]
+  },
+
+  /* ---------- 14. FEEDBACK ----------
+     The widget in the bottom-right corner. This is the only thing on the
+     page that sends anything anywhere — everything else (progress, quiz
+     answers, theme, audience) stays in the visitor's own browser.
+
+     endpoint: paste the Apps Script web-app URL here and the widget starts
+       posting to your Sheet. Leave it "" and the widget still works: it
+       falls back to opening the visitor's mail client with the message
+       already written. Nothing is ever silently dropped.
+       Setup steps and the script itself: tools/feedback-apps-script.js
+
+     mailto: the address the fallback writes to, and where the Friday
+       digest gets sent from the Apps Script side.
+  --------------------------------------------------------------- */
+  feedback: {
+    endpoint: "",
+    mailto: "keneth@purplemaia.org",
+    button: "Feedback",
+    title: "Tell us what to fix",
+    blurb: "This page is a working draft and every note goes into the next pass. Say what tripped you up, what was wrong, or what is missing.",
+    kinds: [
+      { id: "gripe",      label: "Something is wrong",   hint: "Inaccurate, confusing, or it reads badly." },
+      { id: "suggestion", label: "Idea or request",      hint: "Something to add, cut, or explain differently." },
+      { id: "bug",        label: "Something is broken",  hint: "A link, a video, a quiz, the layout on your screen." }
+    ],
+    placeholder: "What happened, and what would you rather it did?",
+    nameLabel: "Your name, if you want a reply",
+    namePlaceholder: "Optional",
+    submit: "Send it",
+    thanks: "Got it. Thank you — this lands in Friday's list.",
+    queued: "Saved on this device. It will send next time you open the page.",
+    disclosure: "What gets sent"
   }
+
 };

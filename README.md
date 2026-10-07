@@ -433,6 +433,7 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and agenda items at once.
 - **Track filters and keyword filtering** on the lessons grid.
 - **Progress tracking** — attendees tick off lessons and see a progress ring. Stored in their own browser via `localStorage`; nothing is uploaded and there is no account. Clearing site data resets it.
+- **Feedback widget** — the button in the bottom-right corner. The one thing on this page that transmits anything, and only when somebody presses send. See section 6.
 - **Copy buttons** on every prompt.
 - **Deep links** — `yourpage.com/#lesson-l3` opens lesson 3 directly. Handy for pasting into a chat during the session.
 - **Keyboard and screen-reader friendly** — skip link, focus rings, real buttons, labelled regions.
@@ -498,8 +499,43 @@ The numbered sections of `content.js`, in order:
 | 11 | `faq` | FAQ |
 | 12 | `resources` | Downloads & links |
 | 13 | `footer` | Footer text and links |
+| 14 | `feedback` | The feedback widget: endpoint, kinds and copy |
 
 ---
+
+## 6. Collecting feedback
+
+The button in the bottom-right opens a short form: pick a kind, write a note,
+optionally leave a name. Everything else is captured for you — which lesson or
+section the person was on, which audience version they had, and their browser
+and window size — because "confusing" is noise and "confusing on Embeddings" is
+a task.
+
+**It ships switched off.** With `feedback.endpoint` empty in `content.js`, the
+form falls back to opening the visitor's mail client with the note already
+written, addressed to `feedback.mailto`. Nothing is ever silently dropped.
+
+**To turn on collection**, follow the setup comment at the top of
+`tools/feedback-apps-script.js`. It takes about five minutes: make a Sheet,
+paste that file into Apps Script, run `setup`, deploy as a web app, and paste
+the resulting URL into `feedback.endpoint`. From then on notes land in a
+spreadsheet in Purple Maiʻa's own Drive, and every Friday at 3pm a trigger
+writes a Google Doc grouped by kind and emails it to `DIGEST_TO`.
+
+> **Send one test note after deploying and confirm the row appears.** The widget
+> posts with `mode: 'no-cors'`, which is what lets it reach Apps Script without
+> a CORS preflight, but it also means the browser cannot see an error response.
+> A misconfigured endpoint looks exactly like success from the page.
+
+A note that cannot be sent is queued in `localStorage` under `aihub:feedbackq`
+and retried on the next page load, so a dropped connection does not lose it.
+
+**On the privacy claim.** The page tells people twice that nothing is uploaded,
+and that stays true of progress, quiz answers, theme and audience, all of which
+live in the browser. The feedback form is the single exception, it is labelled
+as such in the FAQ, and the dialog shows the exact JSON before anybody presses
+send. If you extend it, keep that property: no background collection.
+
 
 ## Licence
 

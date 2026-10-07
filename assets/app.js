@@ -1657,6 +1657,223 @@
     });
   })();
 
+
+  /* =====================================================
+     FEEDBACK WIDGET
+     The only code on this page that talks to a server. Everything
+     else lives in localStorage and never leaves the browser, and the
+     copy on the page says so — so this is kept visibly separate: the
+     visitor presses a button, sees exactly what will be sent, and
+     nothing is collected in the background.
+
+     Transport is a no-cors POST with a text/plain body, the one
+     combination Apps Script accepts without a preflight. The cost is
+     that we cannot read the response, so a send that reaches the
+     network counts as delivered; a send that does not is queued in
+     localStorage and retried on the next page load. With no endpoint
+     configured the whole thing degrades to a prefilled mailto, so a
+     note is never silently dropped.
+     ===================================================== */
+  var FB = S.feedback || null;
+
+  function fbDevice() {
+    var ua = navigator.userAgent || '';
+    var browser = /Edg\//.test(ua) ? 'Edge'
+                : /OPR\//.test(ua) ? 'Opera'
+                : /Chrome\//.test(ua) ? 'Chrome'
+                : /Firefox\//.test(ua) ? 'Firefox'
+                : /Safari\//.test(ua) ? 'Safari' : 'another browser';
+    var os = /Windows/.test(ua) ? 'Windows'
+           : /iPhone|iPad|iPod/.test(ua) ? 'iOS'
+           : /Mac OS X/.test(ua) ? 'macOS'
+           : /Android/.test(ua) ? 'Android'
+           : /Linux/.test(ua) ? 'Linux' : 'an unknown system';
+    return browser + ' on ' + os + ' · ' + window.innerWidth + '×' + window.innerHeight;
+  }
+
+  /* Where the visitor was when they hit the button. This is the field that
+     makes the Friday digest actionable: "confusing" is noise, "confusing on
+     Embeddings" is a task. */
+  function fbWhere() {
+    var dlg = document.getElementById('lessonDialog');
+    if (dlg && dlg.open) {
+      var t = dlg.querySelector('#dlgTitle');
+      if (t && t.textContent.trim()) return 'Lesson: ' + t.textContent.trim();
+    }
+    var best = null, bestTop = Infinity;
+    $$('section[id]').forEach(function (sec) {
+      var top = sec.getBoundingClientRect().top;
+      if (top <= 120 && Math.abs(top) < bestTop) { bestTop = Math.abs(top); best = sec; }
+    });
+    if (best) {
+      var h = best.querySelector('h2');
+      return 'Section: ' + ((h && h.textContent.trim()) || best.id);
+    }
+    return 'Top of the page';
+  }
+
+  function fbPayload() {
+    var checked = $('#fbKinds input:checked');
+    return {
+      ts: new Date().toISOString(),
+      kind: checked ? checked.value : ((FB.kinds[0] && FB.kinds[0].id) || 'note'),
+      message: ($('#fbMessage').value || '').trim(),
+      name: ($('#fbName').value || '').trim(),
+      where: fbWhere(),
+      audience: (typeof audience !== 'undefined' && audience && audience.id) || '',
+      page: location.pathname + location.search + location.hash,
+      device: fbDevice()
+    };
+  }
+
+  function fbPaintPayload() {
+    var p = fbPayload();
+    if (!p.message) p.message = '(whatever you type above)';
+    if (!p.name) p.name = '(blank, sent anonymously)';
+    $('#fbPayload').textContent = JSON.stringify(p, null, 2);
+  }
+
+  /* ---- queue: notes that could not be sent, retried on the next load ---- */
+  var FBQ = 'aihub:feedbackq';
+  function fbQueue() {
+    try { return JSON.parse(localStorage.getItem(FBQ) || '[]'); } catch (e) { return []; }
+  }
+  function fbSetQueue(q) {
+    try { localStorage.setItem(FBQ, JSON.stringify(q.slice(-25))); } catch (e) {}
+  }
+  function fbEnqueue(p) { var q = fbQueue(); q.push(p); fbSetQueue(q); }
+
+  function fbSend(payload, done) {
+    if (!FB.endpoint) { done(false, 'no-endpoint'); return; }
+    if (!window.fetch) { done(false, 'no-fetch'); return; }
+    try {
+      fetch(FB.endpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).then(function () { done(true); }, function () { done(false, 'network'); });
+    } catch (e) { done(false, 'threw'); }
+  }
+
+  function fbFlushQueue() {
+    if (!FB || !FB.endpoint) return;
+    var q = fbQueue();
+    if (!q.length) return;
+    fbSetQueue([]);                       // clear first; a failure re-queues below
+    q.forEach(function (p) {
+      fbSend(p, function (sent) { if (!sent) fbEnqueue(p); });
+    });
+  }
+
+  function fbMailto(p) {
+    var body = [
+      p.message, '',
+      '---',
+      'Kind:     ' + p.kind,
+      'Where:    ' + p.where,
+      'Audience: ' + p.audience,
+      'Page:     ' + p.page,
+      'Device:   ' + p.device,
+      'Sent:     ' + p.ts,
+      'From:     ' + (p.name || '(anonymous)')
+    ].join('\n');
+    return 'mailto:' + encodeURIComponent(FB.mailto) +
+           '?subject=' + encodeURIComponent('LLM/NLP 101 feedback, ' + p.kind) +
+           '&body=' + encodeURIComponent(body.slice(0, 1800));
+  }
+
+  function fbStatus(msg, cls) {
+    var el = $('#fbStatus');
+    el.textContent = msg || '';
+    el.className = 'fb-status' + (cls ? ' is-' + cls : '');
+  }
+
+  (function initFeedback() {
+    var fab = $('#fbOpen'), dlg = $('#fbDialog');
+    if (!FB || !fab || !dlg) return;
+
+    $('#fbOpenLabel').textContent = FB.button;
+    fab.setAttribute('aria-label', FB.title);
+    $('#fbTitle').textContent = FB.title;
+    $('#fbBlurb').textContent = FB.blurb;
+    $('#fbNameLabel').textContent = FB.nameLabel;
+    $('#fbName').placeholder = FB.namePlaceholder;
+    $('#fbMessage').placeholder = FB.placeholder;
+    $('#fbSubmit').textContent = FB.submit;
+    $('#fbDisclosureLabel').textContent = FB.disclosure;
+
+    $('#fbKinds').innerHTML = (FB.kinds || []).map(function (k, i) {
+      return '<label class="fb-kind">' +
+               '<input type="radio" name="fbKind" value="' + esc(k.id) + '"' + (i === 0 ? ' checked' : '') + '>' +
+               '<span title="' + esc(k.hint || '') + '">' + esc(k.label) + '</span>' +
+             '</label>';
+    }).join('');
+
+    fab.hidden = false;
+
+    fab.addEventListener('click', function () {
+      fbStatus('');
+      fbPaintPayload();
+      if (!dlg.open) dlg.showModal();
+      setTimeout(function () { $('#fbMessage').focus(); }, 30);
+    });
+    $('#fbClose').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+
+    $('#fbMessage').addEventListener('input', function () {
+      $('#fbCount').textContent = String(this.value.length);
+      this.setAttribute('aria-invalid', 'false');
+      fbPaintPayload();
+    });
+    $('#fbName').addEventListener('input', fbPaintPayload);
+    $('#fbKinds').addEventListener('change', fbPaintPayload);
+
+    // Cmd/Ctrl+Enter sends, the way every other comment box works
+    $('#fbMessage').addEventListener('keydown', function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if ($('#fbForm').requestSubmit) $('#fbForm').requestSubmit();
+      }
+    });
+
+    $('#fbForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var p = fbPayload();
+      if (!p.message) {
+        $('#fbMessage').setAttribute('aria-invalid', 'true');
+        $('#fbMessage').focus();
+        fbStatus('Write a note first.', 'error');
+        return;
+      }
+      var btn = $('#fbSubmit');
+      btn.disabled = true;
+      fbStatus('Sending…');
+
+      fbSend(p, function (sent, why) {
+        btn.disabled = false;
+        if (sent) {
+          dlg.close();
+          toast(FB.thanks);
+          $('#fbMessage').value = '';
+          $('#fbName').value = '';
+          $('#fbCount').textContent = '0';
+          return;
+        }
+        // Nothing is thrown away: queue it, and offer mail as the way out.
+        fbEnqueue(p);
+        if (why === 'no-endpoint' || why === 'no-fetch') {
+          window.location.href = fbMailto(p);
+          fbStatus('Opening your mail app, press send there.', 'ok');
+        } else {
+          fbStatus('Could not reach the server. ' + FB.queued, 'ok');
+        }
+      });
+    });
+
+    fbFlushQueue();
+  })();
+
   /* ---------- deep link: #lesson-l3 opens that lesson ---------- */
   if (/^#lesson-/.test(location.hash)) {
     openLesson(location.hash.replace('#lesson-', ''));

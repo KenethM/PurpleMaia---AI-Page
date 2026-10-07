@@ -376,6 +376,43 @@
   </div>
 </div>
 
+<!-- ===================== FEEDBACK ===================== -->
+<button class="fb-fab" id="fbOpen" type="button" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.8-.4L3 21l1.6-4.8A8.3 8.3 0 0 1 3.6 11.5a8.4 8.4 0 0 1 9-8.4 8.4 8.4 0 0 1 8.4 8.4z"/></svg>
+  <span id="fbOpenLabel">Feedback</span>
+</button>
+
+<dialog class="fb-dialog" id="fbDialog" aria-labelledby="fbTitle">
+  <button class="dialog-close" id="fbClose" aria-label="Close feedback">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <form class="fb-form" id="fbForm" novalidate>
+    <h2 id="fbTitle" class="fb-title"></h2>
+    <p class="fb-blurb muted" id="fbBlurb"></p>
+
+    <fieldset class="fb-kinds" id="fbKinds">
+      <legend class="sr-only">What kind of note is this?</legend>
+    </fieldset>
+
+    <label class="fb-label" for="fbMessage">Your note</label>
+    <textarea id="fbMessage" class="fb-textarea" rows="5" required maxlength="4000"></textarea>
+    <p class="fb-count"><span id="fbCount">0</span>/4000</p>
+
+    <label class="fb-label" for="fbName" id="fbNameLabel"></label>
+    <input type="text" id="fbName" class="fb-input" maxlength="120" autocomplete="name">
+
+    <details class="fb-disclosure">
+      <summary id="fbDisclosureLabel"></summary>
+      <pre class="fb-payload" id="fbPayload"></pre>
+    </details>
+
+    <div class="fb-actions">
+      <button type="submit" class="btn btn-primary" id="fbSubmit"></button>
+      <span class="fb-status" id="fbStatus" role="status" aria-live="polite"></span>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="content.js"></script>
