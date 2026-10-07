@@ -43,11 +43,12 @@
   })();
 </script>
 <!-- Structured data. Keep in sync with content.js if the event details change.
-     The CourseInstance carries no startDate on purpose: this used to say
-     2026-10-06, and a date in the past is worse here than nowhere, because
-     search engines read it and nobody sees it to correct it. Put one back
-     only when a session is actually booked. courseWorkload is the facilitated
-     run, not the self-paced read. -->
+     The CourseInstance deliberately carries no scheduled date. It used to, and
+     once that session had passed the page was still announcing it to every
+     crawler, where no human would ever see it to notice. Add one back only
+     when a session is actually booked, together with event.date and
+     event.time in content.js. courseWorkload is the facilitated run, not the
+     self-paced read. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

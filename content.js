@@ -21,13 +21,14 @@ window.SITE = {
     name: "LLM/NLP 101",
     shortName: "LLM/NLP 101",
     tagline: "What an LLM actually is, how it generates a response, and where it falls short — at a 101 level, for the whole team.",
-    /* `date` and `time` are deliberately empty. They used to carry
-       "Tuesday, October 6, 2026" and "First Tuesday session", which was right
-       up until the session happened and then started telling every new reader
-       about a date in the past. The hero drops any of these three that is
-       blank, so there is no stray separator left behind.
-       Fill them in again when the next session is booked, and remember the
-       CourseInstance in index.html, which is the machine-readable copy. */
+    /* `date` and `time` are deliberately empty. They used to name a specific
+       session, which was right up until that session happened and then spent
+       every day afterwards announcing a date in the past to new readers. The
+       hero drops any of these three that is blank, so no stray separator is
+       left behind.
+       Fill them in when the next one is booked, and remember the
+       CourseInstance in index.html, which is the machine-readable copy and
+       the one nobody thinks to check. */
     date: "",
     time: "",
     location: "Purple Maiʻa all-staff",
@@ -1359,7 +1360,7 @@ window.SITE = {
      that is not on the page.
 
      Everything below, and the three per-audience versions in section 3,
-     stay exactly as written. The October 6 2026 session has happened and a
+     stay exactly as written. The session these were built for has run, and a
      run of show is no use to somebody reading afterwards, but it is the
      first thing you want back when the next one is booked. Set this to
      false and the section returns, timings intact.
