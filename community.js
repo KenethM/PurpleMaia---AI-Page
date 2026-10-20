@@ -225,7 +225,9 @@
 
   /* ---------- the hero ---------- */
   var ev = S.event;
-  ev.badge = "Community edition";
+  ev.name = "Intro to AI";
+  ev.shortName = "Intro to AI";
+  ev.badge = "";
   ev.tagline = "Every big idea about AI, a minute or two each. Plain words, no math, no login.";
   ev.intro =
     "People keep asking you about AI. This is the short version of what Purple Maiʻa teaches its own staff: " +
@@ -294,7 +296,7 @@
     {
       group: "Want to go deeper?",
       items: [
-        { label: "The full LLM/NLP 101", url: FULL, desc: "The staff course this edition is cut from. Same lessons, the long version of each." },
+        { label: "The full staff course", url: FULL, desc: "LLM/NLP 101, the course this is cut from. Same lessons, the long version of each." },
         { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 35 slides from the staff session. 15 MB." }
       ]
     },
@@ -317,6 +319,6 @@
     }
   ];
 
-  S.footer.note = "The community edition of LLM/NLP 101, from Purple Maiʻa. Free to share and adapt.";
+  S.footer.note = "Intro to AI, from Purple Maiʻa. Free to share and adapt.";
 
 })(window.SITE);

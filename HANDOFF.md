@@ -64,8 +64,9 @@ Each one is cut to its single idea.
 
 ### Held back deliberately
 
-- **The name.** It is still "LLM/NLP 101", which is jargon for a public audience.
-  Renaming is Don's call.
+- **The name** is now "Intro to AI" (set in `community.js`, the page head, and a new
+  share card, `assets/social-intro.png` from `tools/social-card-intro.html`). The
+  staff site keeps "LLM/NLP 101", and this edition still names it where it links there.
 - **The URL, the canonical, the QR code and the JSON-LD.** All of them wait on the
   address. The staff QR code was removed from Resources here because it points at
   the staff site.

@@ -126,6 +126,9 @@
     var ev = audienceView();
     applyBindings();
     document.title = (ev.name || 'Learning hub') + (ev.badge ? ' — ' + ev.badge : '');
+    // An empty badge would leave a bare pill with a dot in it.
+    var eyebrow = $('.hero .eyebrow');
+    if (eyebrow) eyebrow.hidden = !ev.badge;
 
     var meta = [];
     if (ev.date)     meta.push({ i: 'calendar', t: ev.date });
@@ -1822,7 +1825,7 @@
       'From:     ' + (p.name || '(anonymous)')
     ].join('\n');
     return 'mailto:' + encodeURIComponent(FB.mailto) +
-           '?subject=' + encodeURIComponent('LLM/NLP 101 feedback, ' + p.kind) +
+           '?subject=' + encodeURIComponent(((S.event || {}).shortName || 'LLM/NLP 101') + ' feedback, ' + p.kind) +
            '&body=' + encodeURIComponent(body.slice(0, 1800));
   }
 
