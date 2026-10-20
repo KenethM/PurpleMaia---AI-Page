@@ -549,8 +549,11 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "2 min",
       summary: "Why asking the same question twice gives you two different answers — and why that is normal.",
-      video: "file:assets/video/autocomplete-trick.mp4",
-      videoLength: "1:35",
+      /* Back on its stand-in. "The autocomplete trick" sat here too, because the
+         script table maps script 2 to both lessons, but the same film on two cards
+         in a row reads as a mistake. It lives on next-token prediction. */
+      video: "youtube:MkaazQttbpc",
+      videoLength: "14:51",
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",

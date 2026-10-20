@@ -449,9 +449,9 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] The footer's "Source on GitHub" link points at this repo.
 - [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
 - [ ] Add Purple Maiʻa's own module videos as they come out of production. Transcode to H.264/AAC MP4 with `-movflags +faststart`, put it in `assets/video/` with a same-named `.jpg` poster beside it, and set `video: "file:assets/video/<name>.mp4"` on the lesson. The card thumbnail and the stand-in notice follow on their own.
-  - Done (Oct 2026): scripts 2–9, on 9 of 19 lessons. Script 2 serves both `m2-next-token` and `m2-sampling`.
+  - Done (Oct 2026): scripts 2–9, one per lesson, on 8 of 19 lessons. Script 2 maps to `m2-sampling` as well, but it sits only on `m2-next-token` so the same film is not on two cards in a row.
   - Not yet placed: "Video 10 – How text is generated" has no script or lesson mapping. Script 1 (`m2-training-data`, `m3-bias`) is not delivered.
-  - Still on outside stand-ins: `m1-daily`, `m2-loop`, `m2-training-data`, `m2-parameters`, `m2-tokenization`, `m2-embeddings`, `m2-transformers`, `m3-grounding`, `m3-bias`, `m3-model-families`.
+  - Still on outside stand-ins: `m1-daily`, `m2-loop`, `m2-training-data`, `m2-parameters`, `m2-tokenization`, `m2-embeddings`, `m2-transformers`, `m2-sampling`, `m3-grounding`, `m3-bias`, `m3-model-families`.
 - [x] Every lesson has a check-your-understanding quiz (section 6 of `content.js`).
 - [x] Walk the live audience versions before sending a link out — `?for=partners` and the default.
 - [ ] **Cultural review of the two held-back versions** — Community workshop and Kupuna outreach are written and tested but carry `draft: true`, so nothing on the live site can reach them. Once someone who runs those rooms has read the copy, delete that one line per audience.
