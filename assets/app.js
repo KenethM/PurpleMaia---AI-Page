@@ -335,6 +335,9 @@
   function thumbFor(v) {
     var p = parseVideo(v);
     if (p && p.kind === 'youtube') return 'https://i.ytimg.com/vi/' + encodeURIComponent(p.ref) + '/hqdefault.jpg';
+    /* Our own videos ship a poster frame beside them: same name, .jpg. Without
+       this a lesson that has its real video still says "Video coming soon". */
+    if (p && p.kind === 'file') return p.ref.replace(/\.[^./]+$/, '.jpg');
     return null;
   }
   /* Every embed on the page is still an outside explainer standing in for a
@@ -364,7 +367,8 @@
         STANDIN_NOTE;
     }
     if (p.kind === 'file') {
-      return '<div class="video-frame"><video src="' + esc(p.ref) + '" controls autoplay playsinline></video></div>';
+      return '<div class="video-frame"><video src="' + esc(p.ref) + '" poster="' + esc(thumbFor(v)) +
+        '" controls autoplay playsinline preload="metadata"></video></div>';
     }
     return '';
   }
