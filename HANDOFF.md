@@ -16,6 +16,86 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-20 — Community edition: a mile wide, an inch deep (branch `community-hub`)
+
+### Why
+
+The AF-builders meeting asked for a version for public-facing orgs, in Joe's words
+"a mile wide and an inch deep". The brief: replace the deep-dive YouTube videos with
+Purple Maiʻa's own 1–1.5 minute videos, keep the quizzes and practice checks (Don
+asked for them), keep the existing content, and host it at a different URL. Joe
+reviews before it goes to Don, target Friday 23 October.
+
+"Simpler" means shallower, not smaller. Every topic stays and every lesson stays.
+Each one is cut to its single idea.
+
+### What changed
+
+- **`community.js`, an overlay.** It loads after `content.js` and reshapes it in
+  place. It does not copy it. Each lesson gets a one-line summary where the staff
+  wording talked about "this session", and two takeaways at most.
+- **Only our videos play.** Lessons with a Purple Maiʻa video embed it, with its
+  runtime on the card. Every outside explainer, which run 3 to 27 minutes, becomes an
+  optional "Want more?" link labelled with its length. No stand-in notice appears
+  anywhere in this edition.
+- **A "Full lesson" button on every lesson** opens the same lesson on the staff
+  site. The depth lives in one place.
+- **One front door.** No audience switcher and no placement quiz. The hero, the
+  pathways, the FAQ, the resources and the prompt library are rewritten or trimmed
+  for a public audience. Practice and the glossary are unchanged.
+- **Three small changes in `assets/app.js`**, each switched on by config and inert
+  without it, so they can go to main as they are: `copy.videoMissing` and
+  `copy.thumbMissing` reword the not-yet-made states, `showVideoLength` puts the
+  runtime on our own videos, and `deeper` adds the Full lesson button.
+- **`index.html`** loads `community.js`, retitles the page, and asks not to be indexed.
+
+### Decisions worth knowing
+
+- **Why an overlay and not a copy of `content.js`.** Main keeps getting accuracy
+  fixes: the white paper, citation years, author names. With an overlay those reach
+  this edition by `git merge main`, because the source text still lives in one file.
+  The only place a fix will not flow through is a takeaway this edition rewrote in
+  `INCH`. That is the price, and it is 38 short lines to re-read.
+- **The overlay works by rules, not lists, where it can.** When a new video lands on
+  main as `file:`, this edition embeds it, drops the outside link and recounts
+  "With our video" without anyone touching `community.js`.
+- **Noindex until it has a URL.** Without its own address a crawler can only file it
+  as a duplicate of the staff site.
+
+### Held back deliberately
+
+- **The name.** It is still "LLM/NLP 101", which is jargon for a public audience.
+  Renaming is Don's call.
+- **The URL, the canonical, the QR code and the JSON-LD.** All of them wait on the
+  address. The staff QR code was removed from Resources here because it points at
+  the staff site.
+- **The workshop and kupuna audiences** are still held for cultural review, and are
+  not in this edition at all.
+
+### How to keep it in sync
+
+```
+git checkout community-hub
+git merge main
+```
+
+Conflicts should only appear in `index.html` (the head) and, rarely, `assets/app.js`.
+
+### How it was tested
+
+Served locally and driven in headless Edge at 1280 and 375 wide: no console errors,
+no horizontal scroll, 19 cards, 9 runtime pills, 10 "Short video on the way" cards,
+no stand-in notices, quizzes render, and the Full lesson links resolve to the
+matching lesson on the staff site.
+
+### Open / next
+
+- [ ] Joe's review, Friday 23 October.
+- [ ] Pick the URL, then do the launch steps listed in the comment at the top of
+      `index.html`, and add a Dokku app for it.
+- [ ] Place "Video 10 – How text is generated". It has no script entry and no lesson.
+- [ ] Ten lessons still have no Purple Maiʻa video.
+
 ## 2026-10-04 — Live on Purple Maiʻa's own box, a video on every lesson, QR
 
 **Who:** Keneth, with Claude Code

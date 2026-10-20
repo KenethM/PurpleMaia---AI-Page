@@ -440,6 +440,11 @@ kbd {
 }
 .thumb:hover .play { transform: scale(1.09); }
 .play svg { width: 21px; height: 21px; margin-left: 3px; }
+.video-length {
+  position: absolute; right: 10px; bottom: 10px; z-index: 2;
+  font-size: .74rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: #fff; background: rgba(0, 0, 0, .72); padding: 2px 7px; border-radius: 6px;
+}
 .thumb-note { font-size: .78rem; color: var(--text-2); font-weight: 500; background: color-mix(in srgb, var(--surface) 85%, transparent); padding: 3px 10px; border-radius: 999px; }
 .lesson-num {
   position: absolute; top: 10px; left: 10px; z-index: 2;
@@ -611,6 +616,14 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   border-bottom: 1px solid var(--border);
 }
 .video-standin strong { color: var(--accent); font-weight: 600; }
+/* The reworded variant (copy.videoMissing) is a slim note, not a 16:9 stage:
+   with no video coming yet, the lesson's text is the content. */
+.video-missing.is-compact {
+  aspect-ratio: auto; grid-template-columns: auto 1fr; place-items: center start;
+  text-align: left; gap: 12px; padding: 16px 64px 16px 28px;
+}
+.video-missing.is-compact svg { width: 22px; height: 22px; }
+.video-missing.is-compact p { max-width: none; font-size: .86rem; }
 .video-missing {
   width: 100%; aspect-ratio: 16/9; display: grid; place-items: center; align-content: center; gap: 10px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface-2)), color-mix(in srgb, var(--ocean) 12%, var(--surface-2)));

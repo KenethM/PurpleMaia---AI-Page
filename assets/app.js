@@ -372,12 +372,17 @@
     }
     return '';
   }
-  var MISSING_VIDEO =
-    '<div class="video-missing">' + icon('film') +
-    '<p><strong>The recording is not up yet.</strong><br>' +
-    'It will appear right here once it is posted — the notes below are ready now.</p>' +
-    '<p class="facilitator-hint">Facilitator: add <code>video: "youtube:ID"</code> to this lesson in <code>content.js</code></p>' +
-    '</div>';
+  /* `copy.videoMissing` in content.js can reword this panel for a different
+     audience. Without it, the facilitator hint shows as before. */
+  var VM = (S.copy || {}).videoMissing;
+  var MISSING_VIDEO = VM
+    ? '<div class="video-missing is-compact">' + icon('film') +
+      '<p><strong>' + esc(VM.title) + '</strong> ' + esc(VM.body) + '</p></div>'
+    : '<div class="video-missing">' + icon('film') +
+      '<p><strong>The recording is not up yet.</strong><br>' +
+      'It will appear right here once it is posted — the notes below are ready now.</p>' +
+      '<p class="facilitator-hint">Facilitator: add <code>video: "youtube:ID"</code> to this lesson in <code>content.js</code></p>' +
+      '</div>';
 
   /* =====================================================
      LESSONS
@@ -447,9 +452,14 @@
         '<span class="lesson-num">' + String(index + 1).padStart(2, '0') + '</span>' +
         (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') +
         '<span class="thumb-overlay">' +
-          '<span class="play">' + icon('play') + '</span>' +
-          (thumb ? '' : '<span class="thumb-note">Video coming soon</span>') +
+          (thumb || !(S.copy || {}).thumbMissing ? '<span class="play">' + icon('play') + '</span>' : '') +
+          (thumb ? '' : '<span class="thumb-note">' + esc((S.copy || {}).thumbMissing || 'Video coming soon') + '</span>') +
         '</span>' +
+        /* `showVideoLength` puts the runtime on our own videos only. Their
+           videoLength was read off the file, so it is the one clock on this
+           page that is known to be right. */
+        (S.showVideoLength && l.videoLength && (parseVideo(l.video) || {}).kind === 'file'
+          ? '<span class="video-length">' + esc(l.videoLength) + '</span>' : '') +
         /* No time on the thumbnail. `duration` is self-paced time for the whole
            lesson, which in that corner reads as the video's runtime and is not
            it; `videoLength` is the real runtime but the two clocks have not been
@@ -710,6 +720,12 @@
           '<button class="btn btn-primary btn-small" type="button" data-dlg-done="' + esc(l.id) + '">' +
             (isDone ? 'Marked as done ✓' : 'Mark as done') + '</button>' +
           (l.slides ? '<a class="btn btn-ghost btn-small" href="' + esc(l.slides) + '" target="_blank" rel="noopener">Open slides</a>' : '') +
+          /* `deeper` points every lesson at its full-length twin on another
+             copy of this site, so the depth lives in one place. */
+          (S.deeper && S.deeper.url
+            ? '<a class="btn btn-ghost btn-small" href="' + esc(S.deeper.url + '#lesson-' + l.id) +
+              '" target="_blank" rel="noopener">' + esc(S.deeper.label || 'Go deeper') + ' ↗</a>'
+            : '') +
           (n < lessons.length ? '<button class="btn btn-ghost btn-small" type="button" data-next="' + esc(lessons[n].id) + '">Next lesson →</button>' : '') +
         '</div>' +
       '</div>';
