@@ -308,6 +308,7 @@
     $('#ringPct').textContent = pct + '%';
     $('#progressCount').textContent = n + ' of ' + total + ' lessons done';
     $('#resetProgress').hidden = n === 0;
+    if (typeof certPaintCta === 'function') certPaintCta();
     if (n === total && total > 0) {
       $('#progressHint').textContent = 'That is all of them. Go build something.';
     } else {
@@ -1899,6 +1900,199 @@
     });
 
     fbFlushQueue();
+  })();
+
+
+  /* =====================================================
+     CERTIFICATE
+     The second and last thing on this page that talks to a server,
+     and the only one that asks who you are. It stays out of the way
+     until every lesson is ticked off, and nothing on the page is
+     gated behind it.
+
+     The sign-in is a one-time emailed link, so no password is ever
+     created or stored. The round trip avoids CORS entirely: the
+     request out is a no-cors POST, exactly like the feedback widget,
+     and the answer comes back as an ordinary browser navigation to
+     #cert=<payload>, because the Apps Script redirects here after it
+     has checked the token. Nothing has to read a cross-origin
+     response, which is the part that is usually fragile.
+
+     The payload is display data. The authoritative record is the row
+     in Purple Maiʻa's Sheet, which is what the printed code refers to,
+     so a forged local certificate fools nobody but its owner.
+     ===================================================== */
+  var CERT = S.certificate || null;
+  var CKEY = 'aihub:cert';
+
+  function certStored() {
+    try { return JSON.parse(localStorage.getItem(CKEY) || 'null'); }
+    catch (e) { return null; }
+  }
+  function certStore(c) {
+    try { localStorage.setItem(CKEY, JSON.stringify(c)); } catch (e) {}
+  }
+  function certForget() {
+    try { localStorage.removeItem(CKEY); } catch (e) {}
+  }
+
+  // base64url -> object. Returns null on anything malformed rather than throwing,
+  // because this runs on whatever a stranger pasted into the address bar.
+  function certDecode(s) {
+    try {
+      var b = String(s).replace(/-/g, '+').replace(/_/g, '/');
+      while (b.length % 4) b += '=';
+      var json = decodeURIComponent(atob(b).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      var o = JSON.parse(json);
+      if (!o || typeof o.name !== 'string' || !o.name) return null;
+      return o;
+    } catch (e) { return null; }
+  }
+
+  function certEarned() {
+    if (!CERT || !CERT.endpoint) return false;
+    var total = lessons.length;
+    if (!total) return false;
+    var n = lessons.filter(function (l) { return done.has(l.id); }).length;
+    var need = (CERT.requireAll === true || CERT.requireAll == null)
+      ? total : Math.min(Number(CERT.requireAll) || total, total);
+    return n >= need;
+  }
+
+  function certPaintCta() {
+    var cta = $('#certCta');
+    if (!cta || !CERT) return;
+    var have = certStored();
+    if (have) {
+      cta.hidden = false;
+      cta.textContent = 'View your certificate';
+      return;
+    }
+    cta.hidden = !certEarned();
+    cta.textContent = CERT.cta || 'Get your certificate';
+  }
+
+  function certShow(c) {
+    var dlg = $('#certViewDialog');
+    if (!dlg) return;
+    $('#certViewKicker').textContent = (CERT.title || 'Certificate of completion');
+    $('#certViewName').textContent = c.name;
+    $('#certViewCourse').textContent = c.course || CERT.courseName || '';
+    $('#certViewDate').textContent = c.date || '';
+    $('#certViewScore').textContent = (c.n != null && c.total != null)
+      ? (c.n + ' of ' + c.total + ' lessons') : '';
+    $('#certViewCode').textContent = c.code ? ('Verification code  ' + c.code) : '';
+    $('#certViewVerify').textContent = CERT.verifyNote || '';
+    $('#certPrint').textContent = CERT.print || 'Print or save as PDF';
+    $('#certForget').textContent = CERT.signedOut || 'Start over';
+    if (!dlg.open) dlg.showModal();
+  }
+
+  function certStatus(msg, cls) {
+    var el = $('#certStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'fb-status' + (cls ? ' is-' + cls : '');
+  }
+
+  (function initCertificate() {
+    var cta = $('#certCta'), dlg = $('#certDialog'), view = $('#certViewDialog');
+    if (!CERT || !cta || !dlg || !view) return;
+
+    // With no endpoint configured the whole feature stays invisible, so the
+    // page behaves exactly as it did before any of this existed.
+    if (!CERT.endpoint) { cta.hidden = true; return; }
+
+    $('#certTitle').textContent = CERT.title || '';
+    $('#certBlurb').textContent = CERT.blurb || '';
+    $('#certNameLabel').textContent = CERT.nameLabel || '';
+    $('#certEmailLabel').textContent = CERT.emailLabel || '';
+    $('#certName').placeholder = CERT.namePlaceholder || '';
+    $('#certEmail').placeholder = CERT.emailPlaceholder || '';
+    $('#certSubmit').textContent = CERT.submit || '';
+    $('#certDisclosureLabel').textContent = CERT.disclosure || '';
+    $('#certDisclosureBody').textContent = CERT.disclosureBody || '';
+
+    /* Coming back from the emailed link. The hash is cleaned off immediately
+       so the certificate is not re-issued on every refresh and does not sit
+       in the address bar waiting to be pasted somewhere. */
+    var m = /[#&]cert=([A-Za-z0-9_\-]+)/.exec(location.hash || '');
+    if (m) {
+      var payload = certDecode(m[1]);
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      if (payload) {
+        certStore(payload);
+        certPaintCta();
+        setTimeout(function () { certShow(payload); }, 120);
+      } else {
+        toast('That certificate link did not look right. Try asking for a new one.');
+      }
+    }
+
+    cta.addEventListener('click', function () {
+      var have = certStored();
+      if (have) { certShow(have); return; }
+      certStatus('');
+      var n = lessons.filter(function (l) { return done.has(l.id); }).length;
+      $('#certBlurb').textContent = (CERT.blurb || '') + ' (' + n + ' of ' + lessons.length + ' done.)';
+      if (!dlg.open) dlg.showModal();
+      setTimeout(function () { $('#certName').focus(); }, 30);
+    });
+
+    $('#certClose').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    $('#certViewClose').addEventListener('click', function () { view.close(); });
+
+    $('#certPrint').addEventListener('click', function () { window.print(); });
+    $('#certForget').addEventListener('click', function () {
+      certForget();
+      view.close();
+      certPaintCta();
+      toast('Certificate cleared from this browser. The record stays with Purple Maiʻa.');
+    });
+
+    $('#certForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = ($('#certName').value || '').trim();
+      var email = ($('#certEmail').value || '').trim();
+      if (!name) { $('#certName').focus(); certStatus(CERT.needName, 'error'); return; }
+      if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) {
+        $('#certEmail').focus(); certStatus(CERT.needEmail, 'error'); return;
+      }
+
+      var btn = $('#certSubmit');
+      btn.disabled = true;
+      certStatus('Sending…');
+
+      var body = {
+        action: 'request',
+        name: name,
+        email: email,
+        n: lessons.filter(function (l) { return done.has(l.id); }).length,
+        total: lessons.length,
+        course: CERT.courseName || '',
+        origin: location.origin + location.pathname
+      };
+
+      if (!window.fetch) { btn.disabled = false; certStatus(CERT.sendFailed, 'error'); return; }
+      fetch(CERT.endpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(body)
+      }).then(function () {
+        btn.disabled = false;
+        certStatus(CERT.sent, 'ok');
+        $('#certEmail').value = '';
+      }, function () {
+        btn.disabled = false;
+        certStatus(CERT.sendFailed, 'error');
+      });
+    });
+
+    certPaintCta();
   })();
 
   /* ---------- deep link: #lesson-l3 opens that lesson ---------- */

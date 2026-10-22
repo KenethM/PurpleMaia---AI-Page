@@ -1181,3 +1181,75 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .fb-status.is-ok { color: var(--accent); font-weight: 600; }
 
 @media print { .fb-fab, .fb-dialog { display: none !important; } }
+
+/* ===================== CERTIFICATE =====================
+   The sign-in form reuses the feedback dialog's shell, so only the
+   issued certificate needs its own look. It is designed to print on
+   one page with nothing else on it, which is the only reason the
+   print block below is as blunt as it is.
+   ------------------------------------------------------- */
+.cert-view-dialog {
+  width: min(680px, calc(100vw - 32px)); padding: 0;
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg);
+}
+.cert-view-dialog::backdrop { background: rgba(10,12,16,.55); backdrop-filter: blur(3px); }
+
+.cert-sheet {
+  padding: 44px 44px 36px; text-align: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--accent-soft) 0%, transparent 62%),
+    var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.cert-logo { height: 34px; width: auto; margin-bottom: 26px; }
+:root[data-theme="dark"] .cert-logo { content: url("pm-lockup-white.png"); }
+
+.cert-kicker {
+  margin: 0 0 14px; font-size: .74rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .16em; color: var(--accent);
+}
+.cert-name {
+  font-family: var(--font-display); font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 700; line-height: 1.15; letter-spacing: -.02em;
+  margin: 0 0 14px; color: var(--text);
+}
+.cert-course { margin: 0 0 20px; font-size: 1rem; color: var(--text-2); }
+.cert-course strong { color: var(--text); font-weight: 600; }
+.cert-meta { margin: 0 0 26px; font-size: .86rem; color: var(--muted); }
+.cert-code {
+  display: inline-block; margin: 0 0 12px; padding: 7px 15px;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .84rem; letter-spacing: .06em; color: var(--text-2);
+}
+.cert-verify { margin: 0; font-size: .74rem; color: var(--muted); max-width: 46ch; margin-inline: auto; }
+
+.cert-actions {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 18px 26px 22px; border-top: 1px solid var(--border); background: var(--surface-2);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* Printing. Everything on the page is hidden and the certificate is lifted
+   out of the dialog's top layer, because a modal dialog prints clipped or
+   not at all depending on the browser. */
+@media print {
+  .no-print { display: none !important; }
+  body > *:not(.cert-view-dialog) { display: none !important; }
+  .cert-view-dialog[open] {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important; max-width: none !important;
+    margin: 0 !important; border: 0 !important; box-shadow: none !important;
+    background: #fff !important; color: #15031f !important;
+  }
+  .cert-view-dialog[open]::backdrop { display: none !important; }
+  .cert-sheet {
+    background: #fff !important; padding: 12% 10% !important; border-radius: 0 !important;
+  }
+  .cert-name, .cert-course strong { color: #15031f !important; }
+  .cert-kicker { color: #6b2f96 !important; }
+  .cert-actions { display: none !important; }
+}
