@@ -16,6 +16,149 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-23 — Certificate, river prototype, three more videos, and a live site two weeks behind
+
+**Who:** Keneth, with Claude
+**Branch:** `community-hub`, now at `17e951b`. `login` at `55f474f`, `main` at `53abaf9`. All three pushed.
+**State:** committed and pushed to GitHub. **Not deployed.**
+**Files:** `content.js`, `community.js`, `index.html`, `assets/app.js`, `assets/styles.css`, `tools/certificate-apps-script.js`, `tools/river-prototype.html`, `assets/video/*` (six new files)
+
+### Why
+
+Three separate threads landed in the same week. The AF-builders meeting asked for
+tracking on the page and floated login, progress and a certificate as stretch
+goals. Sam delivered videos 10, 11 and 12. And a conversation about making the
+material more engaging turned into the first interactive built from the white
+paper's own analogy.
+
+### What changed
+
+**An optional certificate, signed in by emailed link.** Finish every lesson and a
+button appears. Name plus email, a one-time link arrives, clicking it records the
+completion and returns the learner to the page with a certificate and a `PM-`
+verification code. No password is ever created. Config lives in `content.js`
+section 15; the server side is `tools/certificate-apps-script.js`, a separate
+Apps Script project from the feedback collector.
+
+**Three more Purple Maiʻa videos**, taking it to **11 of 19**:
+
+| Lesson | File | Length |
+|---|---|---|
+| `m2-loop` | `how-text-is-generated.mp4` | 1:45 |
+| `m2-tokenization` | `it-reads-in-pieces.mp4` | 1:48 |
+| `m2-embeddings` | `where-words-live.mp4` | 2:05 |
+
+**`tools/river-prototype.html`** — a standalone page, not wired into the site.
+Droplet-based hydraulic erosion on a 320×200 heightmap, canvas 2D, no libraries.
+Rain on a slope, channels carve, then drop a test droplet anywhere and watch it
+slide into the channels you cut. It is the parameters lesson, and it is secretly
+the bias lesson.
+
+**`VIDEO-SCRIPTS.md` rebuilt** from Sam's production doc: all 15 scripts, plus two
+new ones written to fill the gaps (16 `m1-daily`, 17 `m2-parameters`). Still
+gitignored, so it lives only on Keneth's machine.
+
+### Decisions worth knowing
+
+**The certificate round trip avoids CORS on both legs.** The request out is a
+no-cors POST, same as the feedback widget. The answer comes back as an ordinary
+browser navigation to `#cert=<payload>`, because the Apps Script redirects. Nothing
+has to read a cross-origin response, which is the part that is usually fragile
+with Apps Script. Do not "simplify" this into a fetch that reads a reply.
+
+**`ALLOWED_ORIGINS` in the certificate script is security-critical.** The redirect
+target arrives in the request. Without an exact-match check, anyone could call the
+script with their own origin and use Purple Maiʻa's address as a redirector.
+Matching is full-string, never `indexOf`: `ai-page.sandbox.purplemaia.org.evil.test`
+contains our host too.
+
+**The community overlay claims the certificate.** `community.js` sets
+`certificate.courseName` to "Intro to AI". Without that, somebody finishing the
+community edition is handed a certificate for the staff course.
+
+**The overlay handled the new videos by itself.** Its rule only demotes *outside*
+explainers to optional links, so the moment a lesson got a `file:` video it was
+promoted to inline and its "Want more?" link dropped away. One edit to
+`content.js`, both editions correct. This is the argument against forking.
+
+**Privacy copy was corrected twice.** The FAQ used to promise the feedback button
+was "the single exception" that sends anything; the certificate made that false.
+Both editions now name both, and `"free, no login"` became `"nothing on it is
+gated"`. Keep that precise — it is the claim a sharp reader at a partner org will
+test.
+
+### Held back deliberately
+
+**Both Apps Scripts are written but not deployed.** `feedback.endpoint` and
+`certificate.endpoint` are both `""` in the commit, so both features are invisible
+in production. Each needs about five minutes: new Sheet, paste the file, run
+`setup`, deploy as a web app, paste the `/exec` URL into `content.js`. For the
+certificate, **edit `ALLOWED_ORIGINS` before deploying.**
+
+**The river is not wired into any lesson.** Deliberate: the design direction had
+not been agreed, and `window.__river` is still exposed as a tuning hook. That
+would come out before integration.
+
+**Regions in the river are unlabelled.** Naming one side ʻōlelo Hawaiʻi and the
+other English is what would make it land hardest, and it is exactly the framing
+that should go past cultural review first.
+
+### How it was tested
+
+Seven suites, all passing: `smoke`, `smoke2`, `standin`, `nobadge`, `feedback`,
+`agenda`, `cert`. The certificate adds 42 assertions, including seven on the
+open-redirect defence (suffix attack, host-in-query-string, `javascript:` URL).
+
+The sign-in round trip was exercised end to end against a local stand-in for the
+Apps Script: request → emailed link → 302 → `#cert=` payload rendered. The real
+Google deployment has **not** been tested, because it does not exist yet.
+
+The river was measured rather than eyeballed, which is the only reason it works.
+Three bugs: the terrain had no net downhill (noise octaves out-steepened the base
+slope, so a droplet ran 900 steps and never left row 15 of 200); the downslope
+bias was applied to the raw gradient where it was rounding error; and the erosion
+brush was too tight to leave a catchment, giving 12% channel capture against an 8%
+baseline. Now 26% against 13%, and 28–30 of 30 droplets reach the sea.
+
+Not tested: the certificate against real Google infrastructure, and the river on a
+phone.
+
+### Open / next
+
+- [ ] **The live site is two weeks behind.** Dokku is on `e012b70`; `main` is at
+      `53abaf9` and `community-hub` at `17e951b`. `assets/video/*.mp4` returns 404
+      in production — **none of the 11 videos are live.** Deploying is one command,
+      but it needs a decision first: which branch is the public face, `main`
+      (LLM/NLP 101) or `community-hub` (Intro to AI)?
+- [ ] Deploy the two Apps Scripts. Nothing is being collected until then.
+- [ ] Eight lessons still on stand-ins: `m1-daily`, `m2-training-data`,
+      `m2-parameters`, `m2-transformers`, `m2-sampling`, `m3-grounding`, `m3-bias`,
+      `m3-model-families`. Scripts already exist for all but two, so these are
+      shooting work, not writing work.
+- [ ] `ai.purplemaia.org`. This invalidates all three QR assets, **the QR printed
+      into deck slide 4**, and the URL hard-coded twice in the white paper. A PDF
+      and a printed QR cannot be redirected. Decide the domain before anything
+      else circulates.
+- [ ] The hero still says **~95 min self-paced**. True figure is nearer 5h26m now
+      that 11 lessons carry video. One decision — do stand-ins count? — then three
+      recomputes together.
+- [ ] `README.md:128` still says to find-and-replace the URL across three files and
+      that "nothing else is URL-dependent". Five other things are. That is a trap
+      set for whoever does the domain move.
+- [ ] White paper: the reference list is verified and the editor's note is gone,
+      but three in-text citation years still disagree with the Sources entries
+      (3Blue1Brown 2025→2024, LearnThatStack 2026→2025, Cloudflare 2026→n.d.), and
+      Wei is still uncited in the body.
+- [ ] GitHub Pages was serving a stale build on 10-22. Worth a glance at Settings →
+      Pages.
+- [ ] Sam is working analytics on her own fork, `splimon/AI-101-Community-Site`.
+      She forked from `e012b70`, so she must **pull upstream rather than re-fork**
+      to get the videos and the community edition.
+- [ ] `VIDEO-SCRIPTS.md` is gitignored. It is now the real production record,
+      with 17 scripts. Worth deciding whether it should be tracked.
+
+---
+
 ## 2026-10-20 — Community edition: a mile wide, an inch deep (branch `community-hub`)
 
 ### Why
