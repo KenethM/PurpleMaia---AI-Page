@@ -242,6 +242,14 @@
     { label: "Cost", value: "Free, no login" }
   ];
 
+  /* ---------- the certificate ----------
+     The overlay has to claim this too, or somebody who finishes the
+     community edition is handed a certificate for the staff course. */
+  if (S.certificate) {
+    S.certificate.courseName = "Intro to AI";
+    S.certificate.blurb = "You went through all of it. Put your name on it and keep a copy.";
+  }
+
   S.pathways = [
     {
       icon: "sprout",
@@ -286,9 +294,11 @@
     { q: "Where are the Purple Maiʻa videos?",
       a: ours + " of the " + total + " lessons have one now, and the rest are being made. Until a lesson's video is ready, the two lines under it carry the idea, and a longer outside explainer is linked if you want one." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The checks under each lesson and the activities in Practice are for you. Your answers and progress stay in your own browser and nothing is uploaded. The feedback button is the one exception, and it sends only what you type into it, only when you press send." },
+      a: "No and no. The checks under each lesson and the activities in Practice are for you. Your answers and progress stay in your own browser and nothing is uploaded. Two things can send anything, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
     { q: "Can our organization use this?",
-      a: "Yes. It is free and public with no login. Share the link, work through it together in a meeting, or copy the source and adapt it for your own group." }
+      a: "Yes. It is free and public, and nothing on it is gated. Share the link, work through it together in a meeting, or copy the source and adapt it for your own group." },
+    { q: "What is the certificate at the end?",
+      a: "Optional, and it only shows up once you have finished every lesson. Asking for one sends the name you want printed, an email address, and how many lessons you did. Nothing else, and nothing until you press the button. There is no password and no account: you get a one-time link by email, and clicking it is the whole sign-in. Everything else stays in your browser." }
   ].filter(Boolean);
 
   /* ---------- resources ---------- */
