@@ -399,8 +399,8 @@ window.SITE = {
       level: "Module 2",
       duration: "13 min",
       summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
-      video: "youtube:NKnZYvZA7w4",
-      videoLength: "9:24",
+      video: "file:assets/video/how-text-is-generated.mp4",
+      videoLength: "1:45",
       takeaways: [
         "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
