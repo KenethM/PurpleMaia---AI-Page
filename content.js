@@ -1442,7 +1442,7 @@ window.SITE = {
   /* ---------- 11. FAQ ---------- */
   faq: [
     { q: "Who is this for?",
-      a: "Purple Maiʻa staff first, at a 101 level. Our staff distribution mirrors the broader community well enough that this doubles as a useful public asset, which is why the page is open and has no login." },
+      a: "Purple Maiʻa staff first, at a 101 level. Our staff distribution mirrors the broader community well enough that this doubles as a useful public asset, which is why the page is open and nothing on it is gated. There is no account to make. The only time it asks who you are is if you want a certificate at the end, and that is entirely optional." },
     { q: "Do I need any technical background?",
       a: "None. There is no math anywhere in these three modules, and nothing assumes you have used a particular tool." },
     { q: "Is the model learning from what I type?",
@@ -1460,9 +1460,11 @@ window.SITE = {
     { q: "What does the “Viewing as” switcher at the top do?",
       a: "It re-skins the same knowledge base for whoever is in the room — staff onboarding, a partner briefing, and more versions as we add them. The framing and the suggested starting lessons change; nothing is ever hidden, and all 19 lessons stay reachable in every mode. The switcher writes itself into the address bar, so you can copy the link and send somebody straight into the right version." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere. The feedback button is the single exception on this page, and it sends only what you type into it, only when you press send." },
+      a: "No and no. The checks under each lesson and the activities in Practice are for you. Like the progress ring, answers are kept in your own browser and nothing is uploaded anywhere. Two things on this page can send anything, and both wait for you to press a button: the feedback form, which sends only what you type into it, and the certificate, which only appears once you have finished every lesson and only if you want one." },
     { q: "What does the feedback button send?",
       a: "Exactly what the dialog shows you before you press send, and you can open ‘What gets sent’ to read the whole thing. Your note, which of the three kinds you picked, your name if you chose to fill it in, which lesson or section you were looking at, which audience version you had on, and your browser and window size so a layout bug can be reproduced. No account, no cookie, no tracking, and no raw device fingerprint. It lands in a spreadsheet in Purple Maiʻa’s own Drive and turns into a write-up every Friday." },
+    { q: "What is the certificate, and what does asking for one send?",
+      a: "It appears once you have ticked off every lesson, and it is optional — nothing on this page is locked behind it. Asking for one sends three things: the name you want printed, an email address, and how many lessons you finished. Nothing else, and nothing at all until you press the button. There is no password and no account: you get a one-time link by email, clicking it proves the address is yours, and that is the whole sign-in. Your progress, your quiz answers and the lessons you opened never leave your browser. The record lives in a spreadsheet in Purple Maiʻa's own Drive, and the code printed on the certificate is how anyone can check it with us." },
     { q: "Where are the Purple Maiʻa videos?",
       a: "Being animated from these scripts now. In the meantime every lesson carries a stand-in — an outside explainer chosen for that specific topic and for how well it has been received, labelled as a stand-in under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
@@ -1570,6 +1572,71 @@ window.SITE = {
     thanks: "Got it. Thank you — this lands in Friday's list.",
     queued: "Saved on this device. It will send next time you open the page.",
     disclosure: "What gets sent"
+  }
+,
+
+  /* ---------- 15. CERTIFICATE ----------
+     The only part of this page that asks who you are, and it only asks once
+     you have finished every lesson. Nothing is gated behind it: every lesson,
+     quiz and activity works without ever signing in. If you never want a
+     certificate, the page never learns your name.
+
+     How it works, and why it is built this way:
+
+       1. You finish the lessons, then ask for a certificate and give a name
+          and an email.
+       2. That request goes to the Apps Script, which emails you a one-time
+          link. No password is ever created, stored or transmitted.
+       3. Clicking the link proves the address is yours. The script records
+          the completion, then sends you back here with your name and a
+          verification code.
+       4. The certificate renders in your browser and prints.
+
+     Nothing is sent while you work through the lessons. The first and only
+     transmission happens when you ask for the certificate, which is what
+     keeps the progress ring's promise honest.
+
+     endpoint: the Apps Script web-app URL. Leave it "" and the whole feature
+       stays hidden, so the page behaves exactly as it did before.
+       Setup steps: tools/certificate-apps-script.js
+
+     requireAll: true means the certificate only unlocks at 100%. Set a number
+       instead to unlock earlier, e.g. 15 of 19.
+  --------------------------------------------------------------- */
+  certificate: {
+    endpoint: "",
+    requireAll: true,
+
+    title: "Certificate of completion",
+    courseName: "LLM/NLP 101",
+    issuer: "Purple Maiʻa",
+    blurb: "You have been through all of it. Put your name on it and keep a copy.",
+
+    cta: "Get your certificate",
+    nameLabel: "Name as it should appear",
+    namePlaceholder: "Your full name",
+    emailLabel: "Email, so we can send the link",
+    emailPlaceholder: "you@example.org",
+    submit: "Email me the link",
+
+    sent: "Check your inbox. The link lasts 15 minutes.",
+    sendFailed: "Could not reach the server. Nothing was sent, so nothing was recorded.",
+    needName: "A name is needed for the certificate.",
+    needEmail: "That does not look like an email address.",
+
+    /* Shown under the form, above the button. Keep this accurate: it is the
+       whole reason anybody should trust the thing. */
+    disclosure: "What this sends",
+    disclosureBody:
+      "Your name, your email, and how many lessons you finished. Nothing else, " +
+      "and nothing until you press the button. Your answers, your progress and " +
+      "the lessons you opened stay in this browser, as they always have. The " +
+      "record lives in a spreadsheet in Purple Maiʻa's own Drive.",
+
+    /* Printed on the certificate so a reader can check it is real. */
+    verifyNote: "Verify this certificate with Purple Maiʻa, quoting the code above.",
+    print: "Print or save as PDF",
+    signedOut: "Start over"
   }
 
 };

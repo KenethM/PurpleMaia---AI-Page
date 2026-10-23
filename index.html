@@ -228,6 +228,7 @@
           <p id="progressCount">0 of 10 lessons done</p>
           <p class="muted" id="progressHint">Tick lessons off as you go. Saved in this browser only — nothing is uploaded.</p>
           <button class="btn btn-small btn-ghost" id="resetProgress" hidden>Reset progress</button>
+          <button class="btn btn-small btn-primary" id="certCta" hidden></button>
         </div>
       </div>
       <ul class="facts" id="heroFacts"></ul>
@@ -421,6 +422,54 @@
       <span class="fb-status" id="fbStatus" role="status" aria-live="polite"></span>
     </div>
   </form>
+</dialog>
+
+<!-- ===================== CERTIFICATE ===================== -->
+<dialog class="fb-dialog cert-dialog" id="certDialog" aria-labelledby="certTitle">
+  <button class="dialog-close" id="certClose" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <form class="fb-form" id="certForm" novalidate>
+    <h2 id="certTitle" class="fb-title"></h2>
+    <p class="fb-blurb muted" id="certBlurb"></p>
+
+    <label class="fb-label" for="certName" id="certNameLabel"></label>
+    <input type="text" id="certName" class="fb-input" maxlength="80" autocomplete="name">
+
+    <label class="fb-label" for="certEmail" id="certEmailLabel"></label>
+    <input type="email" id="certEmail" class="fb-input" maxlength="160" autocomplete="email">
+
+    <details class="fb-disclosure">
+      <summary id="certDisclosureLabel"></summary>
+      <p class="fb-payload" id="certDisclosureBody"></p>
+    </details>
+
+    <div class="fb-actions">
+      <button type="submit" class="btn btn-primary" id="certSubmit"></button>
+      <span class="fb-status" id="certStatus" role="status" aria-live="polite"></span>
+    </div>
+  </form>
+</dialog>
+
+<!-- The issued certificate. Rendered from the signed payload the sign-in link
+     sends back, and styled to print on its own page. -->
+<dialog class="cert-view-dialog" id="certViewDialog" aria-labelledby="certViewTitle">
+  <button class="dialog-close no-print" id="certViewClose" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <div class="cert-sheet" id="certSheet">
+    <img class="cert-logo" src="assets/pm-lockup.png" alt="Purple Maiʻa" width="200" height="40">
+    <p class="cert-kicker" id="certViewKicker"></p>
+    <h2 class="cert-name" id="certViewName"></h2>
+    <p class="cert-course">has completed <strong id="certViewCourse"></strong></p>
+    <p class="cert-meta"><span id="certViewDate"></span> &middot; <span id="certViewScore"></span></p>
+    <p class="cert-code" id="certViewCode"></p>
+    <p class="cert-verify" id="certViewVerify"></p>
+  </div>
+  <div class="cert-actions no-print">
+    <button class="btn btn-primary" id="certPrint"></button>
+    <button class="btn btn-ghost btn-small" id="certForget"></button>
+  </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
