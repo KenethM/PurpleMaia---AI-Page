@@ -475,8 +475,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "The model does not see words. It sees numbered chunks.",
-      video: "youtube:-0HRzXk8vlk",
-      videoLength: "25:22",
+      video: "file:assets/video/it-reads-in-pieces.mp4",
+      videoLength: "1:48",
       takeaways: [
         "Text is chopped into tokens, and every token gets a number — a token ID.",
         "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
@@ -493,8 +493,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "Turning tokens into coordinates in a space where distance means similarity of meaning.",
-      video: "youtube:viZrOnJclY0",
-      videoLength: "16:11",
+      video: "file:assets/video/where-words-live.mp4",
+      videoLength: "2:05",
       takeaways: [
         "Each token becomes a vector — a position in a \"meaning space\".",
         "Words used in similar ways land close together. \"King\" sits near \"queen\".",
