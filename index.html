@@ -21,7 +21,7 @@
 <meta property="og:image" content="https://ai-page.sandbox.purplemaia.org/assets/social.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="LLM/NLP 101 — a staff learning asset from Purple Maiʻa">
+<meta property="og:image:alt" content="LLM/NLP 101 — a free 101 from Purple Maiʻa">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="LLM/NLP 101 — Purple Maiʻa">
 <meta name="twitter:description" content="What an LLM is, how it generates a response, and where it falls short. Three modules, free and public.">
@@ -95,8 +95,8 @@
       "hasPart": [
         {
           "@type": "Course",
-          "name": "Module 1 \u2014 Overview",
-          "description": "AI, ML, NLP, generative AI and LLMs, and where each shows up in your day.",
+          "name": "Module 1 \u2014 What is generative AI?",
+          "description": "AI, machine learning, NLP, generative AI and LLMs: how the five terms nest inside each other, and where each already shows up in your day.",
           "provider": {
             "@type": "Organization",
             "name": "Purple Mai\u02bba"
@@ -105,7 +105,7 @@
         {
           "@type": "Course",
           "name": "Module 2 \u2014 How an LLM works",
-          "description": "Training data, parameters, pre-training vs inference, tokens, embeddings, transformers, next-token prediction, sampling, context windows.",
+          "description": "Training and inference, training data, parameters, the generation loop (tokens, embeddings, attention, next-token prediction), sampling, context windows, and how models are built: fine-tuning, RLHF, model families, open weights and agents.",
           "provider": {
             "@type": "Organization",
             "name": "Purple Mai\u02bba"
@@ -114,7 +114,7 @@
         {
           "@type": "Course",
           "name": "Module 3 \u2014 Using LLMs well",
-          "description": "Prompts and context, hallucination, grounding, bias, reasoning, human oversight, model families.",
+          "description": "Prompting, grounding and retrieval-augmented generation, verification, hallucinations, bias and cultural context, reasoning, privacy, human oversight, and recommended practices.",
           "provider": {
             "@type": "Organization",
             "name": "Purple Mai\u02bba"
@@ -133,19 +133,18 @@
 <!-- ===================== HEADER ===================== -->
 <header class="site-header" id="siteHeader">
   <div class="wrap header-inner">
-    <a class="brand" href="#top">
+    <a class="brand" href="#/">
       <span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-text" data-bind="event.shortName">LLM/NLP 101</span>
     </a>
 
     <nav class="site-nav" aria-label="Sections">
-      <a href="#lessons">Lessons</a>
-      <a href="#practice">Practice</a>
+      <a href="#/" data-nav="modules">Modules</a>
       <a href="#agenda">Agenda</a>
-      <a href="#prompts">Prompts</a>
-      <a href="#glossary">Glossary</a>
-      <a href="#faq">FAQ</a>
-      <a href="#resources">Resources</a>
+      <a href="#/reference/glossary" data-nav="glossary">Glossary</a>
+      <a href="#/reference/prompts" data-nav="prompts">Prompts</a>
+      <a href="#/reference/faq" data-nav="faq">FAQ</a>
+      <a href="#/reference/resources" data-nav="resources">Resources</a>
     </nav>
 
     <div class="header-actions">
@@ -173,7 +172,7 @@
       </button>
     </div>
   </div>
-  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true" hidden></div>
 </header>
 
 <main id="main">
@@ -189,94 +188,41 @@
   <p class="wrap audience-blurb" id="audienceBlurb"></p>
 </section>
 
-<!-- ===================== HERO ===================== -->
+<!-- ===================== HOME ===================== -->
+<!-- Three views share <main>; app.js route() shows one at a time:
+     #homeView (#/), #referenceView (#/reference/...) and #moduleView
+     (#/module/<id>). -->
+<div id="homeView">
 <section class="hero" id="top">
-  <div class="hero-glow" aria-hidden="true"></div>
   <div class="wrap hero-inner">
-    <div class="hero-copy">
-      <p class="eyebrow"><span class="dot" aria-hidden="true"></span><span data-bind="event.badge">Workshop materials</span></p>
-      <h1 data-bind="event.name">LLM/NLP 101</h1>
-      <p class="lede" data-bind="event.tagline"></p>
-
-      <ul class="hero-meta" id="heroMeta"></ul>
-
-      <div class="hero-cta">
-        <a class="btn btn-primary" id="ctaPrimary" href="#lessons">Start with Lesson 1</a>
-        <a class="btn btn-ghost" id="ctaSecondary" href="#agenda">See the run of show</a>
-      </div>
-
-      <p class="hero-intro" data-bind="event.intro"></p>
+    <h1 data-bind="event.headline">AI 101, from the ground up.</h1>
+    <p class="lede" data-bind="event.tagline"></p>
+    <ul class="hero-meta" id="heroMeta"></ul>
+    <!-- Course progress, from 0%. Stored in this browser only. -->
+    <div class="overall" id="overall" hidden>
+      <span class="meter" aria-hidden="true"><b id="overallFill"></b></span>
+      <span class="overall-text" id="overallText" tabindex="-1" aria-live="polite"></span>
+      <span class="overall-note">Saved in this browser only.</span>
+      <button class="linklike" id="resetProgress" type="button">Reset progress</button>
     </div>
-
-    <aside class="progress-card" aria-labelledby="progressHeading">
-      <h2 id="progressHeading">Your progress</h2>
-      <div class="progress-body">
-        <div class="ring-wrap">
-          <svg class="ring" viewBox="0 0 120 120" role="img" aria-labelledby="ringLabel">
-            <title id="ringLabel">Lessons completed</title>
-            <circle class="ring-track" cx="60" cy="60" r="52"/>
-            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"/>
-          </svg>
-          <div class="ring-center"><strong id="ringPct">0%</strong></div>
-        </div>
-        <div class="progress-text">
-          <p id="progressCount">0 of 10 lessons done</p>
-          <p class="muted" id="progressHint">Tick lessons off as you go. Saved in this browser only — nothing is uploaded.</p>
-          <button class="btn btn-small btn-ghost" id="resetProgress" hidden>Reset progress</button>
-        </div>
-      </div>
-      <ul class="facts" id="heroFacts"></ul>
-    </aside>
   </div>
 </section>
 
-<!-- ===================== PATHWAYS ===================== -->
-<section class="section section-tight" id="start" aria-labelledby="startHeading">
+<!-- ===================== MODULES ===================== -->
+<section class="section section-tight" id="modules" aria-labelledby="modulesHeading">
   <div class="wrap">
-    <header class="section-head">
-      <h2 id="startHeading">Where should I start?</h2>
-      <p class="section-sub">Three honest answers. Pick the one that sounds like you.</p>
-    </header>
-    <div class="pathways" id="pathways"></div>
-    <!-- Three questions that point at one of the pathways above. Rendered from
-         SITE.placement; the whole block hides if that key is absent. -->
-    <div class="placement" id="placement" hidden></div>
+    <h2 class="sr-only" id="modulesHeading">Modules</h2>
+    <div class="module-grid" id="moduleGrid"></div>
+    <!-- The three placement questions, rendered from SITE.placement. -->
+    <div class="placement" id="placement" aria-live="polite" hidden></div>
   </div>
 </section>
 
-<!-- ===================== LESSONS ===================== -->
-<section class="section" id="lessons" aria-labelledby="lessonsHeading">
-  <div class="wrap">
-    <header class="section-head">
-      <h2 id="lessonsHeading">Lessons &amp; recordings</h2>
-      <p class="section-sub">Each one is short and self-contained. Open a lesson for the video, the key points, and the handouts.</p>
-    </header>
-
-    <div class="toolbar">
-      <div class="filters" id="trackFilters" role="group" aria-label="Filter lessons by track"></div>
-      <div class="filter-input">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
-        </svg>
-        <input type="search" id="lessonSearch" placeholder="Filter lessons…" aria-label="Filter lessons by keyword" autocomplete="off">
-      </div>
-    </div>
-
-    <div class="lesson-grid" id="lessonGrid"></div>
-    <!-- module recap: the one thing to carry out, shown when a single track is filtered -->
-    <aside class="lesson-recap" id="lessonRecap" hidden></aside>
-    <p class="empty-state" id="lessonEmpty" hidden>Nothing matches that. <button class="linklike" id="clearFilters">Clear the filters</button></p>
-  </div>
-</section>
-
-<!-- ===================== PRACTICE ===================== -->
-<section class="section section-alt" id="practice" aria-labelledby="practiceHeading">
-  <div class="wrap">
-    <header class="section-head">
-      <h2 id="practiceHeading">Practice</h2>
-      <p class="section-sub">Six things to play with instead of being told. Nothing is graded and nothing leaves your browser — the point is to see the behaviour for yourself.</p>
-    </header>
-    <div class="practice-grid" id="practiceGrid"></div>
+<!-- ===================== WHY ===================== -->
+<section class="section section-tight" id="why" aria-labelledby="whyHeading" hidden>
+  <div class="wrap why">
+    <h2 id="whyHeading"></h2>
+    <div id="whyBody"></div>
   </div>
 </section>
 
@@ -291,23 +237,46 @@
   </div>
 </section>
 
-<!-- ===================== PROMPTS ===================== -->
-<section class="section section-alt" id="prompts" aria-labelledby="promptsHeading">
+<!-- ===================== REFERENCE LINKS ===================== -->
+<section class="section section-alt" id="reference-links" aria-labelledby="refLinksHeading">
   <div class="wrap">
     <header class="section-head">
-      <h2 id="promptsHeading">Prompt library</h2>
-      <p class="section-sub">Steal these. Copy one, swap the bracketed parts for your own details, and go.</p>
+      <h2 id="refLinksHeading">Reference</h2>
+      <p class="section-sub">For when you need one thing quickly.</p>
     </header>
-    <div class="prompt-grid" id="promptGrid"></div>
+    <div class="ref-links">
+      <a class="ref-link" href="#/reference/glossary"><span class="ref-link-title">Glossary</span><span>Every term from the modules in plain words.</span></a>
+      <a class="ref-link" href="#/reference/prompts"><span class="ref-link-title">Prompt library</span><span>Prompts to copy, with the bracketed parts to swap for your own.</span></a>
+      <a class="ref-link" href="#/reference/faq"><span class="ref-link-title">Questions people ask</span><span>Straight answers to what comes up after a session.</span></a>
+      <a class="ref-link" href="#/reference/resources"><span class="ref-link-title">Downloads and links</span><span>The deck, the outside explainers and the demos.</span></a>
+    </div>
   </div>
 </section>
+
+</div><!-- /#homeView -->
+
+<!-- ===================== REFERENCE ===================== -->
+<!-- Shown by the router for #/reference and #/reference/<section>. -->
+<div id="referenceView" hidden>
+<header class="ref-head">
+  <div class="wrap">
+    <p class="crumb"><a href="#/">Modules</a> / Reference</p>
+    <h1 id="referenceTitle" tabindex="-1">Reference</h1>
+    <nav class="ref-jump" aria-label="On this page">
+      <a href="#/reference/glossary">Glossary</a>
+      <a href="#/reference/prompts">Prompt library</a>
+      <a href="#/reference/faq">Questions people ask</a>
+      <a href="#/reference/resources">Downloads and links</a>
+    </nav>
+  </div>
+</header>
 
 <!-- ===================== GLOSSARY ===================== -->
 <section class="section" id="glossary" aria-labelledby="glossaryHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="glossaryHeading">Plain-language glossary</h2>
-      <p class="section-sub">Every term we used today, without the jargon defending itself with more jargon.</p>
+      <p class="section-sub">Every term from the modules, without the jargon defending itself with more jargon.</p>
     </header>
     <div class="filter-input filter-input-wide">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -319,8 +288,19 @@
   </div>
 </section>
 
+<!-- ===================== PROMPTS ===================== -->
+<section class="section section-alt" id="prompts" aria-labelledby="promptsHeading">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="promptsHeading">Prompt library</h2>
+      <p class="section-sub">Steal these. Copy one, swap the bracketed parts for your own details, and go.</p>
+    </header>
+    <div class="prompt-grid" id="promptGrid"></div>
+  </div>
+</section>
+
 <!-- ===================== FAQ ===================== -->
-<section class="section section-alt" id="faq" aria-labelledby="faqHeading">
+<section class="section" id="faq" aria-labelledby="faqHeading">
   <div class="wrap wrap-narrow">
     <header class="section-head">
       <h2 id="faqHeading">Questions people actually ask</h2>
@@ -330,15 +310,20 @@
 </section>
 
 <!-- ===================== RESOURCES ===================== -->
-<section class="section" id="resources" aria-labelledby="resourcesHeading">
+<section class="section section-alt" id="resources" aria-labelledby="resourcesHeading">
   <div class="wrap">
     <header class="section-head">
       <h2 id="resourcesHeading">Downloads &amp; links</h2>
-      <p class="section-sub">Everything referenced today, in one place.</p>
+      <p class="section-sub">Everything the modules point to, in one place.</p>
     </header>
     <div class="resource-grid" id="resourceGrid"></div>
   </div>
 </section>
+</div><!-- /#referenceView -->
+
+<!-- ===================== MODULE ARTICLE ===================== -->
+<!-- Filled by app.js from SITE.modules when the address is #/module/<id>. -->
+<div id="moduleView" hidden></div>
 
 </main>
 
@@ -358,14 +343,6 @@
   </div>
 </footer>
 
-<!-- ===================== LESSON DIALOG ===================== -->
-<dialog class="lesson-dialog" id="lessonDialog" aria-labelledby="dlgTitle">
-  <button class="dialog-close" id="dialogClose" aria-label="Close lesson">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
-  <div class="dialog-scroll" id="dialogScroll"></div>
-</dialog>
-
 <!-- ===================== SEARCH PALETTE ===================== -->
 <div class="palette-backdrop" id="paletteBackdrop" hidden>
   <div class="palette" role="dialog" aria-modal="true" aria-label="Search everything">
@@ -373,7 +350,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
       </svg>
-      <input type="text" id="paletteInput" placeholder="Search lessons, prompts, terms, questions…" autocomplete="off" spellcheck="false">
+      <input type="text" id="paletteInput" placeholder="Search modules, prompts, terms, questions…" autocomplete="off" spellcheck="false">
       <kbd>esc</kbd>
     </div>
     <ul class="palette-results" id="paletteResults" role="listbox" aria-label="Search results"></ul>
