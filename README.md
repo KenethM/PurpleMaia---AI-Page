@@ -2,15 +2,15 @@
 
 A single static page for hosting workshop material: lessons, video recordings,
 a prompt library, a glossary, an agenda and links — plus a quiz under every
-lesson, six hands-on activities, and an audience switcher that re-skins the
-whole page depending on who is in the room. No build step, no framework, no
+lesson, seven hands-on activities, and three questions up top that point a
+first-time visitor at the right place to start. No build step, no framework, no
 dependencies. Edit one file, push, done.
 
 ```
 index.html          the page structure (you rarely need to touch this)
 content.js          ← EVERYTHING YOU EDIT LIVES HERE
 assets/styles.css   colours, type, layout
-assets/app.js       rendering, filtering, search, progress, quizzes, activities
+assets/app.js       rendering, the module pages and routing, search, progress, quizzes, activities
 assets/favicon.svg  the little icon in the browser tab
 assets/stamp.png    the ʻohe kāpala texture in the page margins (a CSS mask)
 assets/pm-*.png     Purple Maiʻa mark and lockup, each with a -white variant
@@ -142,8 +142,42 @@ file system — nothing needs a server, so what you see locally is what ships.
 Open `content.js`. It is one big object with numbered sections, and everything
 on the page is generated from it. Save the file, refresh the browser, see the change.
 
+### Editing a module
+
+The three modules are `modules` in section 4b of `content.js`, written from
+Purple Maiʻa's "AI 101 Learning Materials" white paper. Each module is one
+article page at `#/module/<id>`, and each of its `sections` is one heading on
+that page. The comment above `modules` documents every field. In short:
+
+```js
+{
+  id: "sampling",                      // the deep link: #/module/how-llms-work/sampling
+  heading: "Probabilistic output and sampling",
+  lesson: "m2-sampling",               // shows that lesson's video, adds its quiz to practice
+  body: [
+    "A paragraph. **Double asterisks** make bold.",
+    { list: ["a bullet", "another"] },
+    { steps: ["numbered", "list"] },
+    { table: { head: ["A", "B"], rows: [["1", "2"]] } }
+  ],
+  takeaway: "Optional Key takeaway box.",
+  sources: ["learnthatstack-2025"]     // ids in `sources`, shown under the section
+}
+```
+
+A section can also hold `parts`, sub-sections with their own video, which is how
+the generation loop carries four videos. Section and part ids are progress keys,
+so don't rename them casually. **Every source in `sources` was checked against
+its live page; do not add one without doing the same.** The read time on each
+module is computed from its words, so it never needs updating by hand.
+
 ### Adding a lesson
 
+A lesson is now a video plus a quiz that a module section points at with
+`lesson`. Of the fields below, the page shows `title` (the video caption),
+`video`, and the lesson's quiz. `summary` and `takeaways` feed search.
+`duration`, `level`, `slides` and `resources` are kept but not displayed since
+the lesson cards were retired. A lesson no section points at is never shown.
 Add an entry to the `lessons` array:
 
 ```js
@@ -180,13 +214,13 @@ The `video` field takes a prefix:
 YouTube videos use `youtube-nocookie.com` and only load **after** someone clicks
 play, so no tracking scripts run for people who never watch. The page is fast either way.
 
-### Every video right now is a stand-in
+### Outside videos are stand-ins
 
-All 19 lessons carry an outside explainer, each picked for that specific topic
-and for how well it has been received, and each verified against live YouTube
-rather than recalled — a made-up video id on a page that teaches people about
-invented citations would be a bad joke. Purple Maiʻa's own animations replace
-them as they are produced.
+Eight of the 19 videos are Purple Maiʻa's own. The other 11 are outside
+explainers, each picked for that specific topic and for how well it has been
+received, and each verified against live YouTube rather than recalled — a
+made-up video id on a page that teaches people about invented citations would be
+a bad joke. Purple Maiʻa's own animations replace them as they are produced.
 
 A notice saying so renders under every embed. **It is keyed to the video's kind,
 not to a flag anyone has to remember to clear.** The in-house animations arrive
@@ -204,8 +238,9 @@ drawn there was `duration`, which is self-paced time for the *whole lesson*, in
 the one corner every viewer reads as the video's length. Two different clocks.
 They are still unreconciled: `duration` is documented below as including video
 time, and those values predate 16 of the 19 videos, so the per-lesson figures,
-the hero's self-paced total and the module table are all understated. Nothing on
-the cards shows a time until that is settled.
+the old hero total were all understated. None of them is displayed any more: the
+only time on the page is each module's read time, computed from its words, and
+it does not include video.
 
 **On MP4s:** GitHub warns above 50 MB per file and hard-blocks at 100 MB, and Pages
 serves a 1 GB site with a soft 100 GB/month bandwidth limit. For anything longer than
@@ -254,9 +289,10 @@ no entry simply shows no quiz — nothing breaks.
 ```
 
 Two to four options each. The `why` is shown whether they got it right or wrong,
-so write it to teach rather than to say "correct". A lesson answered perfectly
-gets a small **Checked ✓** flag on its card. Scores live in `localStorage`
-alongside the progress ring — this browser only, never uploaded, and the
+so write it to teach rather than to say "correct". The quizzes of every lesson in
+a module run together as that module's "Check your understanding", at the end of
+its page. Scores live in `localStorage`
+alongside lesson progress — this browser only, never uploaded, and the
 "Reset progress" button clears both.
 
 **Write the correct option first if that is easiest — the page shuffles them.**
@@ -267,10 +303,16 @@ always clicking A. If a question's options only make sense in a fixed order — 
 sequence of steps, or an "all of the above" — add `fixed: true` to that question
 and it keeps the order you wrote.
 
-This applies to the lesson quizzes, Term match and "Would you send it?" alike,
+This applies to the module quizzes, Term match and "Would you send it?" alike,
 since all three run through the same component.
 
 ### Re-skinning the page for a different room
+
+> **Dormant right now.** Since October 2026 the site is one generic version for
+> everyone. The `audiences` section, including the held-back community workshop
+> and kupuna copy, was deleted from `content.js`; the code below still works if
+> it is added back. Any community-facing version still needs a cultural review
+> by someone who runs those rooms before it goes live.
 
 Section 3 is `audiences`. Each one inherits everything in `event` and overrides
 only what it names, so a new audience is usually twenty lines:
@@ -332,9 +374,16 @@ new kind of activity needs code as well as content.
 | `cite` | One real paper among three fabricated ones | `real: [{…}]` and `fake: { authors, titles, venues }` |
 | `corpus` | Training coverage vs stated confidence, all rows at once | `questions: [{ q, coverage, confidence, verdict }]` |
 
-Each entry also takes `group: "demo"` or `group: "quiz"`, which decides whether it
-lands under **Try it** or **Check yourself**. Anything without a group falls in
-with the demos.
+Each entry also takes `group`, which decides where it appears:
+
+- `group: "quiz"` (the `scenarios` and `match` types): its questions are added to
+  the module's **Check your understanding**, after the lesson quizzes. `module` is
+  a track id (`overview`, `how-it-works`, `using-llms`); `"all"` adds it to the
+  last module. Term match draws fresh glossary questions on every "Try again".
+- `group: "demo"` (the other four): it sits inside the article section named by
+  `section`, a section or part id from `modules`. Token chopper is under
+  Tokenization, Roll the dice under Sampling, Spot the real one under
+  Hallucinations, and How much did it read? under Bias.
 | `match` | Definition → term quiz, built from the glossary | `rounds: 6` |
 | `scenarios` | Judgment calls | `items`, same shape as a quiz above |
 
@@ -426,17 +475,21 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 
 ## 4. What the page does
 
-- **Audience switcher** — the same knowledge base re-skinned per room. Framing and starting lessons change; no lesson is ever hidden. Shareable as `?for=<id>`. Live: staff onboarding and partner education. Written but held back behind `draft: true`: community workshop and kupuna outreach.
-- **Run of show** — off the page right now. `agendaHidden: true` in `content.js` takes the section, its nav link, the hero's second button and its search entries together, without deleting any of the timings. The October 6 2026 session has happened; set the flag to `false` when the next one is booked and it all comes back. While it is hidden, `ctaSecondaryAlt` decides where the hero's second button points instead.
-- **Check your understanding** — a short quiz under each lesson, with an explanation on every answer, right or wrong.
-- **Practice activities** — six playable widgets: token chopper, next-token dice roll, citation fabricator, training-coverage meters, term match, and a "would you send it?" judgment round.
+- **Three module pages** — the home page shows the three modules (`modules` in `content.js`, written from the white paper). Each opens as an article at `#/module/<id>`: the text, the video for each section, a key takeaway, sources, then practice (the module's lesson quizzes plus its activities) and a link to the next module. "In this module" sits to the right and marks the section being read. Old `#lesson-<id>` links land on the matching section.
+- **Hover previews** — on a computer with a mouse or trackpad, hovering a module card plays that card's video, muted and looping, in place of its picture; moving away pauses it. Nothing loads until the first hover, and it never plays on touch screens, with reduce-motion, or with data saver on. `preview` on a module in `content.js` picks a different clip, or `""` turns it off.
+- **Reference page** — `#/reference` holds the glossary (A–Z, searchable), the prompt library, the FAQ and downloads. The header links and the four cards at the bottom of the home page go straight to each one.
+- **One version for everyone** — the `audiences` section was deleted from `content.js` (October 2026), so there is no switcher and `?for=` is ignored. The switcher code in `app.js` stays dormant and comes back if `audiences` is added again (see "Re-skinning the page" above).
+- **"Not sure where to start?" and "Why we made this"** — both still have code and a place on the home page, but their content (`placement`, `why`) was removed from `content.js`, so neither shows. Add the keys back to bring them back.
+- **Run of show** — off the page right now. `agendaHidden: true` in `content.js` takes the section, its nav link and its search entries together, without deleting any of the timings. The October 6 2026 session has happened; set the flag to `false` when the next one is booked and it comes back on the home page.
+- **Check your understanding** — the one practice block at the end of each module: every question from its lessons plus its question activities ("Which one is it?", "Would you send it?", Term match), with an explanation on every answer, right or wrong.
+- **Hands-on demos** — token chopper, next-token dice roll, citation fabricator and training-coverage meters, each inside the section it illustrates.
 - **Dark and light themes** — follows the system setting, with a manual toggle that sticks.
-- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches lessons, practice activities, prompts, glossary terms, FAQs and, when it is showing, agenda items at once.
-- **Track filters and keyword filtering** on the lessons grid.
-- **Progress tracking** — attendees tick off lessons and see a progress ring. Stored in their own browser via `localStorage`; nothing is uploaded and there is no account. Clearing site data resets it.
+- **Motion** — pages cross-fade as you move between them, "In this module" links glide to their section, and a marker on that rail follows the section you are reading. Text, images and cards fade up gently as they scroll into view, a few at a time (`REVEAL_SEL` at the top of `app.js` lists what reveals). All of it is instant with the system's reduce-motion setting on.
+- **Search everything** — press `/` or `Cmd/Ctrl+K`. Searches modules, their sections, practice activities, prompts, glossary terms, FAQs and, when it is showing, agenda items at once.
+- **Progress tracking** — a section counts as read once you have scrolled to its end (jumping past it does not count), and a module's practice once its quiz has been answered all the way through. "In this module" ticks read sections, the bar under the header shows the module's progress, and the home page shows each module's progress, "Continue" to the next unread section, and a "Reset progress" link. Stored in their own browser via `localStorage`; nothing is uploaded and there is no account. Clearing site data resets it.
 - **Feedback widget** — the button in the bottom-right corner. The one thing on this page that transmits anything, and only when somebody presses send. See section 6.
 - **Copy buttons** on every prompt.
-- **Deep links** — `yourpage.com/#lesson-l3` opens lesson 3 directly. Handy for pasting into a chat during the session.
+- **Deep links** — every module, section and practice block has an address, e.g. `#/module/how-llms-work/sampling` or `#/module/using-llms-well/practice`. Old `#lesson-<id>` links and the old `#glossary`-style anchors redirect to where that content lives now.
 - **Keyboard and screen-reader friendly** — skip link, focus rings, real buttons, labelled regions.
 - **Prints cleanly** — navigation and decoration drop out, cards avoid page breaks.
 - **Responsive** down to small phones.
@@ -448,58 +501,51 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] `assets/social.png` is a 1200×630 card for link previews.
 - [x] The footer's "Source on GitHub" link points at this repo.
 - [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
-- [ ] Add Purple Maiʻa's own module videos as they come out of production. Transcode to H.264/AAC MP4 with `-movflags +faststart`, put it in `assets/video/` with a same-named `.jpg` poster beside it, and set `video: "file:assets/video/<name>.mp4"` on the lesson. The card thumbnail and the stand-in notice follow on their own.
+- [ ] Add Purple Maiʻa's own module videos as they come out of production. Transcode to H.264/AAC MP4 with `-movflags +faststart`, put it in `assets/video/` with a same-named `.jpg` poster beside it, and set `video: "file:assets/video/<name>.mp4"` on the lesson. The section's poster and the stand-in notice follow on their own.
   - Done (Oct 2026): scripts 2–9, one per lesson, on 8 of 19 lessons. Script 2 maps to `m2-sampling` as well, but it sits only on `m2-next-token` so the same film is not on two cards in a row.
   - Not yet placed: "Video 10 – How text is generated" has no script or lesson mapping. Script 1 (`m2-training-data`, `m3-bias`) is not delivered.
   - Still on outside stand-ins: `m1-daily`, `m2-loop`, `m2-training-data`, `m2-parameters`, `m2-tokenization`, `m2-embeddings`, `m2-transformers`, `m2-sampling`, `m3-grounding`, `m3-bias`, `m3-model-families`.
 - [x] Every lesson has a check-your-understanding quiz (section 6 of `content.js`).
-- [x] Walk the live audience versions before sending a link out — `?for=partners` and the default.
+- [x] Walk the page before sending a link out. There is one version now; old `?for=` links open it too.
 - [ ] **Cultural review of the two held-back versions** — Community workshop and Kupuna outreach are written and tested but carry `draft: true`, so nothing on the live site can reach them. Once someone who runs those rooms has read the copy, delete that one line per audience.
-- [x] Every `url: "#"` replaced; all 19 lessons carry resources.
+- [x] Every `url: "#"` replaced; all 19 lessons carry resources (not displayed since the lesson cards were retired; the Reference page's downloads are).
 - [x] **The deck is in** — `assets/llm-nlp-101.pdf`, 35 slides, 15 MB, linked from "For facilitators".
 - [ ] Three text fixes in the deck itself, in Canva, then re-export over the same filename (see `HANDOFF.md`). Nothing in the repo changes.
 
 ### Content structure
 
-`content.js` follows the three modules of the LLM/NLP 101 deck:
+The three modules, as the page counts them (sections, videos, and a read time
+computed from the words, at about 200 a minute, video not included):
 
-| Track id | Module | Lessons | Self-paced |
-|---|---|---|---|
-| `overview` | 1 — Overview | 2 | 25 min |
-| `how-it-works` | 2 — How an LLM works | 10 | 46 min |
-| `using-llms` | 3 — Using LLMs well | 7 | 24 min |
+| Module | Track id | Sections | Videos | Read |
+|---|---|---|---|---|
+| 1 — What is generative AI? | `overview` | 3 | 2 | ~1 min |
+| 2 — How an LLM works | `how-it-works` | 9 | 11 | ~6 min |
+| 3 — Using LLMs well | `using-llms` | 9 | 6 | ~6 min |
 
-**Two different clocks, deliberately.** A lesson's `duration` is self-paced time
-and includes any video on the card, which is why Module 1 reads 25 min against a
-10-12 min live budget. The `agenda` tags carry the live run; you would not play
-the full Crash Course video during the session. Both numbers show in the hero.
+"Model families" is a Module 2 section now, following the white paper, though
+its lesson still carries `track: "using-llms"`; the module a lesson appears in is
+decided by which section points at it, not by its track.
 
-> ⚠️ **Those self-paced numbers are stale, and the table above with them.** They
-> were written when 3 lessons had a video. All 19 do now, and the stand-ins come
-> to 3h52m, so under the rule in this paragraph the true total is about 4h57m
-> rather than ~95 min. Nothing on the page displays a per-lesson time while this
-> is unsettled, but the hero's `facts` still carry the old figure. Decide first
-> whether a stand-in counts toward self-paced time at all — they are explicitly
-> labelled as not-ours — then recompute `duration`, `facts` and this table together.
-
-Adding a lesson means adding to `lessons` with one of those three `track` values.
-If you change the lesson count or durations, update the `facts` array in section 1
-so the hero numbers stay honest — and in any audience that overrides `facts`.
+The old "two clocks" problem is retired. Lesson `duration`, the hero `facts` and
+the agenda times are no longer shown (the agenda comes back with its own times
+when a session is booked).
 
 The numbered sections of `content.js`, in order:
 
 | # | Section | What it drives |
 |---|---|---|
-| 1 | `event` | Hero copy, the hero facts, both CTAs |
-| 2 | `pathways` | The three "where should I start?" cards |
-| 3 | `audiences` | The switcher, and every per-room override |
-| 4 | `tracks` | The filter chips |
-| 5 | `lessons` | The grid and the lesson dialog |
-| 6 | `quizzes` | Check your understanding, keyed by lesson id |
-| 7 | `practice` | The four activities |
+| 1 | `event` | The home page headline and line under it (`headline`, `tagline`) |
+| 2 | `pathways` | Not shown; kept for the held-back audiences |
+| — | `placement`, `audiences` | Removed; their places on the page stay empty (see section 4) |
+| 4 | `tracks` | Module labels used by placement and practice |
+| 4b | `modules`, `sources` | The module pages and their sources (`why` was removed) |
+| 5 | `lessons` | Each lesson's video and title, carried by a module section |
+| 6 | `quizzes` | Check your understanding, keyed by lesson id, run per module |
+| 7 | `practice` | Question activities (in each module's quiz) and demos (in their sections) |
 | 8 | `agenda` | Run of show — currently hidden by `agendaHidden: true` |
 | 9 | `prompts` | Prompt library |
-| 10 | `glossary` | Glossary, and the Term match activity |
+| 10 | `glossary` | Glossary (shown A–Z), and the Term match activity |
 | 11 | `faq` | FAQ |
 | 12 | `resources` | Downloads & links |
 | 13 | `footer` | Footer text and links |
@@ -510,9 +556,8 @@ The numbered sections of `content.js`, in order:
 ## 6. Collecting feedback
 
 The button in the bottom-right opens a short form: pick a kind, write a note,
-optionally leave a name. Everything else is captured for you — which lesson or
-section the person was on, which audience version they had, and their browser
-and window size — because "confusing" is noise and "confusing on Embeddings" is
+optionally leave a name. Everything else is captured for you — which module
+and section the person was on, and their browser and window size — because "confusing" is noise and "confusing on Embeddings" is
 a task.
 
 **It ships switched off.** With `feedback.endpoint` empty in `content.js`, the
@@ -537,8 +582,7 @@ and retried on the next page load, so a dropped connection does not lose it.
 **On the privacy claim.** The page tells people twice that nothing is uploaded,
 and that stays true of progress, quiz answers, theme and audience, all of which
 live in the browser. The feedback form is the single exception, it is labelled
-as such in the FAQ, and the dialog shows the exact JSON before anybody presses
-send. If you extend it, keep that property: no background collection.
+as such in the FAQ, which lists exactly what each note carries. If you extend it, keep that property: no background collection.
 
 
 ## Licence

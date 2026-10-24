@@ -10,17 +10,25 @@
    The brief, from the AF-builders meeting: "a mile wide and an inch
    deep" for public-facing orgs. Same breadth of topics as the staff
    course, much shallower:
-     - every lesson keeps its quiz (Don asked for them) and its place
-     - one idea per lesson, two lines of takeaways at most
-     - only Purple Maiʻa's own short videos play in a lesson. Outside
+     - every module keeps its practice (Don asked for the quizzes) and
+       every topic keeps its place
+     - one idea per topic: each section is cut to its opening block
+     - only Purple Maiʻa's own short videos play inline. Outside
        explainers run 3 to 27 minutes, so each one becomes an optional
        link instead of the main event
-     - every lesson links to its full-length twin on the staff site
+     - the long version is one link away, in Resources
+
+   The page became three module articles in October 2026. The overlay
+   survived that rewrite without being rewritten itself, because it has
+   always edited the content rather than the markup. Keep it that way:
+   if something here starts reaching for an element id, it is the wrong
+   file for the job.
 
    What to edit here:
      INCH     the one-idea version of each lesson, keyed by lesson id
+     gist()   the rule that shortens the article sections
      EVENT    the hero copy for this audience
-     FAQ / RESOURCES / PATHWAYS below
+     FAQ / RESOURCES below
    ============================================================= */
 
 (function (S) {
@@ -125,7 +133,7 @@
         "Spell out the audience, format and tone, and hand it your source material.",
         "Weak: \"Write a bio for Keiko.\" Strong: \"Write a 100-word bio for Keiko, our program director, for a grant funder, warm but concise, from the notes below.\""
       ],
-      keep: "#prompts"
+      keep: "#/reference/prompts"
     },
     "m3-hallucinations": {
       takeaways: [
@@ -207,40 +215,57 @@
   });
   var total = (S.lessons || []).length;
 
-  /* ---------- page-level switches the app reads ---------- */
-  S.deeper = { url: FULL, label: "Full lesson" };
-  S.showVideoLength = true;
-  S.copy = {
-    thumbMissing: "Short video on the way",
-    videoMissing: {
-      title: "Our short video for this one is still being made.",
-      body: "The idea fits in the two lines below. For more, open the full lesson."
-    }
-  };
+  /* ---------- the articles: keep the gist, drop the rest ----------
+     The page is three module articles now, not a grid of lesson cards.
+     Each section carries a few paragraphs lifted from the white paper,
+     with its lesson's video and quiz inside it. That prose is the staff
+     depth, so this is where "an inch deep" has to happen now.
+
+     The white paper is written topic-sentence first: every section opens
+     with a block that states the whole idea, and the blocks after it
+     qualify, extend or give examples. So the opener is kept and the rest
+     go. Where the opener introduces a list, a table or a set of steps,
+     that block comes too, because the opener points straight at it.
+
+     This is a rule, not a rewrite, which is the point: new prose written
+     on the staff branch arrives here already shortened, and no sentence
+     on this page was written anywhere but content.js. */
+  function gist(blocks) {
+    if (!blocks || blocks.length < 2) return blocks;
+    var out = [blocks[0]];
+    if (typeof blocks[1] !== "string") out.push(blocks[1]);
+    return out;
+  }
+  (S.modules || []).forEach(function (m) {
+    (m.sections || []).forEach(function (s) {
+      s.body = gist(s.body);
+      (s.parts || []).forEach(function (part) { part.body = gist(part.body); });
+    });
+  });
 
   /* One front door, no switcher. The staff and partner versions stay on
      the staff site; the drafts held for cultural review stay held. */
   S.audiences = [];
   S.placement = null;
 
+  /* Gone with the rebuild, and deliberately not replaced: S.deeper (the
+     per-lesson "Full lesson" link), S.copy and S.showVideoLength. The
+     article renderer reads none of them. The way through to the long
+     version is now the one link in Resources, which is enough. */
+
   /* ---------- the hero ---------- */
   var ev = S.event;
+  /* `headline` is the <h1>, `shortName` the word in the header, and `name`
+     is what the browser tab ends up saying. All three, or the edition
+     half-renames itself. */
   ev.name = "Intro to AI";
   ev.shortName = "Intro to AI";
+  ev.headline = "Intro to AI.";
   ev.badge = "";
   ev.tagline = "Every big idea about AI, a minute or two each. Plain words, no math, no login.";
-  ev.intro =
-    "People keep asking you about AI. This is the short version of what Purple Maiʻa teaches its own staff: " +
-    "every topic, cut down to the one idea that matters most, with a short video where ours is ready. " +
-    "Go in order or pick what you need. Every lesson links to the full version if you want to go deeper.";
   ev.date = ""; ev.time = ""; ev.location = "";
-  ev.ctaPrimary = { label: "Start with lesson 1", href: "#lessons" };
-  ev.facts = [
-    { label: "Lessons", value: String(total) },
-    { label: "Each one", value: "1–2 min" },
-    { label: "With our video", value: ours + " of " + total },
-    { label: "Cost", value: "Free, no login" }
-  ];
+  /* ev.intro, ev.facts and the two hero buttons are no longer rendered.
+     Left unset rather than filled in with copy nobody will ever read. */
 
   /* ---------- the certificate ----------
      The overlay has to claim this too, or somebody who finishes the
@@ -250,26 +275,9 @@
     S.certificate.blurb = "You went through all of it. Put your name on it and keep a copy.";
   }
 
-  S.pathways = [
-    {
-      icon: "sprout",
-      title: "What even is it?",
-      body: "Plain words first: what people mean by AI, and where you already use it every day.",
-      action: { label: "Start at the beginning", filter: "overview" }
-    },
-    {
-      icon: "wrench",
-      title: "How does it come up with an answer?",
-      body: "One loop, one guess at a time. No math, and it explains most of the strange things it does.",
-      action: { label: "See how it works", filter: "how-it-works" }
-    },
-    {
-      icon: "shield",
-      title: "Can I trust what it tells me?",
-      body: "Where it goes wrong, why, and the one rule that keeps you out of trouble.",
-      action: { label: "Go to using it well", filter: "using-llms" }
-    }
-  ];
+  /* S.pathways is gone too: the rebuild answers "where do I start?" with
+     the three placement questions under the module cards instead, and this
+     edition turns those off. Three modules in order is the whole map. */
 
   /* ---------- prompts: the four anyone can use on day one ---------- */
   var KEEP_PROMPTS = ["The capable new hire", "Source-checked answer", "Meeting notes to actions", "Check me before I present"];
@@ -284,21 +292,21 @@
     { q: "Who is this for?",
       a: "Anyone who works with the public and keeps getting asked about AI: nonprofits, schools, community groups, and the people they serve. It is Purple Maiʻa's staff course, cut down to the one idea per topic that matters most." },
     faq("Do I need any technical background?"),
-    { q: "Why is every lesson so short?",
-      a: "On purpose. A mile wide and an inch deep: every topic, one idea each, so you can explain it to somebody else afterwards. If you want more, the Full lesson button on every lesson opens the longer version." },
+    { q: "Why is every section so short?",
+      a: "On purpose. A mile wide and an inch deep: every topic, the one idea that matters most, so you can explain it to somebody else afterwards. The full staff course covers the same ground at length, and it is linked under Downloads and links." },
     faq("Is the model learning from what I type?"),
     faq("Why do I get a different answer when I ask the same question twice?"),
     { q: "Why is it weak on ʻōlelo Hawaiʻi and Hawaiian cultural context?",
       a: "Training data. If something is underrepresented in what the model read, the model is weaker on it, and it will still answer confidently rather than tell you it is out of its depth." },
     faq("Can I use this to draft something public-facing?"),
     { q: "Where are the Purple Maiʻa videos?",
-      a: ours + " of the " + total + " lessons have one now, and the rest are being made. Until a lesson's video is ready, the two lines under it carry the idea, and a longer outside explainer is linked if you want one." },
+      a: ours + " of the " + total + " topics have one now, and the rest are being made. Until a topic's video is ready, the few lines of text carry the idea, and a longer outside explainer is linked if you want one." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The checks under each lesson and the activities in Practice are for you. Your answers and progress stay in your own browser and nothing is uploaded. Two things can send anything, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
+      a: "No and no. The practice at the end of each module is for you. Your answers and reading progress stay in your own browser and nothing is uploaded. Two things can send anything, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
     { q: "Can our organization use this?",
       a: "Yes. It is free and public, and nothing on it is gated. Share the link, work through it together in a meeting, or copy the source and adapt it for your own group." },
     { q: "What is the certificate at the end?",
-      a: "Optional, and it only shows up once you have finished every lesson. Asking for one sends the name you want printed, an email address, and how many lessons you did. Nothing else, and nothing until you press the button. There is no password and no account: you get a one-time link by email, and clicking it is the whole sign-in. Everything else stays in your browser." }
+      a: "Optional, and it only shows up once you have finished all three modules. Asking for one sends the name you want printed, an email address, and how much of the course you did. Nothing else, and nothing until you press the button. There is no password and no account: you get a one-time link by email, and clicking it is the whole sign-in. Everything else stays in your browser." }
   ].filter(Boolean);
 
   /* ---------- resources ---------- */
@@ -306,7 +314,7 @@
     {
       group: "Want to go deeper?",
       items: [
-        { label: "The full staff course", url: FULL, desc: "LLM/NLP 101, the course this is cut from. Same lessons, the long version of each." },
+        { label: "The full staff course", url: FULL, desc: "The course this is cut from. Same three modules, every section at full length." },
         { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 35 slides from the staff session. 15 MB." }
       ]
     },
@@ -323,7 +331,7 @@
     {
       group: "Use it with your group",
       items: [
-        { label: "Prompt library", url: "#prompts", desc: "Four prompts worth copying, ready to paste." },
+        { label: "Prompt library", url: "#/reference/prompts", desc: "Four prompts worth copying, ready to paste." },
         { label: "Copy this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page", desc: "The source, free to adapt for your own group." }
       ]
     }
