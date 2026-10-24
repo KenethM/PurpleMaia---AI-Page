@@ -31,6 +31,13 @@
      FAQ / RESOURCES below
    ============================================================= */
 
+/* This file lives on `main` as well as on `community-hub`, and on `main`
+   nothing loads it: only the community edition's index.html carries the
+   <script src="community.js"> tag. It is kept here on purpose. If it were
+   deleted from `main`, the next merge down into `community-hub` would carry
+   that deletion with it and quietly take the community edition apart. Leaving
+   one unused file in the staff web root is the cheaper of the two problems. */
+
 (function (S) {
 
   /* The full course, where the depth lives. */
