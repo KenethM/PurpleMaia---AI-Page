@@ -16,6 +16,173 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-23 (later) — Sam's rebuild merged, and everything of ours moved onto it
+
+**Who:** Keneth, with Claude
+**Branch:** `main` at `8bd2df8` (Sam's work, fast-forwarded), `community-hub` at `22cef10`. Both pushed.
+**State:** committed and pushed to GitHub. **Not deployed.**
+**Files:** `content.js`, `community.js`, `index.html`, `assets/app.js`, `assets/styles.css`, `.gitignore`, `assets/video/*` (four new files)
+
+### Why
+
+Sam opened and merged a pull request on her own fork
+(`splimon/AI-101-Community-Site`, `community-hub → main`) rather than against
+this repo, which is why nothing showed up in our PR list. She had branched from
+`53abaf9`, so the merge base was clean and `main` fast-forwarded to her work
+with her authorship intact. Keneth saw the result, liked it, and asked to take
+her version and line our work up with it.
+
+### What changed
+
+**Sam rebuilt the page as three module articles written from the white paper.**
+A router with three views (`#/`, `#/reference/<section>`, `#/module/<id>`),
+reading progress measured by section rather than by ticked-off lesson card,
+three placement questions under the module cards, and a live feedback endpoint.
+The lesson grid, the lesson dialog, the track filters and the ring progress card
+are gone. About 1,900 lines added and 1,200 removed across eight files.
+
+**Her shape won everywhere the two sides disagreed.** Thirteen conflict hunks;
+only two were resolved by writing something new, both of them FAQ copy, and both
+because her text had become untrue rather than because it was worse.
+
+**Four pieces of ours hung off markup she deleted and had to move:**
+
+| What | Was | Now |
+|---|---|---|
+| Certificate button | in the progress card | in her progress row under the headline |
+| `certEarned()` | counted ticked-off lessons | reads `moduleProgress()` |
+| The certificate payload | lessons done / total | the same module measure |
+| `#lesson-<id>` deep link | opened the lesson dialog | deleted; her router has `#/module/<id>/<section>` |
+
+**Videos 1 and 16**, on `m2-training-data` and `m1-daily`, taking it to **13 of
+19**. These two are a different shape from the other eleven — see below.
+
+**`community.js` survived the rewrite without being rewritten.** It has always
+edited the content rather than the markup, so the overlay still applied. It
+needed a new rule for the articles, new hero bindings, and four dead levers
+removed.
+
+### Decisions worth knowing
+
+**The certificate and the progress line now read the same number.** They used to
+measure different things — the certificate counted lessons, the page counts
+sections plus module practice — which would eventually have told one learner two
+different stories about whether they had finished. `certEarned()` calls
+`moduleProgress()` now. If you change how progress is counted, both move
+together.
+
+**`gist()` is the inch-deep rule, and it is a rule, not a rewrite.** Each article
+section is cut to its opening block, plus a list, table or set of steps when the
+opener points straight at one. This works because the white paper is written
+topic-sentence first: every section opens with a block that states the whole
+idea and the blocks after it qualify or give examples. 49% shorter, 2,544 words
+down to 1,295, and **no sentence on the community page is written anywhere but
+`content.js`.** New prose written on `main` arrives here already shortened. That
+is the whole argument for the overlay; do not start writing community copy into
+`community.js`.
+
+**Two FAQ answers had to be rewritten rather than picked.** Hers call the
+feedback button "the single exception" on the page that sends anything, which
+the certificate makes false, and they omit the audience and the address from the
+list of what feedback actually sends. Both now name both senders and list the
+whole payload, in her module-and-section vocabulary. This is the claim a sharp
+reader at a partner org will test, so keep it exact.
+
+**Her `mailto` fix is kept, with our subject line.** She fixed a real bug — each
+address has to be encoded separately or a comma-separated list stops being a
+list. Her version hard-codes "LLM/NLP 101" in the subject, which would have the
+community edition mailing about a course it does not teach, so the dynamic
+`event.shortName` went back in.
+
+**Videos 1 and 16 were shot 9:16 for social.** They were exported onto a 1920×1080
+canvas, so the files carry black bars either side that the other eleven do not.
+The pillarbox is symmetric and what is left is exactly 9:16, so a lesson can now
+declare `videoAspect: "9/16"`; the frame takes that shape and the video is set to
+`cover`, which crops the bars off at display time. **Nothing is re-encoded**, so
+if Sam re-exports these two as landscape, drop the `videoAspect` line and the
+page goes back to normal with no other change.
+
+**Their posters are cut from the portrait region**, at 39s and 70s. Both films
+carry burned-in captions almost end to end — the band scan found no clear window
+at all in video 1 and a single 1.5s one in video 16 — so these were chosen by
+looking at frames rather than by threshold. 39s is the scraped-text pile with
+ʻōlelo Hawaiʻi rated weak, which is the lesson's actual point; 70s is all three
+rings labelled and filled.
+
+**`assets/video/*.mov` is now ignored.** Sam delivers masters of 25 MB and up,
+nothing on the site reads them, and only the built `.mp4` and its `.jpg` poster
+belong in the repo and the image. Two were sitting untracked, one `git add -A`
+away from going in.
+
+### Held back deliberately
+
+**`main` now calls itself two different things.** `content.js` says
+`event.name: "Artificial Intelligence 101"`, which `app.js` writes into the
+browser tab, while the static `<title>`, `og:title` and `twitter:title` all still
+say "LLM/NLP 101 — Purple Maiʻa". So the tab says one name and every crawler and
+social preview says another. Left alone because which name is right is a
+decision, not a typo. `community-hub` is consistent — the overlay sets all three
+to "Intro to AI".
+
+**Nothing was changed on Sam's fork, and no PR was opened back to her.** She
+pulls from upstream now.
+
+**Both Apps Scripts are still as they were.** Feedback is live — that endpoint is
+Sam's, already deployed and collecting. The certificate's is still `""`, so the
+feature is invisible in production, and `ALLOWED_ORIGINS` still needs editing
+before that one is deployed.
+
+### How it was tested
+
+A new suite boots **both editions** in jsdom against the merged files and checks
+what the merge could plausibly have broken: **57 assertions, all passing.** The
+router, the module cards, the certificate's new progress model and its position
+in her hero, the portrait frame before and after the poster is pressed, that
+every `file:` video and its poster exist on disk, that every one of the 19
+lessons is reachable from a section, that no section points at a missing lesson,
+and that neither edition contains an in-page anchor the router cannot follow.
+
+The overlay's reduction was measured rather than assumed: 2,544 words of article
+prose to 1,295, with the block counts printed per section to confirm that the
+two sections whose opener introduces a table kept the table.
+
+Not tested: anything in a real browser. The portrait `cover` crop is arithmetic —
+the pillarbox is symmetric and the remainder is exactly 9:16 — but it has not
+been looked at on a screen, and it has not been looked at on a phone.
+
+### Open / next
+
+- [ ] **Look at the two portrait videos in a browser.** Everything else here was
+      verified by test; this one was reasoned out. It is the first thing to
+      check.
+- [ ] **Decide what the course is called.** The name mismatch on `main` above.
+      It affects the tab, every social preview, the README, the deck and the
+      white paper.
+- [ ] **The live site is now three weeks behind.** Dokku is still on `e012b70`.
+      `assets/video/*.mp4` returns 404 in production — **none of the 13 videos
+      are live.** Still needs the same decision first: which branch is the public
+      face, `main` or `community-hub`?
+- [ ] Deploy the certificate Apps Script, and **edit `ALLOWED_ORIGINS` first**.
+      Feedback is already live.
+- [ ] Six lessons still on stand-ins: `m2-parameters`, `m2-transformers`,
+      `m2-sampling`, `m3-grounding`, `m3-bias`, `m3-model-families`. Scripts
+      exist for all six, so this is shooting work, not writing work.
+- [ ] `ai.purplemaia.org`. Unchanged: three QR assets, the QR printed into deck
+      slide 4, and the URL hard-coded twice in the white paper.
+- [ ] The hero no longer claims a total time, so the old "~95 min" problem went
+      away with the rebuild. Worth deciding whether the module cards' "about N
+      min read" figures count the videos.
+- [ ] `README.md` is Sam's rewrite now and describes the module structure, but it
+      still carries the old find-and-replace instruction for a domain move.
+      Re-check it before anyone acts on it.
+- [ ] White paper: three in-text citation years still disagree with the Sources
+      entries, and Wei is still uncited in the body.
+- [ ] Sam's fork is level with `main` — her commits are `main` now. She pulls
+      from upstream from here, and `community-hub` carries an overlay and a
+      certificate she has not seen.
+
+---
+
 ## 2026-10-23 — Certificate, river prototype, three more videos, and a live site two weeks behind
 
 **Who:** Keneth, with Claude
