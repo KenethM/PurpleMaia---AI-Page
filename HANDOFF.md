@@ -114,6 +114,24 @@ nothing on the site reads them, and only the built `.mp4` and its `.jpg` poster
 belong in the repo and the image. Two were sitting untracked, one `git add -A`
 away from going in.
 
+**The branches were put the right way round.** The overlay design says shared
+content lives in `content.js` on `main` and the community edition inherits it,
+but five video wirings, the portrait-video support, the certificate and the river
+had all landed on `community-hub` and never came back. The staff edition was
+showing 8 videos while the inch-deep community edition showed 13, and only the
+community edition could issue a certificate. All of it moved down to `main`.
+
+**`community-hub` is now `main` plus one file.** Its `index.html` differs by the
+title and description, the pre-launch meta block, the three JSON-LD names and the
+header fallback, and one `<script src="community.js">` tag. Thirty-eight lines.
+Nothing else on the branch is its own, so `git merge main` from there should be
+boring, and if it ever flattens that file, putting it back is the whole fix.
+
+**`main` ships `community.js` without loading it.** Deleting it from `main` looks
+tidier and is a trap: the next merge down would carry the deletion with it and
+quietly take the community edition apart. There is a note at the top of the file
+saying so. The README now has a section on all of this.
+
 ### Held back deliberately
 
 **The course was renamed, same session.** `main` had been calling itself two

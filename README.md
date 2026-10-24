@@ -26,6 +26,41 @@ This README is the reference — how things work and how to edit them.
 [`HANDOFF.md`](HANDOFF.md) is the running log: what changed in each work session,
 why, and what was left open. Start there if you are picking the page up mid-stream.
 
+### Two editions, one set of words
+
+There are two versions of this page and they share a single source of content.
+
+| | Branch | Who it is for |
+|---|---|---|
+| **Artificial Intelligence 101** | `main` | Purple Maiʻa staff and partners. The full thing. |
+| **Intro to AI** | `community-hub` | Anyone. The same topics, much shallower. |
+
+`community-hub` is `main` plus **one file's worth of difference**: its own
+`index.html`, which changes the title, the social preview, the pre-launch meta
+and adds one `<script>` tag. That tag loads [`community.js`](community.js), an
+*overlay*. It does not copy `content.js` — it loads after it and reshapes it in
+memory: shortening each article section to its opening block, swapping the hero
+copy, cutting the prompt list, replacing the FAQ.
+
+**So every correction goes in `content.js` on `main`, once.** A fixed citation, a
+reworded takeaway, a new video — all of it reaches the community edition by
+merging `main` into `community-hub`, because the sentence only ever existed in
+one place. Nothing on the community page is written anywhere but `content.js`.
+
+```
+git checkout community-hub
+git merge main          # this should be boring. If it is not, see below
+```
+
+The one thing that merge must never take with it is `community-hub`'s
+`index.html` — its title, its `noindex`, its `<script src="community.js">`. If a
+merge ever flattens those, put that file back and commit; nothing else on the
+branch is its own.
+
+`main` also ships `community.js` without loading it. That is deliberate: deleting
+it from `main` would carry the deletion down into `community-hub` on the next
+merge and take the community edition apart.
+
 ---
 
 ## 1. Put it on GitHub Pages
