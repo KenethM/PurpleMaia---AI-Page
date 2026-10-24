@@ -1,14 +1,15 @@
 /* =============================================================
-   app.js — renders the page from content.js and wires up
-   filtering, search, progress, theme and the lesson dialog.
+   app.js — renders the page from content.js and wires up the
+   module articles, search, progress, theme and feedback.
    No dependencies, no build step.
 
    Three pieces to know about:
      audienceView()  merges SITE.event with the active audience's overrides;
                      everything that renders copy reads through it
-     renderQuiz()    the one quiz component, used by the lesson dialog and
-                     by two of the practice activities
-     PRACTICE_ENGINES  type -> builder for the Practice section
+     renderQuiz()    the one quiz component, used by each module's practice
+                     and by two of the practice activities
+     PRACTICE_ENGINES  type -> builder for the hands-on activities
+     route()         shows the home view or a module article, from the hash
    ============================================================= */
 (function () {
   'use strict';
@@ -47,13 +48,52 @@
   }
 
   /* ---------- reveal-on-scroll setup (must exist before anything renders) ---------- */
+  /* Everything that fades up into place as it scrolls into view. Navigation
+     (the header, "In this module") never moves; it has to be there to use. */
+  var REVEAL_SEL = [
+    // already marked in their templates: run of show, prompts, FAQ, downloads
+    '.reveal',
+    // home
+    '#homeView .hero h1', '#homeView .lede', '.overall', '.module-card', '.ref-link',
+    '#homeView .section-head',
+    // a module page: the header, then every block of the article
+    '.art-num', '.art-head-copy > *',
+    '.art-section:not(.art-practice) > *:not(.art-part)', '.art-part > *',
+    '.art-practice', '.art-next', '.art-sources',
+    // Reference
+    '.ref-head .crumb', '.ref-head h1', '.ref-jump', '#referenceView .section-head',
+    '#referenceView .filter-input', '.term-card'
+  ].join(', ');
+
   var revealObserver = ('IntersectionObserver' in window)
     ? new IntersectionObserver(function (entries, obs) {
-        entries.forEach(function (en) {
-          if (en.isIntersecting) { en.target.classList.add('in'); obs.unobserve(en.target); }
-        });
-      }, { rootMargin: '0px 0px -8% 0px' })
+        var arriving = entries.filter(function (en) { return en.isIntersecting; })
+                              .map(function (en) { return en.target; });
+        arriving.forEach(function (el) { obs.unobserve(el); });
+        showReveals(arriving);
+      }, { rootMargin: '0px 0px -6% 0px', threshold: 0.01 })
     : null;
+
+  /* Blocks that arrive together cascade, 60ms apart and never more than five
+     steps, so nothing waits long. Once a block has settled it drops the
+     reveal classes and gets its own transitions (card hovers) back. */
+  function showReveals(els) {
+    els.forEach(function (el, n) {
+      el.style.transitionDelay = Math.min(n, 5) * 60 + 'ms';
+      el.classList.add('in');
+      var finished = false;
+      var settle = function () {
+        if (finished) return;
+        finished = true;
+        el.removeEventListener('transitionend', onEnd);
+        el.classList.remove('reveal', 'in');
+        el.style.transitionDelay = '';
+      };
+      var onEnd = function (e) { if (e.target === el && e.propertyName === 'transform') settle(); };
+      el.addEventListener('transitionend', onEnd);
+      setTimeout(settle, 1500);
+    });
+  }
 
   // Only now does the CSS start hiding .reveal elements. Without this class the
   // page renders fully visible, so a script failure can never blank a section.
@@ -135,59 +175,14 @@
       return '<li>' + icon(m.i) + '<span>' + esc(m.t) + '</span></li>';
     }).join('');
 
-    $('#heroFacts').innerHTML = (ev.facts || []).map(function (f) {
-      return '<li><span class="fact-label">' + esc(f.label) + '</span>' +
-             '<span class="fact-value">' + esc(f.value) + '</span></li>';
-    }).join('');
-
-    if (ev.ctaPrimary) {
-      var a = $('#ctaPrimary');
-      a.textContent = ev.ctaPrimary.label; a.href = ev.ctaPrimary.href || '#lessons';
-    }
-    // With the run of show hidden, the second button cannot point at it.
-    var second = (S.agendaHidden && S.ctaSecondaryAlt) ? S.ctaSecondaryAlt : ev.ctaSecondary;
-    var b = $('#ctaSecondary');
-    if (second && b) {
-      b.hidden = false;
-      b.textContent = second.label;
-      b.href = second.href || '#lessons';
-    } else if (b) {
-      b.hidden = true;
-    }
   }
 
   /* =====================================================
-     PATHWAYS
-     ===================================================== */
-  function renderPathways() {
-    var root = $('#pathways');
-    root.innerHTML = (audienceView().pathways || []).map(function (p) {
-      var a = p.action, btn = '';
-      if (a && a.goto)        btn = '<button type="button" data-goto="' + esc(a.goto) + '">' + esc(a.label) + '</button>';
-      else if (a && a.filter) btn = '<button type="button" data-goto-track="' + esc(a.filter) + '">' + esc(a.label) + '</button>';
-      return '<article class="pathway reveal">' +
-               '<div class="pathway-icon">' + icon(p.icon) + '</div>' +
-               '<h3>' + esc(p.title) + '</h3>' +
-               '<p>' + esc(p.body) + '</p>' + btn +
-             '</article>';
-    }).join('');
-
-    $$('[data-goto-track]', root).forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        setTrack(btn.getAttribute('data-goto-track'));
-        goTo('#lessons');
-      });
-    });
-    $$('[data-goto]', root).forEach(function (btn) {
-      btn.addEventListener('click', function () { goTo(btn.getAttribute('data-goto')); });
-    });
-    observeReveals(root);
-  }
-
-  /* =====================================================
-     PLACEMENT — three questions that pick a pathway
-     For people who read all three cards and still are not
-     sure which one is them.
+     PLACEMENT — three questions that point at a module
+     Under the module cards, for anyone not sure where to
+     start. Each answer votes for a module; the result
+     opens it. Nothing is stored: the answers live in this
+     closure.
      ===================================================== */
   function renderPlacement() {
     var P = S.placement;
@@ -195,45 +190,66 @@
     if (!host || !P || !(P.questions || []).length) { if (host) host.hidden = true; return; }
     host.hidden = false;
 
+    var total = P.questions.length;
     var i = 0, votes = {};
 
-    function closed() {
+    function closed(moveFocus) {
       host.innerHTML =
         '<div class="placement-open">' +
-          '<p>' + esc(P.prompt) + '</p>' +
-          '<button class="btn btn-ghost btn-small" type="button" data-begin>' + esc(P.cta) + '</button>' +
+          '<p>' + esc(P.prompt || 'Not sure where to start?') + '</p>' +
+          '<button class="btn btn-ghost btn-small" type="button" data-begin>' + esc(P.cta || 'Answer three questions') + '</button>' +
         '</div>';
-      $('[data-begin]', host).addEventListener('click', function () {
-        i = 0; votes = {}; question();
-      });
+      var begin = $('[data-begin]', host);
+      begin.addEventListener('click', function () { i = 0; votes = {}; question(true); });
+      if (moveFocus) begin.focus();
     }
 
-    function question() {
+    function steps(at) {
+      var bars = '';
+      for (var n = 0; n < total; n++) bars += '<i' + (n <= at ? ' class="on"' : '') + '></i>';
+      return '<span class="hq-bars" aria-hidden="true">' + bars + '</span>';
+    }
+
+    function question(moveFocus) {
       var q = P.questions[i];
       var order = q.options.map(function (_, n) { return n; });
       shuffle(order);
       host.innerHTML =
-        '<div class="placement-card">' +
-          '<div class="quiz-head">' +
-            '<p class="quiz-q">' + esc(q.q) + '</p>' +
-            '<span class="quiz-step">' + (i + 1) + ' / ' + P.questions.length + '</span>' +
+        '<div class="hq-card">' +
+          '<div class="hq-head">' +
+            '<span class="hq-step">Question ' + (i + 1) + ' of ' + total + '</span>' + steps(i) +
           '</div>' +
-          '<ul class="quiz-options">' +
+          '<h3 class="hq-q" id="placementHeading" tabindex="-1">' + esc(q.q) + '</h3>' +
+          '<ul class="hq-options">' +
             order.map(function (n) {
-              return '<li><button class="quiz-option" type="button" data-track="' + esc(q.options[n].track) + '">' +
-                       '<span class="mark">•</span><span>' + esc(q.options[n].label) + '</span></button></li>';
+              return '<li><button class="hq-option" type="button" data-track="' + esc(q.options[n].track) + '">' +
+                       '<span class="hq-mark" aria-hidden="true"></span><span>' + esc(q.options[n].label) + '</span></button></li>';
             }).join('') +
           '</ul>' +
+          '<div class="hq-foot">' +
+            (i > 0
+              ? '<button class="linklike" type="button" data-restart>' + esc(P.restart || 'Start over') + '</button>'
+              : '<button class="linklike" type="button" data-close>Close</button>') +
+            (P.note ? '<span class="hq-note">' + esc(P.note) + '</span>' : '') +
+          '</div>' +
         '</div>';
-      $$('.quiz-option', host).forEach(function (b) {
+      $$('.hq-option', host).forEach(function (b) {
         b.addEventListener('click', function () {
           var t = b.getAttribute('data-track');
           votes[t] = (votes[t] || 0) + 1;
           i++;
-          if (i < P.questions.length) question(); else result();
+          if (i < total) question(true); else result();
         });
       });
+      var r = $('[data-restart]', host);
+      if (r) r.addEventListener('click', restart);
+      var c = $('[data-close]', host);
+      if (c) c.addEventListener('click', function () { closed(true); });
+      // Keep keyboard and screen-reader users on the new question.
+      if (moveFocus) $('#placementHeading').focus();
     }
+
+    function restart() { i = 0; votes = {}; question(true); }
 
     // Ties fall to the earlier module — nobody gets sent in over their head.
     function winner() {
@@ -249,24 +265,24 @@
     function result() {
       var id = winner();
       var r = (P.results || {})[id] || {};
+      var m = moduleForTrack(id);
       host.innerHTML =
-        '<div class="placement-card placement-result">' +
-          '<span class="practice-tag">' + esc(trackLabel[id] || id) + '</span>' +
-          '<h3>' + esc(r.title || 'Start here') + '</h3>' +
-          '<p>' + esc(r.body || '') + '</p>' +
-          '<div class="quiz-foot">' +
-            '<button class="btn btn-primary btn-small" type="button" data-go>' + esc(r.label || 'Take me there') + '</button>' +
-            '<button class="btn btn-ghost btn-small" type="button" data-restart>' + esc(P.restart || 'Start over') + '</button>' +
+        '<div class="hq-card hq-result">' +
+          '<div class="hq-head">' +
+            '<span class="hq-step">Your starting point</span>' + steps(total) +
+          '</div>' +
+          '<h3 class="hq-q" id="placementHeading" tabindex="-1">' + esc(r.title || 'Start here') + '</h3>' +
+          '<p class="hq-body">' + esc(r.body || '') + '</p>' +
+          '<div class="hq-actions">' +
+            (m ? '<a class="btn btn-primary" href="' + moduleHref(m) + '">' + esc(r.label || 'Take me there') + '</a>' : '') +
+            '<button class="btn btn-ghost" type="button" data-restart>' + esc(P.restart || 'Start over') + '</button>' +
           '</div>' +
         '</div>';
-      $('[data-go]', host).addEventListener('click', function () {
-        setTrack(id);
-        goTo('#lessons');
-      });
-      $('[data-restart]', host).addEventListener('click', closed);
+      $('[data-restart]', host).addEventListener('click', restart);
+      $('#placementHeading').focus();
     }
 
-    closed();
+    closed(false);
   }
 
   /* =====================================================
@@ -279,6 +295,19 @@
   })();
   function saveProgress() {
     try { localStorage.setItem(PKEY, JSON.stringify(Array.from(done))); } catch (e) {}
+  }
+
+  /* Sections read, by section id. Reading a section also marks the lessons it
+     carries as done in `done` above, which is how progress from the old
+     lesson cards carries over: a section whose lessons were all ticked off
+     there already counts as read. */
+  var RKEY = 'aihub:read';
+  var readSet = (function () {
+    try { return new Set(JSON.parse(localStorage.getItem(RKEY) || '[]')); }
+    catch (e) { return new Set(); }
+  })();
+  function saveRead() {
+    try { localStorage.setItem(RKEY, JSON.stringify(Array.from(readSet))); } catch (e) {}
   }
 
   /* Quiz results live alongside progress: this browser only, never uploaded.
@@ -298,30 +327,6 @@
     var r = quizState[id];
     return !!(r && r.total && r.score === r.total);
   }
-
-  var CIRC = 2 * Math.PI * 52;
-  function paintProgress() {
-    var total = lessons.length;
-    var n = lessons.filter(function (l) { return done.has(l.id); }).length;
-    var pct = total ? Math.round((n / total) * 100) : 0;
-    $('#ringFill').style.strokeDashoffset = String(CIRC - (CIRC * pct) / 100);
-    $('#ringPct').textContent = pct + '%';
-    $('#progressCount').textContent = n + ' of ' + total + ' lessons done';
-    $('#resetProgress').hidden = n === 0;
-    if (n === total && total > 0) {
-      $('#progressHint').textContent = 'That is all of them. Go build something.';
-    } else {
-      $('#progressHint').textContent = 'Tick lessons off as you go. Saved in this browser only — nothing is uploaded.';
-    }
-  }
-  $('#resetProgress').addEventListener('click', function () {
-    done.clear(); saveProgress();
-    quizState = {};
-    try { localStorage.removeItem(QKEY); } catch (e) {}
-    renderLessons();
-    paintProgress();
-    toast('Progress and quiz results cleared');
-  });
 
   /* =====================================================
      VIDEO HELPERS
@@ -372,15 +377,9 @@
     }
     return '';
   }
-  var MISSING_VIDEO =
-    '<div class="video-missing">' + icon('film') +
-    '<p><strong>The recording is not up yet.</strong><br>' +
-    'It will appear right here once it is posted — the notes below are ready now.</p>' +
-    '<p class="facilitator-hint">Facilitator: add <code>video: "youtube:ID"</code> to this lesson in <code>content.js</code></p>' +
-    '</div>';
-
   /* =====================================================
-     LESSONS
+     LESSONS — each one is a video and a quiz now, carried
+     by a section of a module (see MODULES below)
      ===================================================== */
   var lessons = (S.lessons || []).slice();
   var trackLabel = {};
@@ -392,166 +391,15 @@
     return null;
   }
 
-  var activeTrack = 'all';
-  var lessonQuery = '';
-  var featured = [];   // lesson ids this audience leads with, in order
-
-  /* Reorders `lessons` so the audience's starting set comes first. Nothing is
-     dropped — every lesson stays in the list and in search. */
-  function orderLessons() {
-    featured = (audience && audience.feature) || [];
-    var rank = {};
-    featured.forEach(function (id, i) { rank[id] = i; });
-    var source = S.lessons || [];
-    lessons = source.slice().sort(function (a, b) {
-      var ra = rank[a.id] === undefined ? Infinity : rank[a.id];
-      var rb = rank[b.id] === undefined ? Infinity : rank[b.id];
-      if (ra !== rb) return ra - rb;
-      return source.indexOf(a) - source.indexOf(b);
-    });
+  function lessonById(id) {
+    for (var i = 0; i < lessons.length; i++) if (lessons[i].id === id) return lessons[i];
+    return null;
   }
-  function isFeatured(id) { return featured.indexOf(id) > -1; }
-  function featureLabel() { return (audience && audience.featureLabel) || 'Start here'; }
-
-  function renderFilters() {
-    var counts = { all: lessons.length };
-    lessons.forEach(function (l) { counts[l.track] = (counts[l.track] || 0) + 1; });
-    var chips = [{ id: 'all', label: 'All lessons' }].concat(S.tracks || []);
-    if (featured.length) {
-      counts.feature = featured.length;
-      chips.splice(1, 0, { id: 'feature', label: featureLabel(), extra: 'chip-feature' });
-    }
-    $('#trackFilters').innerHTML = chips.map(function (c) {
-      return '<button type="button" class="chip' + (c.extra ? ' ' + c.extra : '') +
-             '" data-track="' + esc(c.id) + '" aria-pressed="' + (c.id === activeTrack) + '">' +
-             esc(c.label) + '<span class="chip-count">' + (counts[c.id] || 0) + '</span></button>';
-    }).join('');
-    $$('#trackFilters .chip').forEach(function (chip) {
-      chip.addEventListener('click', function () { setTrack(chip.getAttribute('data-track')); });
-    });
-  }
-
-  function setTrack(id) {
-    activeTrack = id;
-    $$('#trackFilters .chip').forEach(function (c) {
-      c.setAttribute('aria-pressed', String(c.getAttribute('data-track') === id));
-    });
-    renderLessons();
-  }
-
-  function lessonCard(l, index) {
-    var thumb = thumbFor(l.video);
-    var isDone = done.has(l.id);
-    return '<article class="lesson-card reveal' + (isDone ? ' is-done' : '') + '" data-id="' + esc(l.id) + '">' +
-      '<button class="thumb" type="button" data-open="' + esc(l.id) + '" aria-label="Open lesson: ' + esc(l.title) + '">' +
-        '<span class="lesson-num">' + String(index + 1).padStart(2, '0') + '</span>' +
-        (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') +
-        '<span class="thumb-overlay">' +
-          '<span class="play">' + icon('play') + '</span>' +
-          (thumb ? '' : '<span class="thumb-note">Video coming soon</span>') +
-        '</span>' +
-        /* No time on the thumbnail. `duration` is self-paced time for the whole
-           lesson, which in that corner reads as the video's runtime and is not
-           it; `videoLength` is the real runtime but the two clocks have not been
-           reconciled yet. Recorded in content.js, deliberately not shown. */
-      '</button>' +
-      '<div class="lesson-body">' +
-        '<div class="lesson-tags">' +
-          '<span class="tag tag-track">' + esc(trackLabel[l.track] || l.track) + '</span>' +
-          (isFeatured(l.id) ? '<span class="tag tag-feature">' + esc(featureLabel()) + '</span>' : '') +
-          (quizAced(l.id) ? '<span class="tag tag-check">Checked ✓</span>' : '') +
-          (l.level ? '<span class="tag">' + esc(l.level) + '</span>' : '') +
-        '</div>' +
-        '<h3><button type="button" data-open="' + esc(l.id) + '">' + esc(l.title) + '</button></h3>' +
-        '<p>' + esc(l.summary) + '</p>' +
-        '<div class="lesson-foot">' +
-          '<button class="done-toggle" type="button" data-done="' + esc(l.id) + '" aria-pressed="' + isDone + '">' +
-            '<span class="box">' + icon('check') + '</span>' +
-            '<span class="label">' + (isDone ? 'Done' : 'Mark done') + '</span>' +
-          '</button>' +
-          '<button class="open-link" type="button" data-open="' + esc(l.id) + '">Open →</button>' +
-        '</div>' +
-      '</div>' +
-    '</article>';
-  }
-
-  function renderLessons() {
-    var q = lessonQuery.trim().toLowerCase();
-    var list = lessons.filter(function (l) {
-      if (activeTrack === 'feature') { if (!isFeatured(l.id)) return false; }
-      else if (activeTrack !== 'all' && l.track !== activeTrack) return false;
-      if (!q) return true;
-      var hay = [l.title, l.summary, l.level, trackLabel[l.track], (l.takeaways || []).join(' ')].join(' ').toLowerCase();
-      return hay.indexOf(q) > -1;
-    });
-
-    var grid = $('#lessonGrid');
-    grid.innerHTML = list.map(function (l) {
-      return lessonCard(l, lessons.indexOf(l));
-    }).join('');
-    $('#lessonEmpty').hidden = list.length !== 0;
-
-    /* The one thing to carry out of this module, shown once the whole module is
-       on screen — filtered to a single track, and not mid-search. */
-    var recapEl = $('#lessonRecap');
-    if (recapEl) {
-      var t = trackById(activeTrack);
-      if (t && t.recap && !q && list.length) {
-        recapEl.innerHTML = '<p class="recap-label">The one thing to carry out of ' + esc(t.label) + '</p>' +
-                            '<p class="recap-body">' + esc(t.recap) + '</p>';
-        recapEl.hidden = false;
-      } else {
-        recapEl.hidden = true;
-        recapEl.innerHTML = '';
-      }
-    }
-
-    $$('[data-open]', grid).forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        openLesson(btn.getAttribute('data-open'));
-      });
-    });
-    $$('[data-done]', grid).forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        toggleDone(btn.getAttribute('data-done'));
-      });
-    });
-    observeReveals(grid);
-  }
-
-  function toggleDone(id) {
-    var nowDone;
-    if (done.has(id)) { done.delete(id); nowDone = false; }
-    else { done.add(id); nowDone = true; }
-    saveProgress();
-    paintProgress();
-
-    $$('[data-id="' + id + '"]').forEach(function (card) {
-      card.classList.toggle('is-done', nowDone);
-      var btn = $('[data-done]', card);
-      if (btn) {
-        btn.setAttribute('aria-pressed', String(nowDone));
-        btn.querySelector('.label').textContent = nowDone ? 'Done' : 'Mark done';
-      }
-    });
-    if (nowDone) toast('Nice — marked as done');
-  }
-
-  $('#lessonSearch').addEventListener('input', function (e) {
-    lessonQuery = e.target.value;
-    renderLessons();
-  });
-  $('#clearFilters').addEventListener('click', function () {
-    lessonQuery = ''; $('#lessonSearch').value = '';
-    setTrack('all');
-  });
 
   /* =====================================================
      QUIZ ENGINE
-     One component, three homes: the check under each lesson,
-     Term match, and Would you send it? Give it a host element
+     One component, three homes: the check at the end of each
+     module, Term match, and Would you send it? Give it a host element
      and a list of { q, options, answer, why }.
      opts.onFinish(score, total)  — called once, at the end
      opts.restart()               — return fresh items for "Try again"
@@ -657,99 +505,6 @@
     if (!items || !items.length) { host.innerHTML = ''; return; }
     drawQuestion();
   }
-
-  /* ---------- lesson dialog ---------- */
-  var dlg = $('#lessonDialog');
-  var dlgScroll = $('#dialogScroll');
-
-  function openLesson(id) {
-    var l = lessons.filter(function (x) { return x.id === id; })[0];
-    if (!l) return;
-    var isDone = done.has(l.id);
-    var n = lessons.indexOf(l) + 1;
-    var quiz = ((S.quizzes || {})[l.id]) || [];
-    var prev = quizState[l.id];
-
-    /* If this is the last lesson of its module, show the module's one takeaway
-       here — the point being to pa'a it before moving on to the next module. */
-    var sameTrack = lessons.filter(function (x) { return x.track === l.track; });
-    var atModuleEnd = sameTrack.length && sameTrack[sameTrack.length - 1].id === l.id;
-    var tr = trackById(l.track);
-    var recapHtml = (atModuleEnd && tr && tr.recap)
-      ? '<div class="dialog-recap">' +
-          '<p class="recap-label">That is ' + esc(tr.label) + '. The one thing to carry out of it</p>' +
-          '<p class="recap-body">' + esc(tr.recap) + '</p>' +
-        '</div>'
-      : '';
-
-    // Same renderer as the Resources section, so `pending` behaves the same here.
-    var res = (l.resources || []).map(resourceItem).join('');
-
-    dlgScroll.innerHTML =
-      (l.video ? embedFor(l.video, l.title) : MISSING_VIDEO) +
-      '<div class="dialog-body">' +
-        '<div class="lesson-tags">' +
-          '<span class="tag tag-track">' + esc(trackLabel[l.track] || l.track) + '</span>' +
-          '<span class="tag">Lesson ' + n + '</span>' +
-          (l.duration ? '<span class="tag">' + esc(l.duration) + '</span>' : '') +
-        '</div>' +
-        '<h2 id="dlgTitle">' + esc(l.title) + '</h2>' +
-        '<p class="dialog-summary">' + esc(l.summary) + '</p>' +
-        ((l.takeaways || []).length
-          ? '<h3>What to take away</h3><ul class="takeaways">' +
-            l.takeaways.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>'
-          : '') +
-        (quiz.length
-          ? '<h3>Check your understanding' +
-            (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
-            '</h3><div id="lessonQuiz"></div>'
-          : '') +
-        (res ? '<h3>Handouts &amp; links</h3><ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">' + res + '</ul>' : '') +
-        recapHtml +
-        '<div class="dialog-actions">' +
-          '<button class="btn btn-primary btn-small" type="button" data-dlg-done="' + esc(l.id) + '">' +
-            (isDone ? 'Marked as done ✓' : 'Mark as done') + '</button>' +
-          (l.slides ? '<a class="btn btn-ghost btn-small" href="' + esc(l.slides) + '" target="_blank" rel="noopener">Open slides</a>' : '') +
-          (n < lessons.length ? '<button class="btn btn-ghost btn-small" type="button" data-next="' + esc(lessons[n].id) + '">Next lesson →</button>' : '') +
-        '</div>' +
-      '</div>';
-
-    if (quiz.length) {
-      renderQuiz($('#lessonQuiz', dlgScroll), quiz, {
-        onFinish: function (score, total) {
-          saveQuizResult(l.id, score, total);
-          renderLessons();   // repaint the "Checked ✓" flag on the card behind the dialog
-        }
-      });
-    }
-
-    var doneBtn = $('[data-dlg-done]', dlgScroll);
-    if (doneBtn) doneBtn.addEventListener('click', function () {
-      toggleDone(l.id);
-      doneBtn.textContent = done.has(l.id) ? 'Marked as done ✓' : 'Mark as done';
-    });
-    var nextBtn = $('[data-next]', dlgScroll);
-    if (nextBtn) nextBtn.addEventListener('click', function () {
-      openLesson(nextBtn.getAttribute('data-next'));
-    });
-
-    if (!dlg.open) dlg.showModal();
-    dlgScroll.scrollTop = 0;
-  }
-
-  function closeLesson() {
-    if (dlg.open) dlg.close();
-  }
-  dlg.addEventListener('close', function () { dlgScroll.innerHTML = ''; });
-  $('#dialogClose').addEventListener('click', closeLesson);
-  dlg.addEventListener('click', function (e) {
-    // click on the backdrop (outside the dialog box) closes it
-    var r = dlg.getBoundingClientRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeLesson();
-  });
-
-  /* The lessons grid, the hero and the agenda are all painted by
-     applyAudience() at the bottom of this file, once everything exists. */
 
   /* =====================================================
      AGENDA
@@ -1109,7 +864,7 @@
         q: g.def,
         options: opts,
         answer: opts.indexOf(g.term),
-        why: 'The term is “' + g.term + '”. Every one of these is in the glossary further down the page.'
+        why: 'The term is “' + g.term + '”. Every one of these is in the glossary, under Reference.'
       };
     });
   }
@@ -1291,72 +1046,760 @@
     corpus:    buildCorpus
   };
 
-  (function renderPractice() {
-    var grid = $('#practiceGrid');
-    if (!grid) return;
-    var items = (S.practice || []).filter(function (p) { return PRACTICE_ENGINES[p.type]; });
-    if (!items.length) { $('#practice').hidden = true; return; }
-
-    function card(p) {
-      var foot = '';
-      if (p.note || p.link) {
-        foot = '<div class="practice-foot">' +
-          (p.note ? '<p class="practice-note">' + esc(p.note) + '</p>' : '') +
-          (p.link ? '<a href="' + esc(p.link.url) + '" target="_blank" rel="noopener">' + esc(p.link.label) + ' →</a>' : '') +
-          '</div>';
-      }
-      var kind = (p.group || 'demo') === 'quiz'
-        ? '<span class="practice-kind is-quiz">Check yourself</span>'
-        : '<span class="practice-kind is-demo">Try it</span>';
-      return '<article class="practice-card reveal" data-practice="' + esc(p.id) + '">' +
-        '<div class="practice-tags">' + kind +
-          (p.tag ? '<span class="practice-tag">' + esc(p.tag) + '</span>' : '') +
-        '</div>' +
-        '<h3>' + esc(p.title) + '</h3>' +
-        '<p class="practice-blurb">' + esc(p.blurb) + '</p>' +
-        '<div class="practice-body"></div>' + foot +
-      '</article>';
+  function practiceCard(p) {
+    var foot = '';
+    if (p.note || p.link) {
+      foot = '<div class="practice-foot">' +
+        (p.note ? '<p class="practice-note">' + esc(p.note) + '</p>' : '') +
+        (p.link ? '<a href="' + esc(p.link.url) + '" target="_blank" rel="noopener">' + esc(p.link.label) + ' →</a>' : '') +
+        '</div>';
     }
-
-    /* One band per module, in lesson order, so each module's activities get a
-       row of their own rather than competing in one grid. Whether something is
-       a demo or a quiz is now a chip on the card, not the top-level split. */
-    var bands = (S.tracks || []).map(function (t) {
-      return { id: t.id, title: t.label, sub: t.recap || '' };
-    });
-    bands.push({
-      id: 'all',
-      title: 'Across all three',
-      sub: 'Vocabulary from every module, drawn fresh from the glossary each time.'
-    });
-
-    grid.innerHTML = bands.map(function (b) {
-      var mine = items.filter(function (p) { return (p.module || 'all') === b.id; });
-      if (!mine.length) return '';
-      return '<section class="practice-group">' +
-        '<header class="practice-group-head">' +
-          '<h3>' + esc(b.title) + '</h3>' +
-          (b.sub ? '<p>' + esc(b.sub) + '</p>' : '') +
-        '</header>' +
-        '<div class="practice-rows">' + mine.map(card).join('') + '</div>' +
-      '</section>';
-    }).join('');
-
+    var kind = (p.group || 'demo') === 'quiz'
+      ? '<span class="practice-kind is-quiz">Check yourself</span>'
+      : '<span class="practice-kind is-demo">Try it</span>';
+    return '<article class="practice-card" data-practice="' + esc(p.id) + '">' +
+      '<div class="practice-tags">' + kind +
+        (p.tag ? '<span class="practice-tag">' + esc(p.tag) + '</span>' : '') +
+      '</div>' +
+      '<h4>' + esc(p.title) + '</h4>' +
+      '<p class="practice-blurb">' + esc(p.blurb) + '</p>' +
+      '<div class="practice-body"></div>' + foot +
+    '</article>';
+  }
+  // Each engine gets its card's body element and its entry from content.js.
+  function mountPractice(root, items) {
     items.forEach(function (p) {
-      var card = grid.querySelector('[data-practice="' + p.id + '"]');
+      var card = root.querySelector('[data-practice="' + p.id + '"]');
       if (card) PRACTICE_ENGINES[p.type]($('.practice-body', card), p);
     });
+  }
+
+  /* =====================================================
+     MODULES — the cards on the home page and the article
+     pages they open. One article per module, built from
+     SITE.modules; the address decides which view shows:
+       #/module/<id>             that module, from the top
+       #/module/<id>/<section>   scrolled to a section
+       #/module/<id>/practice    scrolled to its practice
+       #lesson-<id>              redirected to the section
+                                 that carries that lesson
+       anything else             the home view
+     ===================================================== */
+  var MODULES = S.modules || [];
+  var homeView = $('#homeView');
+  var moduleView = $('#moduleView');
+  var referenceView = $('#referenceView');
+  var shownModule = null;
+  var homeTitle = document.title;
+
+  function moduleById(id) {
+    for (var i = 0; i < MODULES.length; i++) if (MODULES[i].id === id) return MODULES[i];
+    return null;
+  }
+  function moduleForTrack(track) {
+    for (var i = 0; i < MODULES.length; i++) if (MODULES[i].track === track) return MODULES[i];
+    return null;
+  }
+  function moduleHref(m, sec) { return '#/module/' + m.id + (sec ? '/' + sec : ''); }
+
+  // Sections and their sub-parts, flattened, in reading order.
+  function moduleParts(m) {
+    var out = [];
+    m.sections.forEach(function (s) {
+      out.push(s);
+      (s.parts || []).forEach(function (p) { out.push(p); });
+    });
+    return out;
+  }
+  function moduleLessonIds(m) {
+    return moduleParts(m).map(function (p) { return p.lesson; }).filter(Boolean);
+  }
+  function sectionForLesson(lessonId) {
+    for (var i = 0; i < MODULES.length; i++) {
+      var parts = moduleParts(MODULES[i]);
+      for (var j = 0; j < parts.length; j++) {
+        if (parts[j].lesson === lessonId) return { m: MODULES[i], sec: parts[j].id };
+      }
+    }
+    return null;
+  }
+
+  /* Plain text of a block list, for the word count and the search index. */
+  function blocksText(blocks) {
+    return (blocks || []).map(function (b) {
+      if (typeof b === 'string') return b;
+      if (b.list || b.steps) return (b.list || b.steps).join(' ');
+      if (b.table) return [].concat(b.table.head, [].concat.apply([], b.table.rows)).join(' ');
+      return '';
+    }).join(' ').replace(/\*\*/g, '');
+  }
+  function partText(p) { return blocksText(p.body) + ' ' + (p.takeaway || ''); }
+
+  /* Read time is counted from the words on the page at ~200 a minute, so it
+     cannot drift from the content. Video runtime is not included. */
+  function moduleStats(m) {
+    var words = 0, videos = 0;
+    moduleParts(m).forEach(function (p) {
+      words += partText(p).split(/\s+/).filter(Boolean).length;
+      var l = lessonById(p.lesson);
+      if (l && l.video) videos++;
+    });
+    return { sections: m.sections.length, videos: videos, minutes: Math.max(1, Math.round(words / 200)) };
+  }
+
+  // **bold** is the one piece of inline markup content.js uses.
+  function inline(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+  function blockHtml(b) {
+    if (typeof b === 'string') return '<p>' + inline(b) + '</p>';
+    if (b.list)  return '<ul class="art-list">' + b.list.map(function (x) { return '<li>' + inline(x) + '</li>'; }).join('') + '</ul>';
+    if (b.steps) return '<ol class="art-steps">' + b.steps.map(function (x) { return '<li>' + inline(x) + '</li>'; }).join('') + '</ol>';
+    if (b.table) {
+      return '<div class="art-table"><table><thead><tr>' +
+        b.table.head.map(function (h) { return '<th scope="col">' + inline(h) + '</th>'; }).join('') +
+        '</tr></thead><tbody>' +
+        b.table.rows.map(function (r) {
+          return '<tr>' + r.map(function (c, n) {
+            return n === 0 ? '<th scope="row">' + inline(c) + '</th>' : '<td>' + inline(c) + '</td>';
+          }).join('') + '</tr>';
+        }).join('') +
+        '</tbody></table></div>';
+    }
+    return '';
+  }
+
+  /* "Ji et al. (2023)" from a full APA entry: an organisation keeps its name,
+     two authors are joined with &, three or more become "et al." */
+  function sourceShort(src) {
+    var head = src.text.split(' (')[0].replace(/\.$/, '');
+    var year = (src.text.match(/\((\d{4}|n\.d\.)/) || [])[1] || '';
+    var names = head.match(/[^\s,&]+, [A-Z]\./g) || [];
+    var label = !names.length ? head
+      : names.length === 1 ? names[0].split(',')[0]
+      : names.length === 2 ? names[0].split(',')[0] + ' & ' + names[1].split(',')[0]
+      : names[0].split(',')[0] + ' et al.';
+    return label + (year ? ' (' + year + ')' : '');
+  }
+  function sourceLink(id, full) {
+    var src = (S.sources || {})[id];
+    if (!src) return '';
+    var text = full ? esc(src.text) : esc(sourceShort(src));
+    return src.url ? '<a href="' + esc(src.url) + '" target="_blank" rel="noopener">' + text + '</a>' : text;
+  }
+  function moduleSources(m) {
+    var seen = [];
+    moduleParts(m).forEach(function (p) {
+      (p.sources || []).forEach(function (id) { if (seen.indexOf(id) < 0) seen.push(id); });
+    });
+    return seen;
+  }
+
+  /* A poster with a play button; the player only loads when it is pressed,
+     so opening a module never pulls in a third-party embed on its own. */
+  function videoHtml(lessonId) {
+    var l = lessonById(lessonId);
+    if (!l || !l.video) return '';
+    var p = parseVideo(l.video);
+    var thumb = thumbFor(l.video);
+    return '<figure class="art-video">' +
+      '<div class="art-player">' +
+        '<button class="art-poster" type="button" data-play="' + esc(l.id) + '" aria-label="Play video: ' + esc(l.title) + '">' +
+          (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy">' : '') +
+          '<span class="play">' + icon('play') + '</span>' +
+        '</button>' +
+      '</div>' +
+      '<figcaption><span><strong>Video:</strong> ' + esc(l.title) + '</span>' +
+        '<span>' + (p && p.kind === 'file' ? 'Purple Maiʻa' : 'Outside explainer') + '</span></figcaption>' +
+    '</figure>';
+  }
+
+  function citeLine(p) {
+    var sources = (p.sources || []).map(function (id) { return sourceLink(id); }).filter(Boolean);
+    return sources.length ? '<p class="art-cite">Sources: ' + sources.join('; ') + '</p>' : '';
+  }
+  // `withSources` is false for a section with parts: its sources go after them.
+  function partHtml(p, tag, withSources) {
+    return '<' + tag + '>' + esc(p.heading) + '</' + tag + '>' +
+      (p.body || []).map(blockHtml).join('') +
+      videoHtml(p.lesson) +
+      demosFor(p.id).map(function (d) { return '<div class="art-demo">' + practiceCard(d) + '</div>'; }).join('') +
+      (p.takeaway
+        ? '<aside class="takeaway"><p class="takeaway-label">Key takeaway</p><p>' + inline(p.takeaway) + '</p></aside>'
+        : '') +
+      (withSources === false ? '' : citeLine(p));
+  }
+
+  /* Question activities (group "quiz") join their module's "Check your
+     understanding"; ones that span every module close out the last module. */
+  function quizActivitiesFor(m) {
+    var last = MODULES[MODULES.length - 1] === m;
+    return (S.practice || []).filter(function (p) {
+      if (p.group !== 'quiz') return false;
+      var mod = p.module || 'all';
+      return mod === m.track || (last && mod === 'all');
+    });
+  }
+  /* The module's whole quiz: its lessons' questions, then the question
+     activities. Term match draws fresh glossary questions on every call, so
+     "Try again" gets a new set. */
+  function quizItemsFor(m) {
+    var items = moduleLessonIds(m).reduce(function (all, id) {
+      return all.concat(((S.quizzes || {})[id]) || []);
+    }, []);
+    quizActivitiesFor(m).forEach(function (p) {
+      if (p.type === 'scenarios') items = items.concat(p.items || []);
+      else if (p.type === 'match') items = items.concat(matchItems(p.rounds || 6));
+    });
+    return items;
+  }
+  /* Hands-on demos (group "demo") sit inside the section they illustrate. */
+  function demosFor(partId) {
+    return (S.practice || []).filter(function (p) {
+      return p.group !== 'quiz' && p.section === partId && PRACTICE_ENGINES[p.type];
+    });
+  }
+
+  /* ---------- progress ----------
+     A module is its sections plus its practice. A section is read once you
+     have scrolled to its end; practice is done once the module quiz has been
+     answered all the way through. */
+  function sectionLessonIds(s) {
+    return [s.lesson].concat((s.parts || []).map(function (p) { return p.lesson; })).filter(Boolean);
+  }
+  function isRead(s) {
+    if (readSet.has(s.id)) return true;
+    var ids = sectionLessonIds(s);
+    return ids.length > 0 && ids.every(function (id) { return done.has(id); });
+  }
+  function markRead(s) {
+    readSet.add(s.id);
+    sectionLessonIds(s).forEach(function (id) { done.add(id); });
+    saveRead();
+    saveProgress();
+  }
+  function moduleProgress(m) {
+    var read = m.sections.filter(isRead).length;
+    var total = m.sections.length;
+    var hasQuiz = quizItemsFor(m).length > 0;
+    var practice = !hasQuiz || !!quizState['module:' + m.id];
+    var units = read + (practice ? 1 : 0), of = total + 1;
+    var next = null;
+    for (var i = 0; i < m.sections.length; i++) if (!isRead(m.sections[i])) { next = m.sections[i].id; break; }
+    if (!next && !practice) next = 'practice';
+    return {
+      read: read, total: total, practice: practice,
+      units: units, of: of,
+      pct: Math.round((units / of) * 100),
+      started: units > 0, complete: read === total && practice,
+      next: next
+    };
+  }
+  function progressLabel(pr) {
+    if (pr.complete) return 'Done';
+    if (!pr.started) return 'Not started';
+    if (pr.read === pr.total) return 'Practice left';
+    // The bar counts practice too, so say so when it is part of the fill.
+    return pr.read + ' of ' + pr.total + ' sections read' + (pr.practice ? ' · practice done' : '');
+  }
+
+  function renderModule(m) {
+    var n = MODULES.indexOf(m);
+    var next = MODULES[n + 1];
+    var st = moduleStats(m);
+    var quiz = quizItemsFor(m);
+    var demos = moduleParts(m).reduce(function (all, p) { return all.concat(demosFor(p.id)); }, []);
+    var srcs = moduleSources(m);
+    var prev = quizState['module:' + m.id];
+
+    moduleView.innerHTML =
+      '<div class="wrap">' +
+        '<header class="art-head">' +
+          '<span class="art-num" aria-hidden="true">' + (n + 1) + '</span>' +
+          '<div class="art-head-copy">' +
+            '<p class="crumb"><a href="#/">Modules</a> / Module ' + (n + 1) + ' of ' + MODULES.length + '</p>' +
+            '<h1 id="moduleTitle" tabindex="-1">' + esc(m.title) + '</h1>' +
+            '<p class="art-lede">' + esc(m.lede || m.summary) + '</p>' +
+            '<p class="art-facts">' +
+              '<span><strong>' + st.sections + '</strong> sections</span>' +
+              '<span><strong>' + st.videos + '</strong> videos</span>' +
+              '<span>About <strong>' + st.minutes + '</strong> min read</span>' +
+              '<span class="art-status" id="artStatus"></span>' +
+            '</p>' +
+          '</div>' +
+        '</header>' +
+        '<div class="art-layout">' +
+          // First in the page order so keyboard and screen-reader users meet it
+          // before the article; CSS puts it in the right-hand column.
+          '<nav class="art-toc" aria-label="In this module"><span class="art-toc-marker" aria-hidden="true"></span><p class="art-toc-title">In this module</p><ol>' +
+            m.sections.map(function (s) {
+              return '<li><a href="' + moduleHref(m, s.id) + '" data-toc="' + esc(s.id) + '">' + esc(s.heading) +
+                '<span class="sr-only" data-read-note></span></a></li>';
+            }).join('') +
+            (quiz.length
+              ? '<li class="art-toc-practice"><a href="' + moduleHref(m, 'practice') + '" data-toc="practice">Practice' +
+                  '<span class="sr-only" data-read-note></span></a></li>'
+              : '') +
+          '</ol></nav>' +
+          '<article class="art-body" aria-labelledby="moduleTitle">' +
+            m.sections.map(function (s) {
+              return '<section class="art-section" id="s-' + esc(s.id) + '" data-sec="' + esc(s.id) + '">' +
+                partHtml(s, 'h2', !(s.parts || []).length) +
+                (s.parts || []).map(function (p) {
+                  return '<div class="art-part" id="s-' + esc(p.id) + '">' + partHtml(p, 'h3') + '</div>';
+                }).join('') +
+                ((s.parts || []).length ? citeLine(s) : '') +
+              '</section>';
+            }).join('') +
+
+            (quiz.length
+              ? '<section class="art-section art-practice" id="s-practice" data-sec="practice">' +
+                  '<h2>Practice: ' + esc(m.title) + '</h2>' +
+                  '<p class="art-practice-sub">' + quiz.length + ' questions on everything in this module. Nothing is graded and nothing leaves your browser.</p>' +
+                  '<h3>Check your understanding' +
+                    (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
+                  '</h3><div class="art-quiz" id="moduleQuiz"></div>' +
+                '</section>'
+              : '') +
+
+            (next
+              ? '<a class="art-next" href="' + moduleHref(next) + '">' +
+                  '<span><small>Next: Module ' + (n + 2) + ' of ' + MODULES.length + '</small><strong>' + esc(next.title) + '</strong></span>' +
+                  '<span class="art-next-cta">Start Module ' + (n + 2) + '</span></a>'
+              : '<a class="art-next" href="#/">' +
+                  '<span><small>That was the last module</small><strong>Back to all modules</strong></span>' +
+                  '<span class="art-next-cta">All modules</span></a>') +
+
+            (srcs.length
+              ? '<section class="art-sources" aria-labelledby="srcHeading"><h2 id="srcHeading">Sources for this module</h2><ol>' +
+                  srcs.map(function (id) { return '<li>' + sourceLink(id, true) + '</li>'; }).join('') +
+                '</ol></section>'
+              : '') +
+          '</article>' +
+
+
+        '</div>' +
+      '</div>';
+
+    // Pressing a poster swaps in the real player, which starts on its own.
+    $$('[data-play]', moduleView).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var l = lessonById(btn.getAttribute('data-play'));
+        var holder = btn.parentNode;
+        holder.outerHTML = embedFor(l.video, l.title);
+      });
+    });
+
+    if (quiz.length) {
+      renderQuiz($('#moduleQuiz', moduleView), quiz, {
+        restart: function () { return quizItemsFor(m); },
+        onFinish: function (score, total) {
+          saveQuizResult('module:' + m.id, score, total);
+          paintModuleProgress();
+        }
+      });
+    }
+    if (demos.length) mountPractice(moduleView, demos);
+    observeReveals(moduleView);
+    watchToc();
+    seen = {};
+    scrolledSinceOpen = false;
+    shownModule = m.id;
+    wasComplete = moduleProgress(m).complete;
+    paintModuleProgress();
+  }
+
+  /* Ticks in "In this module", the line under the title, and the bar under
+     the header, all from moduleProgress(). */
+  var wasComplete = false;
+  function paintModuleProgress() {
+    var m = shownModule && moduleById(shownModule);
+    if (!m) return;
+    var pr = moduleProgress(m);
+    var byId = {};
+    m.sections.forEach(function (s) { byId[s.id] = isRead(s); });
+    byId.practice = pr.practice;
+    $$('.art-toc a', moduleView).forEach(function (a) {
+      var on = !!byId[a.getAttribute('data-toc')];
+      if (on && !a.classList.contains('is-read') && a.hasAttribute('data-painted')) a.classList.add('just-read');
+      a.setAttribute('data-painted', '');
+      a.classList.toggle('is-read', on);
+      var note = $('[data-read-note]', a);
+      if (note) note.textContent = on ? ' (done)' : '';
+    });
+    var status = $('#artStatus');
+    if (status) status.textContent = pr.complete ? 'Done' : pr.started ? progressLabel(pr) : '';
+    // A new tick can re-wrap a line in the rail; keep the marker on its link.
+    moveMarker($('.art-toc a.is-current', moduleView));
+    bar.hidden = false;
+    bar.style.width = pr.pct + '%';
+    if (pr.complete && !wasComplete) toast('Module ' + (MODULES.indexOf(m) + 1) + ' done');
+    wasComplete = pr.complete;
+  }
+
+  /* Called on scroll while a module is open: a section is read once its end
+     is on screen, or once you reach the bottom of the page with it in view.
+     It also has to have been on screen at some point, so jumping straight to
+     Practice from "In this module" does not tick off everything it skipped. */
+  var seen = {};
+  var scrolledSinceOpen = false;   // nothing counts as read before the first scroll
+  function seenOnScreen() {
+    var m = shownModule && moduleById(shownModule);
+    if (!m) return;
+    var vh = window.innerHeight;
+    m.sections.forEach(function (s) {
+      var el = document.getElementById('s-' + s.id);
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      if (r.top < vh && r.bottom > visibleTop()) seen[s.id] = true;
+    });
+  }
+  // The first line of the page not covered by the sticky header, plus a margin.
+  function visibleTop() { return header.getBoundingClientRect().bottom + 40; }
+  function checkRead() {
+    var m = shownModule && moduleById(shownModule);
+    if (!m || gliding) return;
+    var vh = window.innerHeight;
+    var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    var changed = false;
+    m.sections.forEach(function (s) {
+      if (isRead(s)) return;
+      var el = document.getElementById('s-' + s.id);
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      if (r.top < vh && r.bottom > visibleTop()) seen[s.id] = true;
+      if (scrolledSinceOpen && seen[s.id] && (r.bottom < vh * 0.85 || (atBottom && r.top < vh))) { markRead(s); changed = true; }
+    });
+    if (changed) paintModuleProgress();
+  }
+
+  /* "In this module" marks the section being read. */
+  var tocSpy = null;
+  function watchToc() {
+    if (tocSpy) tocSpy.disconnect();
+    if (!('IntersectionObserver' in window)) return;
+    tocSpy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var id = en.target.getAttribute('data-sec');
+        var current = null;
+        $$('.art-toc a', moduleView).forEach(function (a) {
+          var on = a.getAttribute('data-toc') === id;
+          a.classList.toggle('is-current', on);
+          if (on) { a.setAttribute('aria-current', 'true'); current = a; } else a.removeAttribute('aria-current');
+        });
+        moveMarker(current);
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    $$('.art-section', moduleView).forEach(function (sec) { tocSpy.observe(sec); });
+  }
+
+  /* The violet segment on the rail, sized and placed over the current link. */
+  function moveMarker(link) {
+    var mk = $('.art-toc-marker', moduleView);
+    if (!mk) return;
+    if (!link) { mk.style.opacity = '0'; return; }
+    var nav = mk.parentNode;
+    var top = link.getBoundingClientRect().top - nav.getBoundingClientRect().top;
+    mk.style.height = link.offsetHeight + 'px';
+    mk.style.transform = 'translateY(' + Math.round(top) + 'px)';
+    mk.style.opacity = '1';
+  }
+  window.addEventListener('resize', function () { moveMarker($('.art-toc a.is-current', moduleView)); });
+
+  /* The clip a module card plays on hover: `preview` if content.js sets one,
+     otherwise the video whose poster is the card's image, so long as a lesson
+     really uses it. */
+  function previewFor(m) {
+    if (typeof m.preview === 'string') return m.preview;
+    if (!m.image || !/\.jpg$/.test(m.image)) return '';
+    var mp4 = m.image.replace(/\.jpg$/, '.mp4');
+    var used = (S.lessons || []).some(function (l) { return l.video === 'file:' + mp4; });
+    return used ? mp4 : '';
+  }
+
+  /* Hover a card and its picture becomes the video, muted and looping;
+     leave and it pauses and fades back to the still. Nothing loads until
+     the first hover. Only where there is a real hover (mouse or trackpad),
+     never with reduce-motion or data saver on. */
+  var fineHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)');
+  function wirePreviews(grid) {
+    if (!fineHover || !fineHover.matches || calm()) return;
+    if (navigator.connection && navigator.connection.saveData) return;
+    $$('.module-card', grid).forEach(function (card) {
+      var art = $('.module-art[data-preview]', card);
+      if (!art) return;
+      var vid = null;
+      var start = function () {
+        if (!vid) {
+          vid = document.createElement('video');
+          vid.className = 'module-preview';
+          vid.muted = true; vid.loop = true; vid.playsInline = true;
+          vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
+          vid.setAttribute('aria-hidden', 'true'); vid.tabIndex = -1;
+          vid.preload = 'auto';
+          vid.src = art.getAttribute('data-preview');
+          vid.addEventListener('playing', function () { if (art.matches(':hover') || card === document.activeElement) art.classList.add('is-playing'); });
+          art.insertBefore(vid, $('.module-num', art));
+        }
+        var p = vid.play();
+        if (p && p.catch) p.catch(function () {});   // a blocked play just leaves the still
+      };
+      var stop = function () {
+        art.classList.remove('is-playing');
+        if (vid) vid.pause();
+      };
+      card.addEventListener('pointerenter', start);
+      card.addEventListener('pointerleave', stop);
+      card.addEventListener('focus', start);
+      card.addEventListener('blur', stop);
+    });
+  }
+
+  function renderModuleCards() {
+    var grid = $('#moduleGrid');
+    if (!grid) return;
+    grid.innerHTML = MODULES.map(function (m, i) {
+      var st = moduleStats(m);
+      var pr = moduleProgress(m);
+      var cta = pr.complete ? 'Review Module ' + (i + 1) : pr.started ? 'Continue' : 'Start Module ' + (i + 1);
+      var href = (pr.started && !pr.complete && pr.next) ? moduleHref(m, pr.next) : moduleHref(m);
+      return '<a class="module-card' + (pr.complete ? ' is-complete' : '') + '" href="' + href + '">' +
+        '<span class="module-art"' + (previewFor(m) ? ' data-preview="' + esc(previewFor(m)) + '"' : '') + '>' +
+          (m.image ? '<img src="' + esc(m.image) + '" alt="" loading="lazy">' : '') +
+          '<span class="module-num">Module ' + (i + 1) + '</span>' +
+        '</span>' +
+        '<span class="module-body">' +
+          '<h3 class="module-title">' + esc(m.title) + '</h3>' +
+          '<p class="module-summary">' + esc(m.summary) + '</p>' +
+          '<span class="module-meta">' + st.sections + ' sections · ' + st.videos + ' videos · about ' + st.minutes + ' min read</span>' +
+          '<span class="module-progress">' +
+            '<span class="meter" aria-hidden="true"><b style="width:' + pr.pct + '%"></b></span>' +
+            '<span class="module-progress-label">' + esc(progressLabel(pr)) + '</span>' +
+          '</span>' +
+          '<span class="btn btn-primary module-cta">' + esc(cta) + '</span>' +
+        '</span>' +
+      '</a>';
+    }).join('');
     observeReveals(grid);
-  })();
+    wirePreviews(grid);
+    paintOverall();
+  }
+
+  /* The line under the headline. The bar and the words measure the same
+     thing: every section read and every module practice finished, out of all
+     of them across the course. It always shows, at 0% before anything is
+     done; only the reset link waits until there is something to reset. */
+  function paintOverall() {
+    var host = $('#overall');
+    if (!host) return;
+    var prs = MODULES.map(moduleProgress);
+    var units = 0, of = 0;
+    prs.forEach(function (p) { units += p.units; of += p.of; });
+    var pct = of ? Math.round((units / of) * 100) : 0;
+    var doneN = prs.filter(function (p) { return p.complete; }).length;
+    host.hidden = false;
+    $('#overallFill').style.width = pct + '%';
+    $('#overallText').textContent =
+      units === 0 ? 'Not started yet'
+      : doneN === prs.length ? 'All ' + prs.length + ' modules done'
+      : pct + '% of the course done · ' + doneN + ' of ' + prs.length + ' modules finished';
+    var reset = $('#resetProgress');
+    if (reset) reset.hidden = units === 0;
+  }
+  var resetBtn = $('#resetProgress');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    done.clear(); saveProgress();
+    readSet.clear(); saveRead();
+    quizState = {};
+    try { localStorage.removeItem(QKEY); } catch (e) {}
+    renderModuleCards();
+    // The link hides itself once there is nothing left to reset; keep focus nearby.
+    $('#overallText').focus();
+    toast('Progress cleared');
+  });
+
+  function renderWhy() {
+    var w = S.why, sec = $('#why');
+    if (!sec || !w) return;
+    $('#whyHeading').textContent = w.title || '';
+    $('#whyBody').innerHTML = (w.body || []).map(blockHtml).join('');
+    sec.hidden = false;
+  }
+
+  /* ---------- motion ----------
+     Three pieces, all skipped under prefers-reduced-motion:
+       - moving between Home, a module and Reference cross-fades, with the
+         new page settling up a few pixels (View Transitions, where the
+         browser has them; elsewhere the swap is instant, as before);
+       - "In this module" links glide to their section instead of jumping;
+       - the rail's marker slides to the section being read, and a tick
+         draws in when a section is finished. */
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  function calm() { return !!(reduceMotion && reduceMotion.matches); }
+
+  // Which page an address shows; a change of page is what gets a transition.
+  var shownView = null;
+  function viewKey(h) {
+    var mm = /^#\/module\/([^\/]+)/.exec(h);
+    if (mm && moduleById(mm[1])) return 'module:' + mm[1];
+    if (/^#lesson-/.test(h)) return 'lesson';
+    if (/^#\/reference/.test(h) || /^#(glossary|prompts|faq|resources)$/.test(h)) return 'reference';
+    return 'home';
+  }
+  function route() {
+    var key = viewKey(location.hash || '');
+    var changing = shownView !== null && key !== shownView && key !== 'lesson';
+    if (key !== 'lesson') shownView = key;
+    if (changing && document.startViewTransition && !calm()) {
+      document.startViewTransition(routeNow);
+    } else {
+      routeNow();
+    }
+  }
+
+  /* While the page scrolls itself to a section, sections it passes are not
+     being read; checkRead() ignores them until the glide has stopped. */
+  var gliding = false, glideTimer = null;
+  function glideTo(el) {
+    gliding = true;
+    seen = {};   // a jump is not reading: forget what was glimpsed before it
+    var stop = function () {
+      gliding = false;
+      window.removeEventListener('scroll', quiet);
+      clearTimeout(glideTimer);
+      // Whatever is on screen where the glide ends has been seen.
+      seenOnScreen();
+    };
+    // The glide is over once the page has stopped moving for a moment. This
+    // works in every browser and cannot end a long glide early.
+    var quiet = function () { clearTimeout(glideTimer); glideTimer = setTimeout(stop, 160); };
+    window.addEventListener('scroll', quiet, { passive: true });
+    quiet();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function routeNow() {
+    var h = location.hash || '';
+
+    // Old lesson links keep working: they land on the section with that video.
+    var lm = /^#lesson-(.+)$/.exec(h);
+    if (lm) {
+      var hit = sectionForLesson(lm[1]);
+      if (hit) { location.replace(moduleHref(hit.m, hit.sec)); return; }
+    }
+
+    var mm = /^#\/module\/([^\/]+)(?:\/([^\/]+))?$/.exec(h);
+    var m = mm && moduleById(mm[1]);
+    if (m) {
+      var fresh = shownModule !== m.id;
+      setTimeout(checkRead, 0);
+      if (fresh) renderModule(m);
+      homeView.hidden = true;
+      if (referenceView) referenceView.hidden = true;
+      header.classList.remove('is-glass');
+      moduleView.hidden = false;
+      document.title = m.title + ' — ' + ((S.event || {}).name || '');
+      setNav('modules');
+      var target = mm[2] ? document.getElementById('s-' + mm[2]) : null;
+      // Arriving on a module jumps; moving within it glides (see glideTo).
+      if (target && !fresh && !calm()) glideTo(target);
+      else if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+      else if (fresh) window.scrollTo({ top: 0, behavior: 'instant' });
+      if (fresh) $('#moduleTitle').focus({ preventScroll: true });
+      // Web fonts can arrive after the jump and push the target down; land again.
+      if (fresh && target && document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          if (shownModule === m.id) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+        });
+      }
+      return;
+    }
+
+    // The reference sections used to live on the home page as #glossary,
+    // #prompts, #faq and #resources; those links now open the Reference page.
+    var legacy = /^#(glossary|prompts|faq|resources)$/.exec(h);
+    if (legacy && referenceView) { location.replace('#/reference/' + legacy[1]); return; }
+
+    var wasModule = !moduleView.hidden;
+    if (wasModule) {
+      moduleView.hidden = true;
+      moduleView.innerHTML = '';      // stops any video that was playing
+      shownModule = null;
+      if (tocSpy) tocSpy.disconnect();
+    }
+    bar.hidden = true;
+    header.classList.remove('is-glass');
+
+    var rm = /^#\/reference(?:\/([^\/]+))?$/.exec(h);
+    if (rm && referenceView) {
+      var arriving = referenceView.hidden;
+      homeView.hidden = true;
+      referenceView.hidden = false;
+      document.title = 'Reference — ' + ((S.event || {}).name || '');
+      setNav(rm[1] || null);
+      var head = refHead(rm[1]);
+      if (head) head.scrollIntoView({ behavior: (arriving || calm()) ? 'instant' : 'smooth', block: 'start' });
+      else if (arriving) window.scrollTo({ top: 0, behavior: 'instant' });
+      if (arriving) $('#referenceTitle').focus({ preventScroll: true });
+      // Web fonts can arrive after the jump and shift the heading; land again.
+      if (arriving && head && document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          if (!referenceView.hidden) head.scrollIntoView({ behavior: 'instant', block: 'start' });
+        });
+      }
+      return;
+    }
+
+    var arrivingHome = homeView.hidden;
+    if (referenceView) referenceView.hidden = true;
+    homeView.hidden = false;
+    header.classList.add('is-glass');
+    document.title = homeTitle;
+    if (wasModule) renderModuleCards();
+    setNav(null);
+    var el = (h.length > 1 && h.charAt(1) !== '/') ? document.getElementById(h.slice(1)) : null;
+    if (el) el.scrollIntoView({ behavior: (arrivingHome || calm()) ? 'instant' : 'smooth', block: 'start' });
+    else if (arrivingHome) window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  window.addEventListener('hashchange', route);
+
+  /* A Reference section's heading block, which is what a jump lands on: the
+     heading sits just under the header instead of the section's top padding
+     (and the end of the section above) showing first. */
+  function refHead(id) {
+    var sec = id ? document.getElementById(id) : null;
+    return sec ? ($('.section-head', sec) || sec) : null;
+  }
+
+  /* Opens a Reference section, even when the address already points at it
+     (setting the same hash again fires no hashchange). */
+  function openReference(id) {
+    var target = '#/reference/' + id;
+    if (location.hash === target) {
+      var el = refHead(id);
+      if (el) el.scrollIntoView({ behavior: calm() ? 'instant' : 'smooth', block: 'start' });
+    } else {
+      location.hash = target;
+    }
+  }
+
+  // Marks the header link for the current page. `key` is a data-nav value.
+  function setNav(key) {
+    $$('.site-nav a').forEach(function (x) {
+      var on = !!key && x.getAttribute('data-nav') === key;
+      x.classList.toggle('active', on);
+      if (on) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current');
+    });
+  }
 
   /* =====================================================
      GLOSSARY
      ===================================================== */
   function renderGlossary(q) {
     q = (q || '').trim().toLowerCase();
+    // Alphabetical on the page, whatever order content.js keeps them in.
     var items = (S.glossary || []).filter(function (g) {
       return !q || (g.term + ' ' + g.def).toLowerCase().indexOf(q) > -1;
-    });
+    }).sort(function (a, b) { return a.term.localeCompare(b.term, 'en', { sensitivity: 'base' }); });
     $('#glossaryGrid').innerHTML = items.length
       ? items.map(function (g) {
           return '<dl class="term-card"><dt>' + highlight(g.term, q) + '</dt>' +
@@ -1421,20 +1864,37 @@
   /* Rebuilt whenever the audience changes, because the run of show does too. */
   function buildIndex() {
     index = [];
-    lessons.forEach(function (l) {
-      index.push({ kind: 'Lesson', title: l.title, sub: l.duration || '', body: l.summary + ' ' + (l.takeaways || []).join(' '), open: function () { closePalette(); openLesson(l.id); } });
+    MODULES.forEach(function (m, mi) {
+      var sub = 'Module ' + (mi + 1);
+      index.push({ kind: 'Module', title: m.title, sub: sub, body: m.summary, open: function () { closePalette(); location.hash = moduleHref(m); } });
+      moduleParts(m).forEach(function (p) {
+        var l = lessonById(p.lesson);
+        index.push({ kind: 'Section', title: p.heading, sub: sub, body: partText(p) + (l ? ' ' + l.title + ' ' + l.summary : ''), open: function () { closePalette(); location.hash = moduleHref(m, p.id); } });
+      });
     });
     (S.practice || []).forEach(function (p) {
-      index.push({ kind: 'Practice', title: p.title, sub: p.tag || '', body: p.blurb || '', open: function () { closePalette(); goTo('#practice'); } });
+      // A demo opens at its section; question activities live in the module's practice.
+      var hit = null;
+      if (p.group !== 'quiz' && p.section) {
+        MODULES.forEach(function (mod) {
+          if (!hit && moduleParts(mod).some(function (x) { return x.id === p.section; })) hit = { m: mod, sec: p.section };
+        });
+      }
+      if (!hit) {
+        var mm = moduleForTrack(p.module) || MODULES[MODULES.length - 1];
+        if (mm) hit = { m: mm, sec: 'practice' };
+      }
+      if (!hit) return;
+      index.push({ kind: 'Practice', title: p.title, sub: p.tag || '', body: p.blurb || '', open: function () { closePalette(); location.hash = moduleHref(hit.m, hit.sec); } });
     });
     (S.prompts || []).forEach(function (p) {
-      index.push({ kind: 'Prompt', title: p.title, sub: '', body: p.use + ' ' + p.text, open: function () { closePalette(); goTo('#prompts'); } });
+      index.push({ kind: 'Prompt', title: p.title, sub: '', body: p.use + ' ' + p.text, open: function () { closePalette(); openReference('prompts'); } });
     });
     (S.glossary || []).forEach(function (g) {
-      index.push({ kind: 'Term', title: g.term, sub: '', body: g.def, open: function () { closePalette(); $('#glossarySearch').value = g.term; renderGlossary(g.term); goTo('#glossary'); } });
+      index.push({ kind: 'Term', title: g.term, sub: '', body: g.def, open: function () { closePalette(); $('#glossarySearch').value = g.term; renderGlossary(g.term); openReference('glossary'); } });
     });
     (S.faq || []).forEach(function (f) {
-      index.push({ kind: 'Question', title: f.q, sub: '', body: f.a, open: function () { closePalette(); goTo('#faq'); } });
+      index.push({ kind: 'Question', title: f.q, sub: '', body: f.a, open: function () { closePalette(); openReference('faq'); } });
     });
     // Skipped while the run of show is hidden: a search hit that scrolls to
     // a section which is not rendered is worse than no hit at all.
@@ -1452,6 +1912,7 @@
   var pCurrent = [];
 
   function goTo(hash) {
+    if (hash.charAt(1) === '/' || homeView.hidden) { location.hash = hash; return; }
     var el = document.querySelector(hash);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1470,7 +1931,7 @@
     q = q.trim().toLowerCase();
     pCurrent = q
       ? index.filter(function (it) { return (it.title + ' ' + it.body + ' ' + it.kind).toLowerCase().indexOf(q) > -1; }).slice(0, 12)
-      : index.filter(function (it) { return it.kind === 'Lesson'; }).slice(0, 8);
+      : index.filter(function (it) { return it.kind === 'Module' || it.kind === 'Section'; }).slice(0, 8);
     pActive = 0;
     if (!pCurrent.length) {
       pResults.innerHTML = '<li class="palette-empty">Nothing found for “' + esc(q) + '”.</li>';
@@ -1537,8 +1998,7 @@
   var ticking = false;
   function onScroll() {
     header.classList.toggle('is-stuck', window.scrollY > 6);
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+    if (shownModule) { scrolledSinceOpen = true; checkRead(); }
     revealInView();
     ticking = false;
   }
@@ -1552,15 +2012,13 @@
   });
 
   if ('IntersectionObserver' in window) {
+    // On the Reference page, the header link follows the section in view.
     var navLinks = {};
-    $$('.site-nav a').forEach(function (a) { navLinks[a.getAttribute('href').slice(1)] = a; });
+    $$('.site-nav a[data-nav]').forEach(function (a) { navLinks[a.getAttribute('data-nav')] = a; });
     var spy = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var link = navLinks[en.target.id];
-        if (!link) return;
-        $$('.site-nav a').forEach(function (a) { a.classList.remove('active'); });
-        link.classList.add('active');
+        if (!en.isIntersecting || !navLinks[en.target.id]) return;
+        setNav(en.target.id);
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     Object.keys(navLinks).forEach(function (id) {
@@ -1571,30 +2029,38 @@
 
   /* ---------- reveal on scroll (observer set up near the top) ---------- */
 
+  /* Marks everything under `root` that should reveal, once per element: a
+     block that has already faded in never hides again. What is on screen now
+     rises in on the next frame; the rest waits for the observer. */
   function observeReveals(root) {
-    var els = $$('.reveal', root || document).filter(function (el) { return !el.classList.contains('in'); });
-    if (!revealObserver) { els.forEach(function (e) { e.classList.add('in'); }); return; }
-
-    els.forEach(function (el, i) {
-      // Anything already on screen shows straight away — never wait on the observer.
-      if (el.getBoundingClientRect().top < window.innerHeight) {
-        el.style.transitionDelay = Math.min(i, 6) * 45 + 'ms';
-        el.classList.add('in');
-        return;
-      }
-      el.style.transitionDelay = Math.min(i, 6) * 45 + 'ms';
-      revealObserver.observe(el);
+    var fresh = $$(REVEAL_SEL, root || document).filter(function (el) {
+      return !el.hasAttribute('data-rv');
     });
+    if (!fresh.length) return;
+    fresh.forEach(function (el) { el.setAttribute('data-rv', ''); el.classList.add('reveal'); });
+    if (!revealObserver) { fresh.forEach(function (el) { el.classList.remove('reveal'); }); return; }
 
+    var vh = window.innerHeight, now = [];
+    fresh.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      var visible = el.offsetParent !== null && r.top < vh && r.bottom > 0;
+      if (visible) now.push(el); else revealObserver.observe(el);
+    });
+    // Two frames, so the hidden starting state is painted before it moves.
+    if (now.length) requestAnimationFrame(function () { requestAnimationFrame(function () { showReveals(now); }); });
   }
 
   // Backstop: if the observer is ever throttled or fails to fire, scrolling
   // still reveals anything that has come into view. Content never stays blank.
   function revealInView() {
-    $$('.reveal').forEach(function (el) {
-      if (el.classList.contains('in')) return;
-      if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
+    var late = $$('.reveal:not(.in)').filter(function (el) {
+      var r = el.getBoundingClientRect();
+      return el.offsetParent !== null && r.top < window.innerHeight && r.bottom > 0;
     });
+    if (late.length) {
+      late.forEach(function (el) { if (revealObserver) revealObserver.unobserve(el); });
+      showReveals(late);
+    }
   }
   observeReveals(document);
 
@@ -1639,14 +2105,8 @@
     if (!next) return;
     audience = next;
 
-    orderLessons();
-    activeTrack = 'all';
     renderHero();
-    renderPathways();
     renderPlacement();
-    renderFilters();
-    renderLessons();
-    paintProgress();
     renderAgenda();
     buildIndex();
     paintAudienceBar();
@@ -1659,8 +2119,7 @@
   (function initAudience() {
     var bar = $('#audienceBar');
     if (!AUDIENCES.length) {            // no audiences defined: plain page, no switcher
-      orderLessons(); renderHero(); renderPathways(); renderPlacement(); renderFilters();
-      renderLessons(); paintProgress(); renderAgenda(); buildIndex();
+      renderHero(); renderPlacement(); renderAgenda(); buildIndex();
       return;
     }
     if (bar) bar.hidden = AUDIENCES.length < 2;
@@ -1722,21 +2181,20 @@
      makes the Friday digest actionable: "confusing" is noise, "confusing on
      Embeddings" is a task. */
   function fbWhere() {
-    var dlg = document.getElementById('lessonDialog');
-    if (dlg && dlg.open) {
-      var t = dlg.querySelector('#dlgTitle');
-      if (t && t.textContent.trim()) return 'Lesson: ' + t.textContent.trim();
-    }
+    var mod = shownModule && moduleById(shownModule);
     var best = null, bestTop = Infinity;
     $$('section[id]').forEach(function (sec) {
+      if (!sec.offsetParent) return;           // inside the view that is hidden
       var top = sec.getBoundingClientRect().top;
       if (top <= 120 && Math.abs(top) < bestTop) { bestTop = Math.abs(top); best = sec; }
     });
+    var where = '';
     if (best) {
-      var h = best.querySelector('h2');
-      return 'Section: ' + ((h && h.textContent.trim()) || best.id);
+      var h = best.querySelector('h2, h1');
+      where = 'Section: ' + ((h && h.textContent.trim()) || best.id);
     }
-    return 'Top of the page';
+    if (mod) return 'Module: ' + mod.title + (where ? ' · ' + where : '');
+    return where || 'Top of the page';
   }
 
   function fbPayload() {
@@ -1751,13 +2209,6 @@
       page: location.pathname + location.search + location.hash,
       device: fbDevice()
     };
-  }
-
-  function fbPaintPayload() {
-    var p = fbPayload();
-    if (!p.message) p.message = '(whatever you type above)';
-    if (!p.name) p.name = '(blank, sent anonymously)';
-    $('#fbPayload').textContent = JSON.stringify(p, null, 2);
   }
 
   /* ---- queue: notes that could not be sent, retried on the next load ---- */
@@ -1805,7 +2256,10 @@
       'Sent:     ' + p.ts,
       'From:     ' + (p.name || '(anonymous)')
     ].join('\n');
-    return 'mailto:' + encodeURIComponent(FB.mailto) +
+    // Each address encoded on its own, so a comma-separated list stays a list.
+    var to = String(FB.mailto || '').split(',').map(function (a) { return encodeURIComponent(a.trim()); })
+               .filter(Boolean).join(',');
+    return 'mailto:' + to +
            '?subject=' + encodeURIComponent('LLM/NLP 101 feedback, ' + p.kind) +
            '&body=' + encodeURIComponent(body.slice(0, 1800));
   }
@@ -1828,7 +2282,6 @@
     $('#fbName').placeholder = FB.namePlaceholder;
     $('#fbMessage').placeholder = FB.placeholder;
     $('#fbSubmit').textContent = FB.submit;
-    $('#fbDisclosureLabel').textContent = FB.disclosure;
 
     $('#fbKinds').innerHTML = (FB.kinds || []).map(function (k, i) {
       return '<label class="fb-kind">' +
@@ -1841,7 +2294,6 @@
 
     fab.addEventListener('click', function () {
       fbStatus('');
-      fbPaintPayload();
       if (!dlg.open) dlg.showModal();
       setTimeout(function () { $('#fbMessage').focus(); }, 30);
     });
@@ -1851,10 +2303,7 @@
     $('#fbMessage').addEventListener('input', function () {
       $('#fbCount').textContent = String(this.value.length);
       this.setAttribute('aria-invalid', 'false');
-      fbPaintPayload();
     });
-    $('#fbName').addEventListener('input', fbPaintPayload);
-    $('#fbKinds').addEventListener('change', fbPaintPayload);
 
     // Cmd/Ctrl+Enter sends, the way every other comment box works
     $('#fbMessage').addEventListener('keydown', function (e) {
@@ -1901,8 +2350,9 @@
     fbFlushQueue();
   })();
 
-  /* ---------- deep link: #lesson-l3 opens that lesson ---------- */
-  if (/^#lesson-/.test(location.hash)) {
-    openLesson(location.hash.replace('#lesson-', ''));
-  }
+  /* ---------- first paint of the modules, then whichever view the address asks for ---------- */
+  renderModuleCards();
+  renderWhy();
+  homeTitle = document.title;
+  route();
 })();

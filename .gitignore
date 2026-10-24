@@ -5,3 +5,11 @@ tools/node_modules/
 # Kept local on purpose, not published to GitHub or the web root.
 VIDEO-SCRIPTS.md
 WHITEPAPER.md
+
+# AI tool installs, local settings and design-tool state. Each person
+# installs their own; settings.local.json is personal and must not be shared.
+.agents/
+.claude/
+.codex/
+.opencode/
+.impeccable/
