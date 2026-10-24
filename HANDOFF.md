@@ -116,13 +116,30 @@ away from going in.
 
 ### Held back deliberately
 
-**`main` now calls itself two different things.** `content.js` says
-`event.name: "Artificial Intelligence 101"`, which `app.js` writes into the
-browser tab, while the static `<title>`, `og:title` and `twitter:title` all still
-say "LLM/NLP 101 — Purple Maiʻa". So the tab says one name and every crawler and
-social preview says another. Left alone because which name is right is a
-decision, not a typo. `community-hub` is consistent — the overlay sets all three
-to "Intro to AI".
+**The course was renamed, same session.** `main` had been calling itself two
+things: `content.js` said `Artificial Intelligence 101`, which `app.js` writes
+into the browser tab, while the static `<title>`, `og:title`, `twitter:title` and
+both JSON-LD names still said "LLM/NLP 101". Keneth's call is **Artificial
+Intelligence 101**, so that went through index.html, the README, the mail-subject
+fallback, `certificate.courseName` and both Apps Script setup notes.
+
+**Two generated assets carried the old name as pixels**, so they were rebuilt
+from source rather than left to contradict the page: `assets/social.png` (the
+og:image) and `assets/qr-slide.png`. The longer name wraps to two lines on the
+card and three on the slide, and both still sit inside their frames. Both QR
+images were rescanned with `tools/check-qr.js` afterwards and still resolve to
+the canonical URL. `qr.svg` and `qr.png` carry no text and the URL did not
+change, so they were left alone.
+
+**`community-hub` is still "Intro to AI".** Every conflict in that merge was the
+same question and got the same answer: the edition keeps its own name. The one
+exception is the mail-subject fallback, which names the course because it only
+fires when the overlay has not set `shortName`.
+
+**The community edition's pre-launch meta was left exactly as it was** — no
+canonical, no `og:url`, `noindex`, and a relative `og:image`. That is deliberate,
+the comment above it is the launch checklist, and taking main's absolute URLs
+would have pointed this edition's link preview at the staff card.
 
 **Nothing was changed on Sam's fork, and no PR was opened back to her.** She
 pulls from upstream now.
@@ -155,9 +172,16 @@ been looked at on a screen, and it has not been looked at on a phone.
 - [ ] **Look at the two portrait videos in a browser.** Everything else here was
       verified by test; this one was reasoned out. It is the first thing to
       check.
-- [ ] **Decide what the course is called.** The name mismatch on `main` above.
-      It affects the tab, every social preview, the README, the deck and the
-      white paper.
+- [ ] **Two things still say "LLM/NLP 101" and neither can be fixed by editing
+      a file.** `assets/llm-nlp-101.pdf` — both the filename and the deck's own
+      slides. And the deployed feedback Apps Script, which keeps mailing the old
+      subject line and writing the old document title until the updated
+      `tools/feedback-apps-script.js` is pasted back into the editor. Five
+      minutes, and worth doing before the next Friday digest.
+- [ ] The white paper still calls it LLM/NLP 101 in five places, including the
+      running footer, and `VIDEO-SCRIPTS.md` in one. Both are gitignored, so that
+      is a local edit — and for the paper, a re-export of a PDF already in
+      circulation.
 - [ ] **The live site is now three weeks behind.** Dokku is still on `e012b70`.
       `assets/video/*.mp4` returns 404 in production — **none of the 13 videos
       are live.** Still needs the same decision first: which branch is the public
