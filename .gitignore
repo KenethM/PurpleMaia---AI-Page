@@ -6,6 +6,11 @@ tools/node_modules/
 VIDEO-SCRIPTS.md
 WHITEPAPER.md
 
+# Video masters. Sam delivers .mov; what the page serves is the .mp4 built
+# from it, beside a .jpg poster. The masters are tens of megabytes each and
+# nothing on the site reads them, so they stay out of the repo and the image.
+assets/video/*.mov
+
 # AI tool installs, local settings and design-tool state. Each person
 # installs their own; settings.local.json is personal and must not be shared.
 .agents/

@@ -3,7 +3,7 @@
    Everything on the page is generated from the object below.
    Save, refresh, done. See README.md for a field-by-field guide.
 
-   Structure follows the LLM/NLP 101 deck:
+   Structure follows the slide deck (assets/llm-nlp-101.pdf):
      Module 1  Overview            (10-12 min)
      Module 2  How an LLM works    (20-25 min)
      Module 3  Using LLMs well     (15-20 min)
@@ -1653,8 +1653,8 @@ window.SITE = {
          video: "file:assets/<name>.mp4" — the placeholder disappears on its own. */
       group: "Purple Maiʻa originals",
       items: [
-        { label: "Short-form animations — in production", url: "#lessons", desc: "Animated from the LLM/NLP 101 scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
-        { label: "Scripts these are built from", url: "#lessons", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
+        { label: "Short-form animations — in production", url: "#/", desc: "Animated from this course’s scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
+        { label: "Scripts these are built from", url: "#/", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
       ]
     },
     {

@@ -2260,7 +2260,7 @@
     var to = String(FB.mailto || '').split(',').map(function (a) { return encodeURIComponent(a.trim()); })
                .filter(Boolean).join(',');
     return 'mailto:' + to +
-           '?subject=' + encodeURIComponent('LLM/NLP 101 feedback, ' + p.kind) +
+           '?subject=' + encodeURIComponent(((S.event || {}).shortName || 'Artificial Intelligence 101') + ' feedback, ' + p.kind) +
            '&body=' + encodeURIComponent(body.slice(0, 1800));
   }
 

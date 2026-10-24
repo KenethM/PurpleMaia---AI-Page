@@ -15,7 +15,7 @@
    SETUP, about five minutes, once
    ---------------------------------------------------------------
    1.  Go to sheets.new while signed in as keneth@purplemaia.org.
-       Name it "LLM/NLP 101 feedback".
+       Name it "Artificial Intelligence 101 feedback".
 
    2.  Extensions -> Apps Script. Delete the stub Code.gs contents and
        paste this entire file in. Save.
@@ -134,7 +134,7 @@ function doPost(e) {
 // A GET in a browser, so you can confirm the deployment is alive.
 function doGet() {
   return ContentService
-    .createTextOutput('LLM/NLP 101 feedback collector is running.')
+    .createTextOutput('Artificial Intelligence 101 feedback collector is running.')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -159,7 +159,7 @@ function weeklyDigest() {
   if (!pending.length) {
     MailApp.sendEmail({
       to: DIGEST_TO,
-      subject: 'LLM/NLP 101 feedback: nothing new this week',
+      subject: 'Artificial Intelligence 101 feedback: nothing new this week',
       body: 'No notes came in since the last digest. The widget is still live.\n\n' +
             'Sheet: ' + _sheet().getParent().getUrl()
     });
@@ -178,7 +178,7 @@ function weeklyDigest() {
 
   MailApp.sendEmail({
     to: DIGEST_TO,
-    subject: 'LLM/NLP 101 feedback: ' + total + ' note' + (total === 1 ? '' : 's') + ' this week' +
+    subject: 'Artificial Intelligence 101 feedback: ' + total + ' note' + (total === 1 ? '' : 's') + ' this week' +
              (skipped ? ' (' + skipped + ' not shown)' : ''),
     htmlBody: _buildEmail(shown, url, skipped),
     body: _buildPlain(shown, url)
@@ -197,7 +197,7 @@ function _buildDoc(notes, total, skipped) {
   var doc  = DocumentApp.create('LLM-NLP 101 feedback, week of ' + today);
   var b    = doc.getBody();
 
-  b.appendParagraph('LLM/NLP 101 feedback').setHeading(DocumentApp.ParagraphHeading.TITLE);
+  b.appendParagraph('Artificial Intelligence 101 feedback').setHeading(DocumentApp.ParagraphHeading.TITLE);
   b.appendParagraph((total || notes.length) + ' note' + ((total || notes.length) === 1 ? '' : 's') +
                     ', collected up to ' + today +
                     (skipped ? '  ·  ' + skipped + ' not shown here, see the Sheet' : ''))

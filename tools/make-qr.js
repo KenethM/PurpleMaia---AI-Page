@@ -63,7 +63,7 @@ h1{font-family:Montserrat,sans-serif;font-weight:700;font-size:82px;line-height:
 </style></head><body><div class="s"><div class="tex"></div>
 <div class="qr">${light}<div class="pad"><img src="file:///${A}/pm-mark-white.png"></div></div>
 <div class="r"><img class="lk" src="file:///${A}/pm-lockup-white.png">
-<h1>Scan to open<br>LLM/NLP 101</h1>
+<h1>Scan to open<br>Artificial Intelligence 101</h1>
 <p class="u">${SITE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
 <div class="strip"><i style="background:#081659"></i><i style="background:#faaf40"></i>
 <i style="background:#006838"></i><i style="background:#c3996b"></i><i style="background:#ec1c24"></i>
