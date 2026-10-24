@@ -476,6 +476,7 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 ## 4. What the page does
 
 - **Three module pages** — the home page shows the three modules (`modules` in `content.js`, written from the white paper). Each opens as an article at `#/module/<id>`: the text, the video for each section, a key takeaway, sources, then practice (the module's lesson quizzes plus its activities) and a link to the next module. "In this module" sits to the right and marks the section being read. Old `#lesson-<id>` links land on the matching section.
+- **Hover previews** — on a computer with a mouse or trackpad, hovering a module card plays that card's video, muted and looping, in place of its picture; moving away pauses it. Nothing loads until the first hover, and it never plays on touch screens, with reduce-motion, or with data saver on. `preview` on a module in `content.js` picks a different clip, or `""` turns it off.
 - **Reference page** — `#/reference` holds the glossary (A–Z, searchable), the prompt library, the FAQ and downloads. The header links and the four cards at the bottom of the home page go straight to each one.
 - **One version for everyone** — the `audiences` section was deleted from `content.js` (October 2026), so there is no switcher and `?for=` is ignored. The switcher code in `app.js` stays dormant and comes back if `audiences` is added again (see "Re-skinning the page" above).
 - **"Not sure where to start?" and "Why we made this"** — both still have code and a place on the home page, but their content (`placement`, `why`) was removed from `content.js`, so neither shows. Add the keys back to bring them back.
@@ -555,9 +556,8 @@ The numbered sections of `content.js`, in order:
 ## 6. Collecting feedback
 
 The button in the bottom-right opens a short form: pick a kind, write a note,
-optionally leave a name. Everything else is captured for you — which lesson or
-section the person was on, which audience version they had, and their browser
-and window size — because "confusing" is noise and "confusing on Embeddings" is
+optionally leave a name. Everything else is captured for you — which module
+and section the person was on, and their browser and window size — because "confusing" is noise and "confusing on Embeddings" is
 a task.
 
 **It ships switched off.** With `feedback.endpoint` empty in `content.js`, the
@@ -582,8 +582,7 @@ and retried on the next page load, so a dropped connection does not lose it.
 **On the privacy claim.** The page tells people twice that nothing is uploaded,
 and that stays true of progress, quiz answers, theme and audience, all of which
 live in the browser. The feedback form is the single exception, it is labelled
-as such in the FAQ, and the dialog shows the exact JSON before anybody presses
-send. If you extend it, keep that property: no background collection.
+as such in the FAQ, which lists exactly what each note carries. If you extend it, keep that property: no background collection.
 
 
 ## Licence

@@ -84,7 +84,7 @@
    Deploy -> Manage deployments -> Archive.
    ============================================================= */
 
-var DIGEST_TO    = 'keneth@purplemaia.org';
+var DIGEST_TO    = 'keneth@purplemaia.org,splimon@purplemaia.org';   // comma-separated
 var SHEET_NAME   = 'notes';
 var MAX_MESSAGE  = 4000;   // matches the widget's maxlength
 var MAX_PER_HOUR = 60;     // the page is public; this is the abuse ceiling

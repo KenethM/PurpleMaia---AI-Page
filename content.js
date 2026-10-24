@@ -114,7 +114,11 @@ window.SITE = {
        takeaway  optional "Key takeaway" box
        sources   ids from `sources` below, shown under the section
 
-     `image` is the picture on its home-page card.
+     `image` is the picture on its home-page card. When it is the poster of
+     one of our own videos (assets/video/<name>.jpg beside <name>.mp4, used by
+     a lesson), hovering the card plays that video, muted. Set
+     `preview: "assets/video/<other>.mp4"` to choose a different clip, or
+     `preview: ""` to turn it off for that card.
      `track` ties a module to its placement result and its practice
      activities (practice[].module). Every source has been checked against
      the live page; do not add one without doing the same. */
@@ -1603,7 +1607,7 @@ window.SITE = {
     { q: "Are the quizzes graded, and does anyone see my score?",
       a: "No and no. The practice at the end of each module is for you. Like your reading progress, answers are kept in your own browser and nothing is uploaded anywhere. The feedback button is the single exception on this page, and it sends only what you type into it, only when you press send." },
     { q: "What does the feedback button send?",
-      a: "Exactly what the dialog shows you before you press send, and you can open ‘What gets sent’ to read the whole thing. Your note, which of the three kinds you picked, your name if you chose to fill it in, which module and section you were looking at, and your browser and window size so a layout bug can be reproduced. No account, no cookie, no tracking, and no raw device fingerprint. It lands in a spreadsheet in Purple Maiʻa’s own Drive and turns into a write-up every Friday." },
+      a: "Only what you send, and only when you press send: your note, which of the three kinds you picked, your name if you chose to fill it in, which module and section you were looking at, and your browser and window size so a layout bug can be reproduced. No account, no cookie, no tracking, and no raw device fingerprint. It lands in a spreadsheet in Purple Maiʻa’s own Drive and turns into a write-up every Friday." },
     { q: "Where are the Purple Maiʻa videos?",
       a: "Eight of the videos in the modules are Purple Maiʻa's own, and more are being animated. The rest are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
@@ -1688,12 +1692,13 @@ window.SITE = {
        already written. Nothing is ever silently dropped.
        Setup steps and the script itself: tools/feedback-apps-script.js
 
-     mailto: the address the fallback writes to, and where the Friday
-       digest gets sent from the Apps Script side.
+     mailto: the address(es) the fallback writes to, comma-separated for
+       more than one. The Friday digest's recipients are set separately,
+       in DIGEST_TO in tools/feedback-apps-script.js.
   --------------------------------------------------------------- */
   feedback: {
-    endpoint: "",
-    mailto: "keneth@purplemaia.org",
+    endpoint: "https://script.google.com/macros/s/AKfycbzQ3r33WpCDM_DatcNaynMJ9_vn5lYqrtD-S9kLZ2izm_18NwnNNA-ZSJ4CmG77VqFLTQ/exec",
+    mailto: "keneth@purplemaia.org, splimon@purplemaia.org",
     button: "Feedback",
     title: "Tell us what to fix",
     blurb: "This page is a working draft and every note goes into the next pass. Say what tripped you up, what was wrong, or what is missing.",
@@ -1707,8 +1712,7 @@ window.SITE = {
     namePlaceholder: "Optional",
     submit: "Send it",
     thanks: "Got it. Thank you — this lands in Friday's list.",
-    queued: "Saved on this device. It will send next time you open the page.",
-    disclosure: "What gets sent"
+    queued: "Saved on this device. It will send next time you open the page."
   }
 
 };

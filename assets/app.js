@@ -1505,6 +1505,55 @@
   }
   window.addEventListener('resize', function () { moveMarker($('.art-toc a.is-current', moduleView)); });
 
+  /* The clip a module card plays on hover: `preview` if content.js sets one,
+     otherwise the video whose poster is the card's image, so long as a lesson
+     really uses it. */
+  function previewFor(m) {
+    if (typeof m.preview === 'string') return m.preview;
+    if (!m.image || !/\.jpg$/.test(m.image)) return '';
+    var mp4 = m.image.replace(/\.jpg$/, '.mp4');
+    var used = (S.lessons || []).some(function (l) { return l.video === 'file:' + mp4; });
+    return used ? mp4 : '';
+  }
+
+  /* Hover a card and its picture becomes the video, muted and looping;
+     leave and it pauses and fades back to the still. Nothing loads until
+     the first hover. Only where there is a real hover (mouse or trackpad),
+     never with reduce-motion or data saver on. */
+  var fineHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)');
+  function wirePreviews(grid) {
+    if (!fineHover || !fineHover.matches || calm()) return;
+    if (navigator.connection && navigator.connection.saveData) return;
+    $$('.module-card', grid).forEach(function (card) {
+      var art = $('.module-art[data-preview]', card);
+      if (!art) return;
+      var vid = null;
+      var start = function () {
+        if (!vid) {
+          vid = document.createElement('video');
+          vid.className = 'module-preview';
+          vid.muted = true; vid.loop = true; vid.playsInline = true;
+          vid.setAttribute('muted', ''); vid.setAttribute('playsinline', '');
+          vid.setAttribute('aria-hidden', 'true'); vid.tabIndex = -1;
+          vid.preload = 'auto';
+          vid.src = art.getAttribute('data-preview');
+          vid.addEventListener('playing', function () { if (art.matches(':hover') || card === document.activeElement) art.classList.add('is-playing'); });
+          art.insertBefore(vid, $('.module-num', art));
+        }
+        var p = vid.play();
+        if (p && p.catch) p.catch(function () {});   // a blocked play just leaves the still
+      };
+      var stop = function () {
+        art.classList.remove('is-playing');
+        if (vid) vid.pause();
+      };
+      card.addEventListener('pointerenter', start);
+      card.addEventListener('pointerleave', stop);
+      card.addEventListener('focus', start);
+      card.addEventListener('blur', stop);
+    });
+  }
+
   function renderModuleCards() {
     var grid = $('#moduleGrid');
     if (!grid) return;
@@ -1514,7 +1563,7 @@
       var cta = pr.complete ? 'Review Module ' + (i + 1) : pr.started ? 'Continue' : 'Start Module ' + (i + 1);
       var href = (pr.started && !pr.complete && pr.next) ? moduleHref(m, pr.next) : moduleHref(m);
       return '<a class="module-card' + (pr.complete ? ' is-complete' : '') + '" href="' + href + '">' +
-        '<span class="module-art">' +
+        '<span class="module-art"' + (previewFor(m) ? ' data-preview="' + esc(previewFor(m)) + '"' : '') + '>' +
           (m.image ? '<img src="' + esc(m.image) + '" alt="" loading="lazy">' : '') +
           '<span class="module-num">Module ' + (i + 1) + '</span>' +
         '</span>' +
@@ -1531,6 +1580,7 @@
       '</a>';
     }).join('');
     observeReveals(grid);
+    wirePreviews(grid);
     paintOverall();
   }
 
@@ -2161,13 +2211,6 @@
     };
   }
 
-  function fbPaintPayload() {
-    var p = fbPayload();
-    if (!p.message) p.message = '(whatever you type above)';
-    if (!p.name) p.name = '(blank, sent anonymously)';
-    $('#fbPayload').textContent = JSON.stringify(p, null, 2);
-  }
-
   /* ---- queue: notes that could not be sent, retried on the next load ---- */
   var FBQ = 'aihub:feedbackq';
   function fbQueue() {
@@ -2213,7 +2256,10 @@
       'Sent:     ' + p.ts,
       'From:     ' + (p.name || '(anonymous)')
     ].join('\n');
-    return 'mailto:' + encodeURIComponent(FB.mailto) +
+    // Each address encoded on its own, so a comma-separated list stays a list.
+    var to = String(FB.mailto || '').split(',').map(function (a) { return encodeURIComponent(a.trim()); })
+               .filter(Boolean).join(',');
+    return 'mailto:' + to +
            '?subject=' + encodeURIComponent('LLM/NLP 101 feedback, ' + p.kind) +
            '&body=' + encodeURIComponent(body.slice(0, 1800));
   }
@@ -2236,7 +2282,6 @@
     $('#fbName').placeholder = FB.namePlaceholder;
     $('#fbMessage').placeholder = FB.placeholder;
     $('#fbSubmit').textContent = FB.submit;
-    $('#fbDisclosureLabel').textContent = FB.disclosure;
 
     $('#fbKinds').innerHTML = (FB.kinds || []).map(function (k, i) {
       return '<label class="fb-kind">' +
@@ -2249,7 +2294,6 @@
 
     fab.addEventListener('click', function () {
       fbStatus('');
-      fbPaintPayload();
       if (!dlg.open) dlg.showModal();
       setTimeout(function () { $('#fbMessage').focus(); }, 30);
     });
@@ -2259,10 +2303,7 @@
     $('#fbMessage').addEventListener('input', function () {
       $('#fbCount').textContent = String(this.value.length);
       this.setAttribute('aria-invalid', 'false');
-      fbPaintPayload();
     });
-    $('#fbName').addEventListener('input', fbPaintPayload);
-    $('#fbKinds').addEventListener('change', fbPaintPayload);
 
     // Cmd/Ctrl+Enter sends, the way every other comment box works
     $('#fbMessage').addEventListener('keydown', function (e) {
