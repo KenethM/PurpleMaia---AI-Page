@@ -22,7 +22,7 @@
    SETUP, about five minutes, once
    ---------------------------------------------------------------
    1.  sheets.new while signed in as keneth@purplemaia.org.
-       Name it "LLM/NLP 101 certificates".
+       Name it "Artificial Intelligence 101 certificates".
 
    2.  Extensions -> Apps Script. Paste this whole file in. Save.
 

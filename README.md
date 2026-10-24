@@ -1,4 +1,4 @@
-# LLM/NLP 101 — Purple Maiʻa staff learning page
+# Artificial Intelligence 101 — Purple Maiʻa staff learning page
 
 A single static page for hosting workshop material: lessons, video recordings,
 a prompt library, a glossary, an agenda and links — plus a quiz under every
