@@ -225,6 +225,182 @@ been looked at on a screen, and it has not been looked at on a phone.
 
 ---
 
+## 2026-10-23 — One site for everyone: three module pages from the white paper
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `53abaf9`
+**State:** working tree only
+**Files:** `content.js`, `index.html`, `assets/app.js`, `assets/styles.css`,
+`README.md`, `HANDOFF.md`, `.dockerignore`, new `PRODUCT.md` and `DESIGN.md` (design context,
+kept out of the image by `*.md`), new `.impeccable/` (design tooling, now in
+`.dockerignore`)
+
+### Why
+The page is turning into a community resource. A first-time visitor on their
+own was landing on staff framing ("Staff learning asset", "Purple Maiʻa
+all-staff") and an audience switcher. The ask was one generic page with the
+lessons and practice easy to reach, and the three placement questions as the
+first thing you see.
+
+### What changed
+- **Hero:** the headline is now "Not sure where to start with AI?" (new
+  `event.headline`; `event.name` stays the title and brand). The placement
+  quiz moved out of "Where should I start?" and into the hero as a card that
+  opens on question 1. Answers vote for a module and the result button opens
+  the lessons on it. Two plain links skip straight to the lessons or the
+  activities, with a quiet "3 modules · 19 lessons · 7 activities" line under
+  them.
+- **Progress:** the progress card is gone. A small ring and count appear in the
+  hero only once at least one lesson is ticked off.
+- **Audiences:** all four carry `draft: true`. With none published, the existing
+  code renders the plain page: no "Viewing as" bar, and `?for=` and any saved
+  audience are ignored.
+- **Generic copy:** tagline, intro, the third start card ("I need to get this
+  right"), and placement Q1 and Q3 (no more "in a meeting", "colleagues",
+  "funders"). "Six things to play with" became "Seven" (there are 7),
+  "Every term we used today" became "Every term on this page", and the
+  *Would you send it?* blurb lost "a week of actual work". The OG image alt
+  text no longer says "staff learning asset".
+- **The section below the hero** is now "Or pick a starting point yourself",
+  with the same three cards.
+
+### Decisions worth knowing
+- The hero `facts` now show counts only. The "~95 min" self-paced and "~59 min"
+  live figures were stale (README §5) and are no longer displayed. Nothing was
+  recomputed.
+- The quiz still shuffles options, never stores answers, and moves focus to the
+  new question after each answer so keyboard and screen-reader users keep
+  their place.
+- On narrow screens the hero reorders to headline, questions, then the skip
+  links, so the questions are still the first thing you reach.
+- The eyebrow badge was dropped from the hero. `event.badge` is blank, and the
+  `<title>` falls back to just the name.
+
+### Held back deliberately
+- Staff and partner copy is kept in `content.js` as drafts, not deleted.
+  Community workshop and kupuna still need a cultural review before any reuse.
+
+### How it was tested
+- `node --check` on `content.js` and `assets/app.js`.
+- Headless Chrome in light and dark at 1440 wide, plus 390 and 820 wide in
+  iframes. The answered states were checked too: question 2 of 3, and the
+  result card in both themes.
+- Not tested: a real screen reader, or the Docker build.
+
+### Later the same day: module pages from the white paper
+The quiz-first hero above was replaced. The home page now shows three module
+cards (Microsoft "AI 101" style, Purple Maiʻa look). Each opens a module article
+at `#/module/<id>` with the header layout and right-hand "In this module" list
+the team picked from sketches in `.impeccable/mocks/modules/`.
+- **Content:** `modules`, `why` and `sources` in `content.js`, written from
+  "AI 101 Learning Materials" (the white paper). All 19 lessons map to exactly
+  one section, so each video sits where it is explained. "Model families" moved
+  from Module 3 to Module 2 to follow the paper. "Communicating about AI in
+  public" was left out, and "Why this matters" became the short "Why we made this".
+- **Sources:** all 18 were checked against their live pages. Anthropic's link
+  moved to platform.claude.com, Ji et al. shows Crossref's "1–38" because
+  "Article 248" could not be confirmed, and three NeurIPS papers got
+  proceedings links. Fix the paper's Anthropic link and its p. 10 takeaway too.
+- **Removed:** the lesson grid, the lesson dialog, the pathway cards, the
+  Practice section and the progress ring, all now carried by the modules.
+  Activities render at the end of their module (Term match closes Module 3).
+- **Tested:** routing, old lesson links, video swap-in, practice and placement
+  were driven in headless Chrome. Light and dark were checked at 1440 and 390 wide.
+
+### Open / next
+- [x] Step 3, progress: read sections live in `aihub:read`. Reading a section
+      also adds its lessons to `aihub:progress`, so old lesson ticks count as
+      read sections. Practice is done once `aihub:quiz["module:<id>"]` exists.
+      Tested in a real headless Chrome over the DevTools protocol, because
+      `--virtual-time-budget` never fires scroll events.
+- [x] Step 4, Reference: the glossary, prompts, FAQ and downloads moved to
+      their own page at `#/reference/<section>`, linked from four cards on
+      the home page and from the header. Old `#glossary`-style links redirect.
+      The glossary gained the paper's 13 missing terms (33 in all) and renders
+      A–Z. Five FAQ answers that described the old page were corrected, and the
+      "Viewing as" question was removed. The footer no longer says "internal".
+- [x] Final pass: every view checked in light and dark at desktop and phone
+      width. A keyboard walk found focus rings on every stop. "In this module"
+      now comes before the article in the page order (still on the right
+      visually), and nothing counts as read until the first scroll. The quiz
+      counter no longer wraps. The JSON-LD module names follow the new
+      modules, and the placement result no longer quotes a stale 25 minutes.
+      README, PRODUCT.md, DESIGN.md and `.impeccable/design.json` describe the
+      module site.
+- [x] Later: the owner trimmed `content.js` and removed `placement`,
+      `audiences` and `why`. Every cross-reference was checked (lessons,
+      quizzes, sources, practice modules, files on disk) and every view loaded
+      with no errors. Their containers on the home page simply stay hidden.
+- [x] Home progress line fixed. It always shows (0% and "Not started yet" on a
+      fresh visit), so Reset no longer makes it vanish; only the Reset link
+      hides. The bar and the words now measure the same thing (sections read
+      plus practice finished, across the course), and a card whose practice is
+      done says so beside its section count.
+- [x] Practice is now one "Check your understanding" per module. The question
+      activities fold into it (Module 1: 8 questions, Module 2: 17, Module 3:
+      19), and "Try it yourself" is gone. The four demos moved into the
+      sections they illustrate, set by a new `section` field on each practice
+      entry. A section with sub-sections now lists its sources after them.
+- [x] Header links to Glossary, Prompts, FAQ and Resources now land with the
+      section heading 27px under the header, instead of showing the end of the
+      section above it. Jumps target the `.section-head`, and the scroll
+      margins no longer add the header height a second time on top of
+      `html { scroll-padding-top }` (the same double offset was on module
+      sections, which now land 21px under the header).
+- [x] Home page: all three module buttons are filled violet (only the next
+      module's used to be). The navbar is frosted glass on home only
+      (`.site-header.is-glass`, set by `route()`), and the hero glow was
+      removed, so the title band is the same plain colour as the navbar.
+- [x] Home: a hairline divides the title band from the module cards, drawn
+      inside the content column (`.hero-inner::after`).
+- [x] Phones: the longer site name "Artificial Intelligence 101 | Purple
+      Maiʻa" pushed the search, theme and menu buttons off the screen at 390px
+      and below, so the navigation was unreachable. The name now wraps under
+      560px; the buttons were checked in view at 390, 360 and 320px.
+- [x] Motion: Home, module and Reference pages cross-fade with a small
+      settle (View Transitions; instant where unsupported). Contents links
+      glide, and a glide never counts the sections it passes as read: a jump
+      forgets earlier glimpses, ends only when scrolling goes quiet, and
+      "on screen" excludes what is under the header. A violet marker follows
+      the current section on the rail, and earned ticks draw in. Everything
+      is instant under prefers-reduced-motion. Tested in Chrome only; a
+      browser without View Transitions simply swaps the page, as before.
+- [x] Scroll reveals across all three pages: content blocks fade up 16px as
+      they enter the viewport, 60ms apart within a batch (capped at 300ms).
+      `REVEAL_SEL` lists them; each element reveals once and then sheds the
+      classes, so card hovers keep their own timing. Verified: nothing left
+      hidden after scrolling any page, deep links land visible, reduce-motion
+      shows everything at once.
+- [x] Module cards play their video on hover (muted, looping, resumes where
+      it paused). Lazy: the MP4 (5.7–7.9 MB, streamed) loads on first hover only.
+      Skipped on touch, reduce-motion and data saver. A dedicated short
+      preview clip per module would be lighter; `preview` in content.js takes one.
+- [x] Module numeral centred on the header text both ways (`text-box` trim to
+      cap height); left-aligned above the title on phones.
+- [x] *(Not kept: on 2026-10-26 this was dropped in favour of the emailed-link
+      certificate already on `main`. The code is in the git stash.)*
+      Certificate of completion at `#/certificate` (`certificate` in
+      content.js): every section read, and at least 70% on each module quiz
+      (best attempt). The reader's name and the completion date live in
+      `aihub:certname` and `aihub:certdate`, and Reset clears the date. It
+      prints as one landscape Letter page or downloads as a PNG (http(s)
+      only). Signer is blank; add a name and title once someone agrees.
+- [ ] Found while building the certificate: `assets/pm-lockup.png` has a
+      **white** wordmark, so the footer logo's "PURPLE MAIʻA" text is
+      invisible in light mode. A dark-text lockup file would fix it.
+- [ ] **Not run:** `docker build`. The Docker daemon was not running on this
+      machine. The Dockerfile is unchanged and `.dockerignore` only gained
+      `.impeccable`, but build and run it once before `git push dokku main`.
+- [ ] **Not tested:** a real screen reader (VoiceOver), and Safari or Firefox.
+      All browser checks were headless Chrome.
+- [ ] `CLAUDE.md` (an untracked local file) still describes the lesson dialog,
+      `?for=` re-skinning and `renderQuiz` for lesson quizzes as live.
+- [ ] The sketches in `.impeccable/mocks/` were for choosing layouts. Delete
+      them, or keep them as a record; they never ship (`.dockerignore`).
+- [ ] Read the new placement wording (Q1 and Q3) with someone who runs community rooms.
+
+---
+
 ## 2026-10-23 — Certificate, river prototype, three more videos, and a live site two weeks behind
 
 **Who:** Keneth, with Claude
