@@ -774,8 +774,8 @@ window.SITE = {
       level: "Module 3",
       duration: "7 min",
       summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
-      video: "youtube:gV0_raKR2UQ",
-      videoLength: "11:20",
+      video: "file:assets/video/the-uneven-library.mp4",
+      videoLength: "1:13",
       takeaways: [
         "Training data reflects the internet's existing skews: whose voices, languages and stories are well represented, and whose are not.",
         "A model can reproduce and amplify those gaps rather than flag them.",
@@ -1616,7 +1616,7 @@ window.SITE = {
     { q: "What is the certificate, and what does asking for one send?",
       a: "It appears once you have finished every module, and it is optional — nothing on this page is locked behind it. Asking for one sends three things: the name you want printed, an email address, and how much of the course you finished. Nothing else, and nothing at all until you press the button. There is no password and no account: you get a one-time link by email, clicking it proves the address is yours, and that is the whole sign-in. Your reading progress, your quiz answers and the sections you opened never leave your browser. The record lives in a spreadsheet in Purple Maiʻa’s own Drive, and the code printed on the certificate is how anyone can check it with us." },
     { q: "Where are the Purple Maiʻa videos?",
-      a: "Sixteen of the 19 videos in the modules are Purple Maiʻa's own, and more are being animated. The other three are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
+      a: "Seventeen of the 19 videos in the modules are Purple Maiʻa's own, and more are being animated. The other two are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
       a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
   ],

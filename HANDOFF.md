@@ -16,6 +16,30 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-26 (later) — Video 19 on bias
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `5698c58`
+**State:** working tree only
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/the-uneven-library.{mp4,jpg}`
+
+### What changed
+`m3-bias` (Module 3, "Bias and missing cultural context") now plays Video 19,
+"The Uneven Library" → `the-uneven-library.mp4` (1:13), in place of the
+outside explainer `youtube:gV0_raKR2UQ`. Same handling as videos 13–15 below:
+passthrough remux to put `moov` first, 960×540 poster at 7s (the "Mostly
+English" shelves). FAQ and README now say 17 of 19.
+
+### How it was tested
+`node --check`; `content.js` loaded in node shows 17 `file:` lessons, all with
+`.mp4` and `.jpg` on disk; atoms on the output are `ftyp, moov, mdat`.
+**Not checked:** playback in a browser.
+
+### Open / next
+- [ ] Still on stand-ins: `m2-parameters`, `m2-sampling`.
+
+---
+
 ## 2026-10-26 — Videos 13, 14 and 15 replace three more stand-ins
 
 **Who:** splimon, with Claude Code
