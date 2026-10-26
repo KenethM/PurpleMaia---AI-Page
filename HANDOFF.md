@@ -16,6 +16,47 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-26 — Videos 13, 14 and 15 replace three more stand-ins
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `d8694a9`
+**State:** working tree only
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/` (three new `.mp4` + `.jpg` pairs)
+
+### Why
+Three more of Purple Maiʻa's own videos were delivered, each matching a section
+that was still on an outside explainer.
+
+### What changed
+- `m2-transformers` (Module 2, "Transformers and attention"): Video 15, "Which words matter" → `which-words-matter.mp4` (2:52).
+- `m3-grounding` (Module 3, "Grounding and retrieval-augmented generation"): Video 13, "Show me the receipts" → `show-me-the-receipts.mp4` (2:02).
+- `m3-model-families` (Module 2, "Model families, open weights and agents"): Video 14, "Which one said it" → `which-one-said-it.mp4` (2:35).
+- The FAQ answer and README §"Outside videos are stand-ins" now say 16 of 19 videos are ours (they still said eight).
+
+### Decisions worth knowing
+- **Remuxed, not re-encoded.** The deliveries were already H.264/AAC 1920×1080
+  but had the `moov` atom at the end, so a browser had to download the whole
+  file before playing. They went through an AVFoundation passthrough export
+  with network optimisation (the `+faststart` equivalent; ffmpeg is not
+  installed on this machine). Same streams, index moved to the front.
+- **Posters** are 960×540 frames like the others: 86s of video 15 (the
+  honu–swam "strongest link", the lesson's own example), 98s of video 13 (an
+  answer with citations beside its source), 124s of video 14 (proprietary
+  families next to open models). Captions are burned in throughout, so every
+  frame carries one.
+
+### How it was tested
+`node --check` on both JS files. Loaded `content.js` in node: 16 of 19 lessons
+are `file:`, every `file:` video and its `.jpg` exist on disk, and the three
+sections resolve to the new files. Top-level atoms checked on all three outputs.
+**Not checked:** playback in a browser, and `docker build`.
+
+### Open / next
+- [ ] Still on stand-ins: `m2-parameters`, `m2-sampling`, `m3-bias`.
+- [ ] Watch the three in the page once, on a phone as well.
+
+---
+
 ## 2026-10-23 (later) — Sam's rebuild merged, and everything of ours moved onto it
 
 **Who:** Keneth, with Claude
