@@ -1313,6 +1313,11 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-video figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; font-size: .86rem; color: var(--text-2); line-height: 1.45; }
 .art-video figcaption span:last-child { color: var(--muted); }
 .art-video .video-standin { border-top: 1px solid var(--border); }
+/* The follow-on explainer. Same bar as the stand-in notice, because it is
+   the same kind of thing: a note about the video, not part of it. */
+.art-deeper { margin: 0; border-top: 1px solid var(--border); padding: 11px 16px;
+  font-size: .86rem; color: var(--muted); line-height: 1.45; }
+.art-deeper a { color: var(--text-2); }
 
 /* Films shot vertically. The file is still 16:9 with black bars either side,
    so the frame is given the real 9:16 shape (inline, from the lesson) and the

@@ -261,6 +261,11 @@
      version is now the one link in Resources, which is enough. */
 
   /* ---------- the hero ---------- */
+  /* The follow-on explainers are the staff edition's depth layer, and this
+     is the edition that deliberately has no depth layer. Ours still plays;
+     the 3-to-27 minute outside videos behind them do not belong here. */
+  (S.lessons || []).forEach(function (l) { delete l.deeper; });
+
   var ev = S.event;
   /* `headline` is the <h1>, `shortName` the word in the header, and `name`
      is what the browser tab ends up saying. All three, or the edition

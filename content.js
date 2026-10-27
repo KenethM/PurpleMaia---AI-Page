@@ -475,6 +475,12 @@ window.SITE = {
              "vimeo:123456789"       -> Vimeo
              "file:assets/clip.mp4"  -> a video file committed to the repo
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
+     deeper:  optional. An outside explainer on the same topic, longer and
+             slower than ours, rendered as a link under the player rather
+             than as a second embed: ours is the lesson, this is the
+             follow-on for anyone who wants the long version. Every id was
+             checked against live YouTube, not recalled. The community
+             edition strips these — it is the inch-deep one by design.
      videoLength: the video's real runtime, read off the file with ffprobe
              rather than estimated. Nothing renders it today. It used to sit bottom-right
              of the thumbnail, but `duration` was what was being drawn there —
@@ -486,6 +492,188 @@ window.SITE = {
              cards compute minutes from word count. Fix the clocks, then decide
              what the card shows.
   --------------------------------------------------------------- */
+  /* RESTORED 27 Oct 2026, lifted whole from 53abaf9. Sam's module-article
+     rebuild (26fbde8) dropped this block, and the deployed staff build still
+     had it, so pushing main would have silently deleted `?for=partners` from
+     a live site people hold links to. Putting it back is what made deploying
+     main safe.
+
+     It works on the rebuilt page: the switcher bar renders, and `tagline`,
+     `time` and `location` swap per audience. Two fields no longer land
+     anywhere — `badge` and `intro` lost their markup in the rebuild, and
+     `facts`, `pathways` and `agenda` point at sections the rebuild retired.
+     They are left in rather than pruned: they are the record of what each
+     audience is for, and deleting them would make restoring any of that
+     markup a rewrite instead of a re-bind. The switcher still does its job,
+     it just changes less of the page than it used to.
+
+     `workshop` and `kupuna` stay `draft: true`, so the bar shows two buttons,
+     not four — same as the live build. Cultural review before either ships. */
+  audiences: [
+    {
+      id: "staff",
+      label: "Staff onboarding",
+      short: "Staff",
+      blurb: "New to the team, or catching up before an all-staff session.",
+      /* No overrides — this is the page exactly as written above. */
+      feature: []
+    },
+
+    {
+      id: "partners",
+      label: "Partner education",
+      short: "Partners",
+      blurb: "Funders, schools and partner orgs asking how we think about AI.",
+      badge: "For our partners",
+      tagline: "How Purple Maiʻa talks about AI — what these systems actually are, what they are not, and where a person has to stay in the loop.",
+      date: "",
+      time: "~30 min briefing",
+      location: "Partner orientation",
+      intro:
+        "We get asked a lot of AI questions, and we would rather answer them the same way every time. " +
+        "This is the baseline our whole staff works from, published openly so you can read it before a meeting instead of taking our word for it in one. " +
+        "No math, no product pitch. Start anywhere.",
+      facts: [
+        { label: "Read time", value: "~30 min" },
+        { label: "Modules", value: "3" },
+        { label: "Cost", value: "Free, no login" },
+        { label: "Reusable", value: "Fork it" }
+      ],
+      pathways: [
+        {
+          icon: "sprout",
+          title: "Give me the ten-minute version",
+          body: "What an LLM is, in plain terms, and why that definition matters before anybody signs off on using one.",
+          action: { label: "Start with the overview", filter: "overview" }
+        },
+        {
+          icon: "shield",
+          title: "What are the risks you watch for?",
+          body: "Hallucination, bias, and the places where a confident answer is worth less than nothing. This is where our position sits.",
+          action: { label: "Go to using LLMs well", filter: "using-llms" }
+        },
+        {
+          icon: "wrench",
+          title: "I want the mechanism, not the metaphor",
+          body: "How text becomes tokens, what attention does, and why the same question gives two different answers.",
+          action: { label: "Go to how an LLM works", filter: "how-it-works" }
+        }
+      ],
+      agenda: [
+        { time: "0:00", title: "Why we published this",     detail: "Our AI footprint is growing, and so is the number of people asking us about it. This is the answer, in writing.", tag: "Opening" },
+        { time: "0:05", title: "What an LLM is",            detail: "AI, ML, NLP, generative AI and LLMs — five words that are not interchangeable.", tag: "~8 min" },
+        { time: "0:13", title: "How it produces an answer", detail: "Next-token prediction, at a level you can repeat back to your own board.", tag: "~7 min" },
+        { time: "0:20", title: "Where it breaks",           detail: "Hallucination, bias and inadequate cultural context — and what we do about each.", tag: "~8 min" },
+        { time: "0:28", title: "Questions",                 detail: "Anything, including the ones we have not answered well yet.", tag: "Discussion" }
+      ],
+      featureLabel: "Partner briefing",
+      feature: ["m1-map", "m2-loop", "m2-next-token", "m3-hallucinations", "m3-bias", "m3-oversight"]
+    },
+
+    {
+      id: "workshop",
+      draft: true,   // ← awaiting a read from someone who runs these rooms. Delete this line to publish.
+      label: "Community workshop",
+      short: "Workshop",
+      blurb: "Facilitator-led, in a room, hands on keyboards. Leads with the activities.",
+      badge: "Community workshop",
+      tagline: "Ninety minutes, hands on. Take an LLM apart, break it on purpose, and leave able to explain it to somebody else.",
+      date: "",
+      time: "~90 min, facilitated",
+      location: "Bring a laptop or a phone",
+      intro:
+        "This runs as a workshop, not a lecture. Every module has something to try in the Practice section, and the fastest way through is to play first and read second. " +
+        "Everything here is free and public — open it again at home, or run the whole session yourself for your own group.",
+      facts: [
+        { label: "Format", value: "Hands-on" },
+        { label: "Activities", value: "6" },
+        { label: "Session", value: "~90 min" },
+        { label: "Bring", value: "A device" }
+      ],
+      pathways: [
+        {
+          icon: "sprout",
+          title: "Just tell me what to click",
+          body: "Start in Practice. Chop a sentence into tokens, roll the dice on a prediction, and the vocabulary makes sense afterwards.",
+          action: { label: "Go to the activities", goto: "#practice" }
+        },
+        {
+          icon: "wrench",
+          title: "I want to see it come apart",
+          body: "The middle module is the machinery: tokens, embeddings, attention, prediction, sampling. Each one has a demo you can open.",
+          action: { label: "Go to how an LLM works", filter: "how-it-works" }
+        },
+        {
+          icon: "shield",
+          title: "I came for the hard questions",
+          body: "Bias, cultural context, and who stays responsible for what goes out. That is Module 3, and it is the point of the workshop.",
+          action: { label: "Go to using LLMs well", filter: "using-llms" }
+        }
+      ],
+      agenda: [
+        { time: "0:00", title: "Open — what do you already use?", detail: "Go around the room. Almost everyone is already using NLP and has never called it that.", tag: "Talk story" },
+        { time: "0:10", title: "Activity — Token chopper",        detail: "Everyone types their own name, then a sentence in ʻōlelo Hawaiʻi. The token counts make the point on their own.", tag: "Hands on" },
+        { time: "0:25", title: "Modules 1 and 2 — how it works",  detail: "The loop, end to end, stopping at each stage. The demos open in a browser tab.", tag: "~25 min" },
+        { time: "0:50", title: "Activity — Roll the dice",        detail: "Same prompt, different answer, temperature slider. Where “probabilistic” stops being a word and starts being obvious.", tag: "Hands on" },
+        { time: "1:05", title: "Module 3 — using it well",        detail: "Hallucination, bias, cultural context, oversight. Run “Would you send it?” as a group vote.", tag: "~20 min" },
+        { time: "1:25", title: "Close — what will you try?",      detail: "One thing each person will use it for, and one thing they will not.", tag: "Round" }
+      ],
+      featureLabel: "Workshop set",
+      feature: ["m2-tokenization", "m2-next-token", "m2-sampling", "m1-daily", "m3-prompts", "m3-bias", "m3-oversight"]
+    },
+
+    {
+      id: "kupuna",
+      draft: true,   // ← awaiting a read from someone who runs these rooms. Delete this line to publish.
+      label: "Kupuna outreach",
+      short: "Kupuna",
+      blurb: "Slower, plainer, pointed at the questions that matter to our ʻohana.",
+      badge: "Talk story about AI",
+      tagline: "What this thing is, in plain words — and why it gets our moʻolelo wrong so confidently.",
+      date: "",
+      time: "~45 min, talk story",
+      location: "No devices needed",
+      intro:
+        "No jargon, no math, nothing to sign up for. We go slowly, and the questions are the good part. " +
+        "The short version: this is a very good guessing machine, trained on what other people wrote down. " +
+        "It has read very little of ours, which is exactly why it should never be the last word on anything that belongs to us.",
+      facts: [
+        { label: "Pace", value: "Talk story" },
+        { label: "Jargon", value: "None" },
+        { label: "Devices", value: "Not needed" },
+        { label: "Cost", value: "Free" }
+      ],
+      pathways: [
+        {
+          icon: "sprout",
+          title: "What even is it?",
+          body: "Plain words first. What people mean by AI, and what the thing on the phone is actually doing when it answers you.",
+          action: { label: "Start at the beginning", filter: "overview" }
+        },
+        {
+          icon: "shield",
+          title: "Why does it get our things wrong?",
+          body: "Because of what it read, and what it never read. This is the part worth staying for.",
+          action: { label: "Go to the limits", filter: "using-llms" }
+        },
+        {
+          icon: "wrench",
+          title: "How does it guess?",
+          body: "If you want to know what is underneath — no math, just the idea of how one word follows another.",
+          action: { label: "Go to how it works", filter: "how-it-works" }
+        }
+      ],
+      agenda: [
+        { time: "0:00", title: "Talk story — what have you heard?", detail: "What people have been told about AI, and what worries them. We start there.", tag: "Open" },
+        { time: "0:10", title: "What it is",                        detail: "A guessing machine that read a great deal of writing. What that means, and what it does not.", tag: "Plain words" },
+        { time: "0:22", title: "Why it gets our things wrong",      detail: "It read very little ʻōlelo Hawaiʻi and very little of our moʻolelo — and it will still answer you with full confidence.", tag: "The main point" },
+        { time: "0:34", title: "What we do about it",               detail: "Who checks it, what never goes out without a person who knows, and what we do not put into it at all.", tag: "Kuleana" },
+        { time: "0:44", title: "Questions",                         detail: "However long it takes.", tag: "Open" }
+      ],
+      featureLabel: "Talk-story set",
+      feature: ["m1-map", "m1-daily", "m2-training-data", "m3-hallucinations", "m3-bias", "m3-oversight"]
+    }
+  ],
   lessons: [
 
     /* ===== MODULE 1 — OVERVIEW ===== */
@@ -499,6 +687,7 @@ window.SITE = {
       video: "file:assets/video/ai-isnt-one-thing.mp4",
       videoLength: "1:20",
       slides: "",
+      deeper: { url: "https://www.youtube.com/watch?v=oi0JXuL19TA", length: "13:29" },
       takeaways: [
         "AI is the umbrella term. Machine learning is a way of building AI: systems learn patterns from data instead of being programmed rule by rule.",
         "NLP is machine learning applied to language — reading, understanding and producing human speech and text.",
@@ -522,6 +711,7 @@ window.SITE = {
          carries black bars our other films do not. `videoAspect` tells the
          player to show it portrait, which crops those bars back off. */
       videoAspect: "9/16",
+      deeper: { url: "https://www.youtube.com/watch?v=oJC8VIDSx_Q", length: "3:23" },
       takeaways: [
         "NLP: live captions and transcription, translation tools, grammar and spell-check, voice-to-text.",
         "Generative AI: image generators, AI-made graphics, first-draft writing.",
@@ -544,6 +734,7 @@ window.SITE = {
       summary: "Five stages that repeat once per word. Everything else in this module is a zoom-in on one stage.",
       video: "file:assets/video/how-text-is-generated.mp4",
       videoLength: "1:45",
+      deeper: { url: "https://www.youtube.com/watch?v=NKnZYvZA7w4", length: "9:24" },
       takeaways: [
         "Tokenization → embeddings → transformers → probabilities → sampling, then loop back and do it again.",
         "The loop runs once per token produced. A three-paragraph answer is that circuit running hundreds of times.",
@@ -564,6 +755,7 @@ window.SITE = {
       video: "file:assets/video/what-it-learned-from.mp4",
       videoLength: "1:04",
       videoAspect: "9/16",
+      deeper: { url: "https://www.youtube.com/watch?v=-4Oso9-9KTQ", length: "27:39" },
       takeaways: [
         "Websites, books, articles and code. It is the source of both what the model knows and what it does not.",
         "If something is underrepresented in training data — ʻōlelo Hawaiʻi, for example — the model will be weaker on it.",
@@ -584,6 +776,7 @@ window.SITE = {
       video: "file:assets/video/where-the-odds-come-from.mp4",
       videoLength: "1:31",
       videoAspect: "9/16",
+      deeper: { url: "https://www.youtube.com/watch?v=LPZh9BOjkQs", length: "7:58" },
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
         "Change the parameters and you change those probabilities for the same input.",
@@ -602,6 +795,7 @@ window.SITE = {
       summary: "The one distinction that clears up most confusion about whether it is \"learning from you\".",
       video: "file:assets/video/is-it-learning-from-me.mp4",
       videoLength: "1:30",
+      deeper: { url: "https://www.youtube.com/watch?v=XtT5i0ZeHHE", length: "10:41" },
       takeaways: [
         "Pre-training happens once, up front. The model reads enormous amounts of text and adjusts its parameters.",
         "Inference is every time you send a message. The model applies what it already learned.",
@@ -622,6 +816,7 @@ window.SITE = {
       summary: "The model does not see words. It sees numbered chunks.",
       video: "file:assets/video/it-reads-in-pieces.mp4",
       videoLength: "1:48",
+      deeper: { url: "https://www.youtube.com/watch?v=-0HRzXk8vlk", length: "25:22" },
       takeaways: [
         "Text is chopped into tokens, and every token gets a number — a token ID.",
         "Common words are one token. Long or uncommon words get split: \"indistinguishable\" is four tokens, \"the\" is one.",
@@ -640,6 +835,7 @@ window.SITE = {
       summary: "Turning tokens into coordinates in a space where distance means similarity of meaning.",
       video: "file:assets/video/where-words-live.mp4",
       videoLength: "2:05",
+      deeper: { url: "https://www.youtube.com/watch?v=viZrOnJclY0", length: "16:11" },
       takeaways: [
         "Each token becomes a vector — a position in a \"meaning space\".",
         "Words used in similar ways land close together. \"King\" sits near \"queen\".",
@@ -658,6 +854,7 @@ window.SITE = {
       summary: "For every token, the model decides which other tokens matter most.",
       video: "file:assets/video/which-words-matter.mp4",
       videoLength: "2:52",
+      deeper: { url: "https://www.youtube.com/watch?v=wjZofJX0v4M", length: "27:14" },
       takeaways: [
         "Attention is the model weighting the relationships between tokens — some links are strong, some barely matter.",
         "In \"The honu swam toward the ocean\", honu and swam are a strong link; the second \"the\" barely matters.",
@@ -678,6 +875,7 @@ window.SITE = {
       summary: "The heart of it. Given everything so far, guess the single most likely next token — then do it again.",
       video: "file:assets/video/autocomplete-trick.mp4",
       videoLength: "1:35",
+      deeper: { url: "https://www.youtube.com/watch?v=5sLYAQS9sWQ", length: "5:33" },
       takeaways: [
         "The output is a ranked list of probabilities, not an answer: ocean 45%, shore 20%, reef 15%, current 12%, sky 8%.",
         "It is optimizing for \"plausible next token\", never for \"true statement\". That is where hallucination comes from.",
@@ -697,6 +895,7 @@ window.SITE = {
       video: "file:assets/video/ask-it-twice.mp4",
       videoLength: "1:41",
       videoAspect: "9/16",
+      deeper: { url: "https://www.youtube.com/watch?v=MkaazQttbpc", length: "14:51" },
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
@@ -717,6 +916,7 @@ window.SITE = {
       summary: "How much the model can hold in view at once — and what happens when you go past it.",
       video: "file:assets/video/why-it-forgets.mp4",
       videoLength: "1:21",
+      deeper: { url: "https://www.youtube.com/watch?v=-QVoIxEpFkM", length: "11:30" },
       takeaways: [
         "The window covers your prompt, the conversation so far, and any documents you have shared.",
         "Once something falls outside the window, the model cannot see it at all.",
@@ -737,6 +937,7 @@ window.SITE = {
       summary: "The most immediately useful thing in the whole course. Treat it like a capable new coworker.",
       video: "file:assets/video/like-a-new-hire.mp4",
       videoLength: "1:30",
+      deeper: { url: "https://www.youtube.com/watch?v=jC4v5AS4RIM", length: "8:30" },
       takeaways: [
         "It has vast general knowledge and knows nothing about your specific situation. Be explicit about audience, format and tone.",
         "Hand it the source material. Do not expect it to already know your project, your people or your numbers.",
@@ -756,6 +957,7 @@ window.SITE = {
       summary: "Fluent, confident, and simply wrong. Straight back to next-token prediction.",
       video: "file:assets/video/fake-citation.mp4",
       videoLength: "1:39",
+      deeper: { url: "https://www.youtube.com/watch?v=005JLRt3gXI", length: "5:13" },
       takeaways: [
         "It is built to predict the next plausible word, not to verify truth. Invented citations, wrong dates, quotes nobody said.",
         "Ask for the exact page number of a quote and it may hand you a specific-sounding page and citation that does not exist.",
@@ -774,6 +976,7 @@ window.SITE = {
       summary: "Pairing the model with real, retrievable sources — and checking what comes back.",
       video: "file:assets/video/show-me-the-receipts.mp4",
       videoLength: "2:02",
+      deeper: { url: "https://www.youtube.com/watch?v=T-D1OfcDW1M", length: "6:35" },
       takeaways: [
         "Cross-check anything presented as fact. Numbers, quotes and names are the highest-risk items.",
         "Treat AI output as a draft, not a finished fact.",
@@ -792,6 +995,7 @@ window.SITE = {
       summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
       video: "file:assets/video/the-uneven-library.mp4",
       videoLength: "1:13",
+      deeper: { url: "https://www.youtube.com/watch?v=gV0_raKR2UQ", length: "11:20" },
       takeaways: [
         "Training data reflects the internet's existing skews: whose voices, languages and stories are well represented, and whose are not.",
         "A model can reproduce and amplify those gaps rather than flag them.",
@@ -813,6 +1017,7 @@ window.SITE = {
       summary: "A corrective to the instinct that \"it showed its work, so it must be right\".",
       video: "file:assets/video/it-showed-its-work.mp4",
       videoLength: "1:32",
+      deeper: { url: "https://www.youtube.com/watch?v=enLbj0igyx4", length: "8:37" },
       takeaways: [
         "When a model shows step-by-step reasoning, it is still generating plausible-sounding text, one step at a time.",
         "Visible steps are not proof of correctness, and they are not human reasoning or understanding.",
@@ -831,6 +1036,7 @@ window.SITE = {
       summary: "The clearest, most actionable takeaway of the whole course.",
       video: "file:assets/video/who-signs-it.mp4",
       videoLength: "1:27",
+      deeper: { url: "https://www.youtube.com/watch?v=9iS-YYLIXiw", length: "10:44" },
       takeaways: [
         "AI drafts, explores and accelerates. A person stays responsible for what actually goes out the door.",
         "That goes double for anything public-facing, and anything touching culture or community.",
@@ -849,6 +1055,7 @@ window.SITE = {
       summary: "Just enough to follow a conversation without getting lost. Not benchmark comparison.",
       video: "file:assets/video/which-one-said-it.mp4",
       videoLength: "2:35",
+      deeper: { url: "https://www.youtube.com/watch?v=KrV6ldHymwQ", length: "7:15" },
       takeaways: [
         "Different companies build different models: ChatGPT from OpenAI, Claude from Anthropic, Gemini from Google.",
         "A \"family\" is versions of the same model line released over time — GPT-4 and GPT-5, the way iPhone 15 and iPhone 16 are versions.",
