@@ -16,6 +16,190 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-26 (latest) — Nineteen of nineteen, and Sam's four merged in
+
+**Who:** Keneth, with Claude
+**Branch:** `main` at `50cf9f0`, then merged down to `community-hub`
+**State:** committed and pushed. **Not deployed.**
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/{where-the-odds-come-from,ask-it-twice}.{mp4,jpg}`, plus Sam's eight via merge
+
+### What changed
+
+**Every lesson now carries Purple Maiʻa's own video.** Sam's 13, 14, 15 and 19
+came in on her `community-hub`; 17 and 18 were cut here. That is the last six
+stand-ins gone, 19 of 19, 32:01 of film.
+
+**Her branch merged clean into `main`.** Despite its name, `sam/community-hub`
+carries *main's* `index.html`, not the community one — checked before merging,
+because merging the community `index.html` onto `main` is exactly the trap from
+23 October. Her four lesson edits and our two touch different hunks, so there
+were no conflicts.
+
+**Videos 17 and 18 are 9:16.** Same as 1 and 16: shot for social, exported onto
+a 1920×1080 canvas, so both carry `videoAspect: "9/16"` and the page crops the
+pillarbox off at display time. `cropdetect` gives `608:1080:656:0` on both —
+centred on 959.5, and 9/16 of 1080 is 607.5 — so the crop is symmetric and
+exact and **nothing is re-encoded**. All four of Sam's are true landscape and
+need no such line.
+
+**Posters are caption-free frames found by looking**, at 1:04 and 1:02. Both
+films carry burned-in captions nearly end to end, so a threshold scan is no use
+here; the two gaps were found by rendering candidates and looking at them.
+
+**The stand-in copy is retired in five places.** The FAQ, the pathways blurb,
+two `content.js` comments and the README all still described a page with
+outside explainers on it. Details in `50cf9f0`. The *machinery* stays — it is
+keyed to the kind of video rather than a flag anyone has to clear, so it costs
+nothing and comes back on its own if a lesson ever goes back to an explainer.
+
+**`duration` turns out to be dead data.** It is not read by `app.js` anywhere;
+the module cards compute minutes from word count. Worth knowing before anyone
+spends time reconciling it — the long-standing "two clocks" note in
+`content.js` is about a number nothing draws.
+
+### Decisions worth knowing
+
+**The 128 wpm planning figure is retired.** All six remaining scripts were
+timed at it, and five of six came in long — scripts 14 and 15 by 52 and 50
+seconds. Measured across all nineteen films, delivery spans **79 to 155 wpm**,
+mean 111, and nothing in a script predicts where it lands: 13 and 15 are within
+twenty words of each other and came in fifty seconds apart. `VIDEO-SCRIPTS.md`
+now says plan at 111 and expect ±40%.
+
+**Two films call back to a film the viewer has not reached yet.** This is a real
+defect and the shoot made it permanent in the film, but it is fixable by
+*lesson order*:
+
+| Film | Sits at | Calls back to | Which sits at |
+|---|---|---|---|
+| 17, as its cold open — *"Remember these?"* | `m2-parameters`, 2nd of 11 | script 2's bars | `m2-next-token`, **8th** |
+| 13, one beat at 0:09 | `m3-grounding`, 2nd of 6 | script 3's closed book | `m3-hallucinations`, **3rd** |
+
+17 is the bad one: it opens by asking for a memory nobody has yet. Moving
+`m2-parameters` after `m2-next-token` and swapping `m3-grounding` with
+`m3-hallucinations` fixes both and touches no film. **Left alone deliberately**
+— it changes the teaching sequence Sam designed, so it is her call, not a repo
+chore.
+
+### Held back deliberately
+
+**Script 19's cultural read is not recorded anywhere.** The script says it
+should get one before shooting, the same as script 1 did, because it is the
+second film that speaks about Hawaiian knowledge. It has now been shot. That
+read may well have happened off the repo — but nothing here says so, and this
+is the one film where it matters most. One question to Sam settles it.
+
+**Script 19 shipped under a different title.** Written as *It sounds just as
+sure*, delivered as `the-uneven-library.mp4`. The site uses the file so nothing
+is broken, but the two names should be reconciled before either is cited.
+
+**Nothing was deployed.** See the trap below.
+
+### How it was tested
+
+The jsdom suite from 23 October, extended: **69 assertions, both editions, all
+passing.** Every one of the 19 `file:` videos and its poster confirmed on disk,
+every lesson reachable from a section, no section pointing at a missing lesson,
+the portrait count in Module 2 now 3 rather than 1, and no dead in-page anchors
+in either edition.
+
+Speaking rate was measured rather than claimed: voiceover word counts parsed out
+of `VIDEO-SCRIPTS.md` against `ffprobe` durations for all nineteen files.
+
+Not tested: anything in a real browser. **The four portrait films have still
+never been looked at on a screen or on a phone.** The crop is arithmetic, and
+that arithmetic is now carrying four films instead of two.
+
+### Open / next
+
+- [ ] **Look at the four portrait videos in a browser.** Oldest open item in
+      this log, and it just doubled in weight: 1, 16, 17, 18.
+- [ ] **Ask Sam about script 19's cultural read**, and about the title.
+- [ ] **Decide the two lesson-order moves above**, or decide to live with them.
+- [ ] **Do not `git push dokku main` without thinking.** It looks like pure
+      upside and is not: the live Dokku build still carries the staff/partners
+      `?for=` switcher, and `main` has had no `audiences` block since Sam's
+      rebuild (`26fbde8`). Deploying `main` as-is **deletes `?for=partners`
+      from the live site.** Restore `audiences` first — it is recoverable from
+      `53abaf9` and every bit of switcher code is still in `app.js` — or accept
+      losing it on purpose. The live site is now a month behind and has none of
+      the 19 videos, so this will keep looking tempting.
+- [ ] Certificate Apps Script still undeployed, `certificate.endpoint` still
+      `""`. **Edit `ALLOWED_ORIGINS` before deploying it.**
+- [ ] The deployed feedback Apps Script still mails a "LLM/NLP 101" subject
+      until `tools/feedback-apps-script.js` is re-pasted into it.
+- [ ] `assets/llm-nlp-101.pdf` and its slides still carry the old course name.
+- [ ] White paper: five old-name mentions, three citation years that disagree
+      with the Sources entries, Wei uncited in the body.
+- [ ] `ai.purplemaia.org` — still needs David.
+
+---
+
+## 2026-10-26 (later) — Video 19 on bias
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `5698c58`
+**State:** working tree only
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/the-uneven-library.{mp4,jpg}`
+
+### What changed
+`m3-bias` (Module 3, "Bias and missing cultural context") now plays Video 19,
+"The Uneven Library" → `the-uneven-library.mp4` (1:13), in place of the
+outside explainer `youtube:gV0_raKR2UQ`. Same handling as videos 13–15 below:
+passthrough remux to put `moov` first, 960×540 poster at 7s (the "Mostly
+English" shelves). FAQ and README now say 17 of 19.
+
+### How it was tested
+`node --check`; `content.js` loaded in node shows 17 `file:` lessons, all with
+`.mp4` and `.jpg` on disk; atoms on the output are `ftyp, moov, mdat`.
+**Not checked:** playback in a browser.
+
+### Open / next
+- [ ] Still on stand-ins: `m2-parameters`, `m2-sampling`.
+
+---
+
+## 2026-10-26 — Videos 13, 14 and 15 replace three more stand-ins
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `d8694a9`
+**State:** working tree only
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/` (three new `.mp4` + `.jpg` pairs)
+
+### Why
+Three more of Purple Maiʻa's own videos were delivered, each matching a section
+that was still on an outside explainer.
+
+### What changed
+- `m2-transformers` (Module 2, "Transformers and attention"): Video 15, "Which words matter" → `which-words-matter.mp4` (2:52).
+- `m3-grounding` (Module 3, "Grounding and retrieval-augmented generation"): Video 13, "Show me the receipts" → `show-me-the-receipts.mp4` (2:02).
+- `m3-model-families` (Module 2, "Model families, open weights and agents"): Video 14, "Which one said it" → `which-one-said-it.mp4` (2:35).
+- The FAQ answer and README §"Outside videos are stand-ins" now say 16 of 19 videos are ours (they still said eight).
+
+### Decisions worth knowing
+- **Remuxed, not re-encoded.** The deliveries were already H.264/AAC 1920×1080
+  but had the `moov` atom at the end, so a browser had to download the whole
+  file before playing. They went through an AVFoundation passthrough export
+  with network optimisation (the `+faststart` equivalent; ffmpeg is not
+  installed on this machine). Same streams, index moved to the front.
+- **Posters** are 960×540 frames like the others: 86s of video 15 (the
+  honu–swam "strongest link", the lesson's own example), 98s of video 13 (an
+  answer with citations beside its source), 124s of video 14 (proprietary
+  families next to open models). Captions are burned in throughout, so every
+  frame carries one.
+
+### How it was tested
+`node --check` on both JS files. Loaded `content.js` in node: 16 of 19 lessons
+are `file:`, every `file:` video and its `.jpg` exist on disk, and the three
+sections resolve to the new files. Top-level atoms checked on all three outputs.
+**Not checked:** playback in a browser, and `docker build`.
+
+### Open / next
+- [ ] Still on stand-ins: `m2-parameters`, `m2-sampling`, `m3-bias`.
+- [ ] Watch the three in the page once, on a phone as well.
+
+---
+
 ## 2026-10-23 (later) — Sam's rebuild merged, and everything of ours moved onto it
 
 **Who:** Keneth, with Claude
@@ -222,6 +406,182 @@ been looked at on a screen, and it has not been looked at on a phone.
 - [ ] Sam's fork is level with `main` — her commits are `main` now. She pulls
       from upstream from here, and `community-hub` carries an overlay and a
       certificate she has not seen.
+
+---
+
+## 2026-10-23 — One site for everyone: three module pages from the white paper
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `53abaf9`
+**State:** working tree only
+**Files:** `content.js`, `index.html`, `assets/app.js`, `assets/styles.css`,
+`README.md`, `HANDOFF.md`, `.dockerignore`, new `PRODUCT.md` and `DESIGN.md` (design context,
+kept out of the image by `*.md`), new `.impeccable/` (design tooling, now in
+`.dockerignore`)
+
+### Why
+The page is turning into a community resource. A first-time visitor on their
+own was landing on staff framing ("Staff learning asset", "Purple Maiʻa
+all-staff") and an audience switcher. The ask was one generic page with the
+lessons and practice easy to reach, and the three placement questions as the
+first thing you see.
+
+### What changed
+- **Hero:** the headline is now "Not sure where to start with AI?" (new
+  `event.headline`; `event.name` stays the title and brand). The placement
+  quiz moved out of "Where should I start?" and into the hero as a card that
+  opens on question 1. Answers vote for a module and the result button opens
+  the lessons on it. Two plain links skip straight to the lessons or the
+  activities, with a quiet "3 modules · 19 lessons · 7 activities" line under
+  them.
+- **Progress:** the progress card is gone. A small ring and count appear in the
+  hero only once at least one lesson is ticked off.
+- **Audiences:** all four carry `draft: true`. With none published, the existing
+  code renders the plain page: no "Viewing as" bar, and `?for=` and any saved
+  audience are ignored.
+- **Generic copy:** tagline, intro, the third start card ("I need to get this
+  right"), and placement Q1 and Q3 (no more "in a meeting", "colleagues",
+  "funders"). "Six things to play with" became "Seven" (there are 7),
+  "Every term we used today" became "Every term on this page", and the
+  *Would you send it?* blurb lost "a week of actual work". The OG image alt
+  text no longer says "staff learning asset".
+- **The section below the hero** is now "Or pick a starting point yourself",
+  with the same three cards.
+
+### Decisions worth knowing
+- The hero `facts` now show counts only. The "~95 min" self-paced and "~59 min"
+  live figures were stale (README §5) and are no longer displayed. Nothing was
+  recomputed.
+- The quiz still shuffles options, never stores answers, and moves focus to the
+  new question after each answer so keyboard and screen-reader users keep
+  their place.
+- On narrow screens the hero reorders to headline, questions, then the skip
+  links, so the questions are still the first thing you reach.
+- The eyebrow badge was dropped from the hero. `event.badge` is blank, and the
+  `<title>` falls back to just the name.
+
+### Held back deliberately
+- Staff and partner copy is kept in `content.js` as drafts, not deleted.
+  Community workshop and kupuna still need a cultural review before any reuse.
+
+### How it was tested
+- `node --check` on `content.js` and `assets/app.js`.
+- Headless Chrome in light and dark at 1440 wide, plus 390 and 820 wide in
+  iframes. The answered states were checked too: question 2 of 3, and the
+  result card in both themes.
+- Not tested: a real screen reader, or the Docker build.
+
+### Later the same day: module pages from the white paper
+The quiz-first hero above was replaced. The home page now shows three module
+cards (Microsoft "AI 101" style, Purple Maiʻa look). Each opens a module article
+at `#/module/<id>` with the header layout and right-hand "In this module" list
+the team picked from sketches in `.impeccable/mocks/modules/`.
+- **Content:** `modules`, `why` and `sources` in `content.js`, written from
+  "AI 101 Learning Materials" (the white paper). All 19 lessons map to exactly
+  one section, so each video sits where it is explained. "Model families" moved
+  from Module 3 to Module 2 to follow the paper. "Communicating about AI in
+  public" was left out, and "Why this matters" became the short "Why we made this".
+- **Sources:** all 18 were checked against their live pages. Anthropic's link
+  moved to platform.claude.com, Ji et al. shows Crossref's "1–38" because
+  "Article 248" could not be confirmed, and three NeurIPS papers got
+  proceedings links. Fix the paper's Anthropic link and its p. 10 takeaway too.
+- **Removed:** the lesson grid, the lesson dialog, the pathway cards, the
+  Practice section and the progress ring, all now carried by the modules.
+  Activities render at the end of their module (Term match closes Module 3).
+- **Tested:** routing, old lesson links, video swap-in, practice and placement
+  were driven in headless Chrome. Light and dark were checked at 1440 and 390 wide.
+
+### Open / next
+- [x] Step 3, progress: read sections live in `aihub:read`. Reading a section
+      also adds its lessons to `aihub:progress`, so old lesson ticks count as
+      read sections. Practice is done once `aihub:quiz["module:<id>"]` exists.
+      Tested in a real headless Chrome over the DevTools protocol, because
+      `--virtual-time-budget` never fires scroll events.
+- [x] Step 4, Reference: the glossary, prompts, FAQ and downloads moved to
+      their own page at `#/reference/<section>`, linked from four cards on
+      the home page and from the header. Old `#glossary`-style links redirect.
+      The glossary gained the paper's 13 missing terms (33 in all) and renders
+      A–Z. Five FAQ answers that described the old page were corrected, and the
+      "Viewing as" question was removed. The footer no longer says "internal".
+- [x] Final pass: every view checked in light and dark at desktop and phone
+      width. A keyboard walk found focus rings on every stop. "In this module"
+      now comes before the article in the page order (still on the right
+      visually), and nothing counts as read until the first scroll. The quiz
+      counter no longer wraps. The JSON-LD module names follow the new
+      modules, and the placement result no longer quotes a stale 25 minutes.
+      README, PRODUCT.md, DESIGN.md and `.impeccable/design.json` describe the
+      module site.
+- [x] Later: the owner trimmed `content.js` and removed `placement`,
+      `audiences` and `why`. Every cross-reference was checked (lessons,
+      quizzes, sources, practice modules, files on disk) and every view loaded
+      with no errors. Their containers on the home page simply stay hidden.
+- [x] Home progress line fixed. It always shows (0% and "Not started yet" on a
+      fresh visit), so Reset no longer makes it vanish; only the Reset link
+      hides. The bar and the words now measure the same thing (sections read
+      plus practice finished, across the course), and a card whose practice is
+      done says so beside its section count.
+- [x] Practice is now one "Check your understanding" per module. The question
+      activities fold into it (Module 1: 8 questions, Module 2: 17, Module 3:
+      19), and "Try it yourself" is gone. The four demos moved into the
+      sections they illustrate, set by a new `section` field on each practice
+      entry. A section with sub-sections now lists its sources after them.
+- [x] Header links to Glossary, Prompts, FAQ and Resources now land with the
+      section heading 27px under the header, instead of showing the end of the
+      section above it. Jumps target the `.section-head`, and the scroll
+      margins no longer add the header height a second time on top of
+      `html { scroll-padding-top }` (the same double offset was on module
+      sections, which now land 21px under the header).
+- [x] Home page: all three module buttons are filled violet (only the next
+      module's used to be). The navbar is frosted glass on home only
+      (`.site-header.is-glass`, set by `route()`), and the hero glow was
+      removed, so the title band is the same plain colour as the navbar.
+- [x] Home: a hairline divides the title band from the module cards, drawn
+      inside the content column (`.hero-inner::after`).
+- [x] Phones: the longer site name "Artificial Intelligence 101 | Purple
+      Maiʻa" pushed the search, theme and menu buttons off the screen at 390px
+      and below, so the navigation was unreachable. The name now wraps under
+      560px; the buttons were checked in view at 390, 360 and 320px.
+- [x] Motion: Home, module and Reference pages cross-fade with a small
+      settle (View Transitions; instant where unsupported). Contents links
+      glide, and a glide never counts the sections it passes as read: a jump
+      forgets earlier glimpses, ends only when scrolling goes quiet, and
+      "on screen" excludes what is under the header. A violet marker follows
+      the current section on the rail, and earned ticks draw in. Everything
+      is instant under prefers-reduced-motion. Tested in Chrome only; a
+      browser without View Transitions simply swaps the page, as before.
+- [x] Scroll reveals across all three pages: content blocks fade up 16px as
+      they enter the viewport, 60ms apart within a batch (capped at 300ms).
+      `REVEAL_SEL` lists them; each element reveals once and then sheds the
+      classes, so card hovers keep their own timing. Verified: nothing left
+      hidden after scrolling any page, deep links land visible, reduce-motion
+      shows everything at once.
+- [x] Module cards play their video on hover (muted, looping, resumes where
+      it paused). Lazy: the MP4 (5.7–7.9 MB, streamed) loads on first hover only.
+      Skipped on touch, reduce-motion and data saver. A dedicated short
+      preview clip per module would be lighter; `preview` in content.js takes one.
+- [x] Module numeral centred on the header text both ways (`text-box` trim to
+      cap height); left-aligned above the title on phones.
+- [x] *(Not kept: on 2026-10-26 this was dropped in favour of the emailed-link
+      certificate already on `main`. The code is in the git stash.)*
+      Certificate of completion at `#/certificate` (`certificate` in
+      content.js): every section read, and at least 70% on each module quiz
+      (best attempt). The reader's name and the completion date live in
+      `aihub:certname` and `aihub:certdate`, and Reset clears the date. It
+      prints as one landscape Letter page or downloads as a PNG (http(s)
+      only). Signer is blank; add a name and title once someone agrees.
+- [ ] Found while building the certificate: `assets/pm-lockup.png` has a
+      **white** wordmark, so the footer logo's "PURPLE MAIʻA" text is
+      invisible in light mode. A dark-text lockup file would fix it.
+- [ ] **Not run:** `docker build`. The Docker daemon was not running on this
+      machine. The Dockerfile is unchanged and `.dockerignore` only gained
+      `.impeccable`, but build and run it once before `git push dokku main`.
+- [ ] **Not tested:** a real screen reader (VoiceOver), and Safari or Firefox.
+      All browser checks were headless Chrome.
+- [ ] `CLAUDE.md` (an untracked local file) still describes the lesson dialog,
+      `?for=` re-skinning and `renderQuiz` for lesson quizzes as live.
+- [ ] The sketches in `.impeccable/mocks/` were for choosing layouts. Delete
+      them, or keep them as a record; they never ship (`.dockerignore`).
+- [ ] Read the new placement wording (Q1 and Q3) with someone who runs community rooms.
 
 ---
 

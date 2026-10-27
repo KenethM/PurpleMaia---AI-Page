@@ -251,11 +251,14 @@ play, so no tracking scripts run for people who never watch. The page is fast ei
 
 ### Outside videos are stand-ins
 
-Eight of the 19 videos are Purple Maiʻa's own. The other 11 are outside
-explainers, each picked for that specific topic and for how well it has been
-received, and each verified against live YouTube rather than recalled — a
-made-up video id on a page that teaches people about invented citations would be
-a bad joke. Purple Maiʻa's own animations replace them as they are produced.
+**All 19 module videos are Purple Maiʻa's own**, animated from this course's
+scripts. There are no outside stand-ins left on the page.
+
+The machinery below stays anyway, because it costs nothing and nobody has to
+remember it. If a lesson ever goes back to an outside explainer, that video is
+picked for the specific topic and for how well it has been received, and it is
+verified against live YouTube rather than recalled — a made-up video id on a
+page that teaches people about invented citations would be a bad joke.
 
 A notice saying so renders under every embed. **It is keyed to the video's kind,
 not to a flag anyone has to remember to clear.** The in-house animations arrive
@@ -536,10 +539,12 @@ Don't forget `assets/favicon.svg` (one hex value) and the `<title>` and
 - [x] `assets/social.png` is a 1200×630 card for link previews.
 - [x] The footer's "Source on GitHub" link points at this repo.
 - [x] Reference videos linked and embedded where the deck cites them (three YouTube, one Science Learning Hub).
-- [ ] Add Purple Maiʻa's own module videos as they come out of production. Transcode to H.264/AAC MP4 with `-movflags +faststart`, put it in `assets/video/` with a same-named `.jpg` poster beside it, and set `video: "file:assets/video/<name>.mp4"` on the lesson. The section's poster and the stand-in notice follow on their own.
+- [x] Add Purple Maiʻa's own module videos as they come out of production. Transcode to H.264/AAC MP4 with `-movflags +faststart`, put it in `assets/video/` with a same-named `.jpg` poster beside it, and set `video: "file:assets/video/<name>.mp4"` on the lesson. The section's poster and the stand-in notice follow on their own.
   - Done (Oct 2026): scripts 2–9, one per lesson, on 8 of 19 lessons. Script 2 maps to `m2-sampling` as well, but it sits only on `m2-next-token` so the same film is not on two cards in a row.
   - Not yet placed: "Video 10 – How text is generated" has no script or lesson mapping. Script 1 (`m2-training-data`, `m3-bias`) is not delivered.
-  - Still on outside stand-ins: `m1-daily`, `m2-loop`, `m2-training-data`, `m2-parameters`, `m2-tokenization`, `m2-embeddings`, `m2-transformers`, `m2-sampling`, `m3-grounding`, `m3-bias`, `m3-model-families`.
+  - Oct 26: videos 13 ("Show me the receipts", `m3-grounding`), 14 ("Which one said it", `m3-model-families`) and 15 ("Which words matter", `m2-transformers`) placed. 16 of 19 lessons now have our own video.
+  - Oct 26: video 19 ("The Uneven Library", `m3-bias`) placed. 17 of 19.
+  - Oct 26: videos 17 ("Where the odds come from", `m2-parameters`) and 18 ("Ask it twice", `m2-sampling`) placed, both 9:16. **19 of 19 — every lesson now carries Purple Maiʻa's own video, and no stand-ins are left.**
 - [x] Every lesson has a check-your-understanding quiz (section 6 of `content.js`).
 - [x] Walk the page before sending a link out. There is one version now; old `?for=` links open it too.
 - [ ] **Cultural review of the two held-back versions** — Community workshop and Kupuna outreach are written and tested but carry `draft: true`, so nothing on the live site can reach them. Once someone who runs those rooms has read the copy, delete that one line per audience.

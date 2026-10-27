@@ -460,14 +460,16 @@ window.SITE = {
              "vimeo:123456789"       -> Vimeo
              "file:assets/clip.mp4"  -> a video file committed to the repo
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
-     videoLength: the embedded video's real runtime, read off YouTube rather
-             than estimated. Nothing renders it today. It used to sit bottom-right
+     videoLength: the video's real runtime, read off the file with ffprobe
+             rather than estimated. Nothing renders it today. It used to sit bottom-right
              of the thumbnail, but `duration` was what was being drawn there —
              self-paced time for the whole lesson, in the one corner every viewer
              reads as the video's length. Two different clocks, and they have not
              been reconciled since the stand-in videos landed: `duration` is
-             documented as including video time, and those values predate 16 of
-             the 19 videos. Fix the clocks, then decide what the card shows.
+             documented as including video time, and those values predate all 19
+             videos. `duration` is not read by `app.js` at all today — the module
+             cards compute minutes from word count. Fix the clocks, then decide
+             what the card shows.
   --------------------------------------------------------------- */
   lessons: [
 
@@ -564,8 +566,9 @@ window.SITE = {
       level: "Module 2 · Pre-training",
       duration: "11 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
-      video: "youtube:LPZh9BOjkQs",
-      videoLength: "7:58",
+      video: "file:assets/video/where-the-odds-come-from.mp4",
+      videoLength: "1:37",
+      videoAspect: "9/16",
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
         "Change the parameters and you change those probabilities for the same input.",
@@ -638,8 +641,8 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "3 min",
       summary: "For every token, the model decides which other tokens matter most.",
-      video: "youtube:wjZofJX0v4M",
-      videoLength: "27:14",
+      video: "file:assets/video/which-words-matter.mp4",
+      videoLength: "2:52",
       takeaways: [
         "Attention is the model weighting the relationships between tokens — some links are strong, some barely matter.",
         "In \"The honu swam toward the ocean\", honu and swam are a strong link; the second \"the\" barely matters.",
@@ -676,11 +679,9 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "2 min",
       summary: "Why asking the same question twice gives you two different answers — and why that is normal.",
-      /* Back on its stand-in. "The autocomplete trick" sat here too, because the
-         script table maps script 2 to both lessons, but the same film on two cards
-         in a row reads as a mistake. It lives on next-token prediction. */
-      video: "youtube:MkaazQttbpc",
-      videoLength: "14:51",
+      video: "file:assets/video/ask-it-twice.mp4",
+      videoLength: "1:41",
+      videoAspect: "9/16",
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
@@ -756,8 +757,8 @@ window.SITE = {
       level: "Module 3",
       duration: "3 min",
       summary: "Pairing the model with real, retrievable sources — and checking what comes back.",
-      video: "youtube:T-D1OfcDW1M",
-      videoLength: "6:35",
+      video: "file:assets/video/show-me-the-receipts.mp4",
+      videoLength: "2:02",
       takeaways: [
         "Cross-check anything presented as fact. Numbers, quotes and names are the highest-risk items.",
         "Treat AI output as a draft, not a finished fact.",
@@ -774,8 +775,8 @@ window.SITE = {
       level: "Module 3",
       duration: "7 min",
       summary: "Not a new idea — this is the training data lesson from Module 2, showing up in practice.",
-      video: "youtube:gV0_raKR2UQ",
-      videoLength: "11:20",
+      video: "file:assets/video/the-uneven-library.mp4",
+      videoLength: "1:13",
       takeaways: [
         "Training data reflects the internet's existing skews: whose voices, languages and stories are well represented, and whose are not.",
         "A model can reproduce and amplify those gaps rather than flag them.",
@@ -831,8 +832,8 @@ window.SITE = {
       level: "Module 3",
       duration: "2 min",
       summary: "Just enough to follow a conversation without getting lost. Not benchmark comparison.",
-      video: "youtube:KrV6ldHymwQ",
-      videoLength: "7:15",
+      video: "file:assets/video/which-one-said-it.mp4",
+      videoLength: "2:35",
       takeaways: [
         "Different companies build different models: ChatGPT from OpenAI, Claude from Anthropic, Gemini from Google.",
         "A \"family\" is versions of the same model line released over time — GPT-4 and GPT-5, the way iPhone 15 and iPhone 16 are versions.",
@@ -1616,7 +1617,7 @@ window.SITE = {
     { q: "What is the certificate, and what does asking for one send?",
       a: "It appears once you have finished every module, and it is optional — nothing on this page is locked behind it. Asking for one sends three things: the name you want printed, an email address, and how much of the course you finished. Nothing else, and nothing at all until you press the button. There is no password and no account: you get a one-time link by email, clicking it proves the address is yours, and that is the whole sign-in. Your reading progress, your quiz answers and the sections you opened never leave your browser. The record lives in a spreadsheet in Purple Maiʻa’s own Drive, and the code printed on the certificate is how anyone can check it with us." },
     { q: "Where are the Purple Maiʻa videos?",
-      a: "Eight of the videos in the modules are Purple Maiʻa's own, and more are being animated. The rest are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
+      a: "All 19 of them. Every lesson in every module now carries Purple Maiʻa's own animation, made from this course's scripts, and there are no outside stand-ins left. If a lesson ever goes back to an outside explainer, a notice under the player says so — that notice is keyed to the kind of video, not to a flag anyone has to remember to set." },
     { q: "Will these materials stay up?",
       a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
   ],
@@ -1660,7 +1661,7 @@ window.SITE = {
          video: "file:assets/<name>.mp4" — the placeholder disappears on its own. */
       group: "Purple Maiʻa originals",
       items: [
-        { label: "Short-form animations — in production", url: "#/", desc: "Animated from this course’s scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
+        { label: "Short-form animations", url: "#/", desc: "Animated from this course’s scripts. All 19 lessons carry one." },
         { label: "Scripts these are built from", url: "#/", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
       ]
     },
