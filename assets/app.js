@@ -416,7 +416,9 @@
      ===================================================== */
   function renderQuiz(host, items, opts) {
     opts = opts || {};
-    var i = 0, score = 0;
+    var i = 0, score = 0, streak = 0, marks = [];
+    var TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    var CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
 
     /* Shuffle each question's options at render time and remap `answer` to
        follow. Content authors can write the correct option first — which is
@@ -444,7 +446,10 @@
         '<div class="quiz">' +
           '<div class="quiz-head">' +
             '<p class="quiz-q">' + esc(it.q) + '</p>' +
-            (items.length > 1 ? '<span class="quiz-step">' + (i + 1) + ' / ' + items.length + '</span>' : '') +
+            '<span class="quiz-meta">' +
+              '<span class="quiz-streak" data-streak' + (streak >= 2 ? '' : ' hidden') + '>' + streak + ' in a row</span>' +
+              (items.length > 1 ? '<span class="quiz-step">' + (i + 1) + ' / ' + items.length + '</span>' : '') +
+            '</span>' +
           '</div>' +
           '<ul class="quiz-options">' +
             it.options.map(function (o, n) {
@@ -465,22 +470,40 @@
     function answer(n) {
       var it = items[i];
       var right = n === it.answer;
-      if (right) score++;
+      if (right) { score++; streak++; } else { streak = 0; }
+      marks[i] = right;
 
+      /* A right pick gets stamped: the row presses down, violet floods out
+         from its mark and the tick inks in (CSS: .just-stamped). The answer
+         revealed after a wrong pick gets the tick without the ceremony. */
       $$('.quiz-option', host).forEach(function (btn, idx) {
         btn.disabled = true;
+        var mark = btn.querySelector('.mark');
         if (idx === it.answer) {
           btn.classList.add('is-correct');
-          btn.querySelector('.mark').textContent = '✓';
+          mark.innerHTML = TICK + (right ? '<i class="ink" aria-hidden="true"></i>' : '');
+          if (right) btn.classList.add('just-stamped');
         } else if (idx === n) {
           btn.classList.add('is-wrong');
-          btn.querySelector('.mark').textContent = '✕';
+          mark.innerHTML = CROSS;
         }
       });
 
+      var streakEl = $('[data-streak]', host);
+      if (streakEl) {
+        streakEl.hidden = streak < 2;
+        if (streak >= 2) {
+          streakEl.textContent = streak + ' in a row';
+          streakEl.classList.remove('bump');
+          void streakEl.offsetWidth;          // restart the bump animation
+          streakEl.classList.add('bump');
+        }
+      }
+
       var last = i === items.length - 1;
       var why = document.createElement('p');
-      why.className = 'quiz-why';
+      why.className = 'quiz-why' + (right ? ' is-right' : '');
+      why.setAttribute('role', 'status');
       why.innerHTML = '<strong>' + (right ? 'Yes.' : 'Not quite.') + '</strong> ' + esc(it.why);
       $('.quiz-options', host).insertAdjacentElement('afterend', why);
 
@@ -488,27 +511,79 @@
       foot.hidden = false;
       foot.innerHTML = '<button class="btn btn-primary btn-small" type="button" data-next>' +
                        (last ? 'See how you did' : 'Next question') + '</button>';
-      $('[data-next]', foot).addEventListener('click', function () {
+      var next = $('[data-next]', foot);
+      next.addEventListener('click', function () {
         if (last) { drawDone(); return; }
         i++; drawQuestion();
       });
+      // The picked option is now disabled, so hand keyboard focus on.
+      try { next.focus({ preventScroll: true }); } catch (e) { next.focus(); }
     }
 
     function drawDone() {
       var total = items.length;
-      host.innerHTML =
-        '<div class="quiz">' +
-          '<p class="quiz-score"><strong>' + score + ' of ' + total + '</strong> — ' +
-            esc(score === total ? 'all of them. You can explain this to somebody else now.'
-                                : score >= total - 1 ? 'close. The one you missed is worth a re-read.'
-                                : 'worth another pass through the takeaways above.') + '</p>' +
-          '<div class="quiz-foot"><button class="btn btn-ghost btn-small" type="button" data-again>Try again</button></div>' +
-        '</div>';
+      var note = score === total ? 'all of them. You can explain this to somebody else now.'
+               : score >= total - 1 ? 'close. The one you missed is worth a re-read.'
+               : 'worth another pass through the takeaways above.';
+      var pct = Math.round(score / total * 100);
+      var prev = opts.previous ? opts.previous() : null;
+      var again = '<button class="btn btn-ghost btn-small" type="button" data-again>Try again</button>';
+
+      if (pct >= 80) drawSealed(total, pct, note, prev, again);
+      else {
+        host.innerHTML =
+          '<div class="quiz">' +
+            '<p class="quiz-score"><strong>' + score + ' of ' + total + '</strong> — ' + esc(note) + '</p>' +
+            '<div class="quiz-foot">' + again + '</div>' +
+          '</div>';
+      }
       $('[data-again]', host).addEventListener('click', function () {
         items = prepare(opts.restart ? opts.restart() : items);   // reshuffle on every run
-        i = 0; score = 0; drawQuestion();
+        i = 0; score = 0; streak = 0; marks = []; drawQuestion();
       });
       if (opts.onFinish) opts.onFinish(score, total);
+    }
+
+    /* 80% or better: the page gets sealed. One pip per question fills in
+       order while the score counts up with it, then the seal stamps down.
+       The finished state is in the markup; the motion only replays it. */
+    function drawSealed(total, pct, note, prev, again) {
+      var still = reduceMotion && reduceMotion.matches;
+      var step = Math.min(70, Math.round(700 / total));      // the tally never takes more than ~0.7s
+      var landAt = total * step + 120;
+      var best = prev && prev.total === total && score > prev.score;
+      var next = opts.next ? opts.next() : null;
+
+      host.innerHTML =
+        '<div class="quiz quiz-sealed' + (score === total ? ' is-perfect' : '') + '" style="--land:' + landAt + 'ms">' +
+          '<div class="seal" aria-hidden="true">' + TICK + '<i class="ink"></i></div>' +
+          '<div class="sealed-body">' +
+            '<p class="sealed-score" tabindex="-1">' +
+              '<span class="sr-only">' + score + ' of ' + total + ' right</span>' +
+              '<span aria-hidden="true"><b data-count>' + (still ? score : 0) + '</b> of ' + total + '</span>' +
+              '<span class="sealed-pct">' + pct + '%</span>' +
+              (best ? '<span class="sealed-best">New best</span>' : '') +
+            '</p>' +
+            '<p class="sealed-note">' + esc(note.charAt(0).toUpperCase() + note.slice(1)) + '</p>' +
+            '<ol class="tally" aria-hidden="true">' +
+              marks.map(function (ok, n) {
+                return '<li class="' + (ok ? 'is-right' : 'is-miss') + '" style="--d:' + (n * step) + 'ms"></li>';
+              }).join('') +
+            '</ol>' +
+            '<div class="quiz-foot">' +
+              (next ? '<a class="btn btn-primary btn-small" href="' + next.href + '">' + esc(next.label) + '</a>' : '') +
+              again +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      var head = $('.sealed-score', host);
+      try { head.focus({ preventScroll: true }); } catch (e) {}
+      if (still) return;
+      var count = $('[data-count]', host), shown = 0;
+      marks.forEach(function (ok, n) {
+        if (ok) setTimeout(function () { count.textContent = ++shown; }, n * step + 180);
+      });
     }
 
     if (!items || !items.length) { host.innerHTML = ''; return; }
@@ -862,8 +937,13 @@
   }
 
   /* ---------- Term match (built from the glossary) ---------- */
-  function matchItems(n) {
-    var terms = (S.glossary || []).slice();
+  /* `track` limits the draw, answers and wrong options alike, to glossary
+     terms whose `module` is that track id, so each module's Term match only
+     asks about what that module taught. "all" or nothing uses every term. */
+  function matchItems(n, track) {
+    var terms = (S.glossary || []).filter(function (g) {
+      return !track || track === 'all' || g.module === track;
+    });
     if (terms.length < 4) return [];
     shuffle(terms);
     return terms.slice(0, Math.min(n, terms.length)).map(function (g) {
@@ -878,7 +958,7 @@
     });
   }
   function buildMatch(host, cfg) {
-    var make = function () { return matchItems(cfg.rounds || 6); };
+    var make = function () { return matchItems(cfg.rounds || 6, cfg.module); };
     renderQuiz(host, make(), { restart: make });
   }
 
@@ -1257,7 +1337,7 @@
     }, []);
     quizActivitiesFor(m).forEach(function (p) {
       if (p.type === 'scenarios') items = items.concat(p.items || []);
-      else if (p.type === 'match') items = items.concat(matchItems(p.rounds || 6));
+      else if (p.type === 'match') items = items.concat(matchItems(p.rounds || 6, p.module));
     });
     return items;
   }
@@ -1362,11 +1442,9 @@
 
             (quiz.length
               ? '<section class="art-section art-practice" id="s-practice" data-sec="practice">' +
-                  '<h2>Practice: ' + esc(m.title) + '</h2>' +
-                  '<p class="art-practice-sub">' + quiz.length + ' questions on everything in this module. Nothing is graded and nothing leaves your browser.</p>' +
-                  '<h3>Check your understanding' +
+                  '<h2>Practice: ' + esc(m.title) +
                     (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
-                  '</h3><div class="art-quiz" id="moduleQuiz"></div>' +
+                  '</h2><div class="art-quiz" id="moduleQuiz"></div>' +
                 '</section>'
               : '') +
 
@@ -1401,6 +1479,11 @@
     if (quiz.length) {
       renderQuiz($('#moduleQuiz', moduleView), quiz, {
         restart: function () { return quizItemsFor(m); },
+        previous: function () { return quizState['module:' + m.id] || null; },
+        next: function () {
+          return next ? { href: moduleHref(next), label: 'On to Module ' + (n + 2) }
+                      : { href: '#/', label: 'Back to all modules' };
+        },
         onFinish: function (score, total) {
           saveQuizResult('module:' + m.id, score, total);
           paintModuleProgress();

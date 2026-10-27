@@ -4,9 +4,12 @@
    Save, refresh, done. See README.md for a field-by-field guide.
 
    Structure follows the slide deck (assets/llm-nlp-101.pdf):
-     Module 1  Overview            (10-12 min)
-     Module 2  How an LLM works    (20-25 min)
-     Module 3  Using LLMs well     (15-20 min)
+     Module 1  What is AI?           (10-12 min)
+     Module 2  How AI chatbots work  (20-25 min)
+     Module 3  Using AI well         (15-20 min)
+   The module articles are written for a general reader: plain words, each
+   technical term bolded and explained where it first appears, and examples
+   from everyday life rather than from Purple Maiʻa's own work.
 
    Three things here are worth knowing before you edit:
      audiences  section 3  — re-skins the whole page per room (?for=kupuna)
@@ -22,7 +25,7 @@ window.SITE = {
     shortName: "Artificial Intelligence 101",
     // The home page's big line. `name` stays the page title and the header brand.
     headline: "Artificial Intelligence 101",
-    tagline: "A free course from Purple Maiʻa on what AI chatbots actually are, how they come up with an answer, and where they fall short.",
+    tagline: "A free course from Purple Maiʻa on what AI is, how chatbots come up with an answer, and how to use them well.",
     /* `date` and `time` are deliberately empty. They used to name a specific
        session, which was right up until that session happened and then spent
        every day afterwards announcing a date in the past to new readers. The
@@ -127,49 +130,52 @@ window.SITE = {
       id: "generative-ai",
       track: "overview",
       image: "assets/video/ai-isnt-one-thing.jpg",
-      title: "What is generative AI?",
-      summary: "Five terms people use as if they mean the same thing. They nest inside each other, and you've already met all of them.",
+      title: "What is AI?",
+      summary: "“AI” is not a single technology. It is a family of related technologies that fit inside one another, and most of us have been using them for years.",
+      lede: "AI is a family of technologies, not a single machine. Knowing which one you mean is the first step toward using it well.",
       sections: [
         {
           id: "several-technologies",
-          heading: "AI is several technologies, not one",
+          heading: "AI is a family of technologies",
           body: [
-            "Most people use “AI” as the umbrella term for computers doing tasks that seem to need human thinking. That is close enough to be useful and loose enough to cause trouble, because “AI” does not name one technology.",
-            "It covers a set of smaller technologies working together, each one with a name and each one with limits you can learn. They build from the outside in."
+            "When people say “AI”, they usually refer to computer systems performing tasks that typically require human intelligence, such as learning, reasoning, pattern recognition, and problem-solving. That everyday definition is useful, but it hides an important point: “AI” does not name a single technology.",
+            "It is a family of related technologies working together, each with its own name and its own limitations. Learning to tell them apart makes news coverage and product claims about AI much easier to evaluate."
           ]
         },
         {
           id: "five-terms",
-          heading: "Five terms that nest inside each other",
+          heading: "Five terms that fit inside one another",
           lesson: "m1-map",
           body: [
+            "These terms are best understood as circles, each one sitting inside the one before it.",
             { list: [
-              "**Artificial intelligence** covers any computer system doing work we associate with human thinking.",
-              "**Machine learning** is a way of building AI where the system learns patterns from data instead of following rules a person wrote out by hand.",
-              "**Natural language processing** applies machine learning to human language, so computers can read, interpret and produce text and speech.",
-              "**Generative AI** creates new content, such as text, images, audio or video, instead of only sorting or predicting.",
-              "**Large language models** sit where NLP and generative AI overlap. They process language and they generate it, and they are the technology behind most text-generating AI today."
-            ] }
+              "**Artificial intelligence (AI)** is the broadest circle. Any computer system performing work we would normally associate with human thinking.",
+              "**Machine learning** is one way to build AI. Instead of following rules written out by a person, the system learns patterns from large numbers of examples.",
+              "**Natural language processing (NLP)** applies machine learning to human language, so that computers can read, interpret and produce text and speech.",
+              "**Generative AI** creates new content, such as text, images, audio or video, rather than only sorting or predicting.",
+              "**Large language models (LLMs)** process language and generate new text. They are the technology behind AI chatbots such as ChatGPT, Claude, and Gemini."
+            ] },
+            "An AI chatbot therefore belongs to all five categories at once. “LLM” is simply the most precise name for it."
           ],
           sources: ["toloka-2026"]
         },
         {
           id: "already-met",
-          heading: "Where you've already met it",
+          heading: "Where you have already encountered it",
           lesson: "m1-daily",
           body: [
-            "Most of us have been using all of this for years without calling any of it AI.",
+            "Most people have been using these technologies for years without thinking of them as AI.",
             { table: {
-              head: ["Technology", "Where you have already met it"],
+              head: ["Technology", "Where you have already encountered it"],
               rows: [
-                ["Machine learning", "Streaming recommendations, spam filters, social feeds"],
-                ["Natural language processing", "Live captions, translation tools, spell-check, voice-to-text"],
-                ["Generative AI", "Social graphics, image generators, first-draft copy"],
+                ["Machine learning", "Streaming recommendations, spam filters, social media feeds"],
+                ["Natural language processing", "Live captions, translation apps, spell-check, voice-to-text"],
+                ["Generative AI", "Image generators, AI-created graphics, first-draft writing"],
                 ["Large language models", "Drafting emails, summarizing long documents, quick how-to help"]
               ]
             } }
           ],
-          takeaway: "These five terms nest inside each other instead of competing. Being able to say which one you mean puts you ahead of most of the conversation."
+          takeaway: "These five terms fit inside one another rather than competing. Being able to say which one you mean puts you ahead of most conversations about AI."
         }
       ]
     },
@@ -178,111 +184,111 @@ window.SITE = {
       id: "how-llms-work",
       track: "how-it-works",
       image: "assets/video/autocomplete-trick.jpg",
-      title: "How an LLM works",
-      summary: "Training, then the five-step loop that writes every answer one token at a time, and how models are built and adapted.",
-      lede: "An LLM doesn't look up answers. It predicts them one token at a time, and on its own it's only as reliable as its training data.",
+      title: "How AI chatbots work",
+      summary: "How a chatbot learns from huge amounts of text then writes every answer, one small piece at a time.",
+      lede: "An AI chatbot does not look up answers. It predicts them, one small piece of text at a time, and on its own it is only as reliable as the material it learned from.",
       sections: [
         {
           id: "training-and-inference",
-          heading: "Training and inference",
+          heading: "Training and inference: learning, then answering",
           body: [
-            "A large language model (LLM) works in two distinct phases: **training** and **inference**.",
-            "Training begins with pre-training, in which the model processes a very large body of text and adjusts its parameters to improve its predictions of language. Pre-training happens once for each model version, and later stages of training refine the result.",
-            "During inference, the model applies what it has already learned to generate a response, one token at a time. This happens every time someone sends a prompt."
+            "Chatbots such as ChatGPT, Claude and Gemini run on a **large language model (LLM)**, and every LLM goes through two distinct phases: **training** and **inference**.",
+            "Training is the phase in which the model learns. It processes an enormous amount of text and gradually adjusts itself to become better at predicting what comes next. This first stage, called **pre-training**, happens once for each version of a model, and later stages of training refine the result.",
+            "Inference is the phase in which the model answers. Each time you send a message, the model applies what it has already learned to write a response, one small piece at a time."
           ],
           sources: ["cloudflare"]
         },
         {
           id: "training-data",
-          heading: "Training data",
+          heading: "Training data: what the model learned from",
           lesson: "m2-training-data",
           body: [
-            "Training data is the body of text a model processes during pre-training, drawn from websites, books, articles and code. It is the source of everything the model knows, and of every gap in that knowledge.",
-            "Subjects underrepresented in training data are subjects the model performs poorly on.",
-            "**ʻŌlelo Hawaiʻi, Hawaiian cultural practice, and knowledge carried through family and oral tradition** are all far less present on the open internet than English-language material. Nobody designs the gap. It is a direct consequence of what the model reads.",
-            "The model has no way of detecting this gap either. It answers a question about Hawaiian protocol with the same confidence it brings to a general knowledge question. This is where bias and missing cultural context come from, which Module 3 returns to."
+            "**Training data** is the body of text a model reads while it learns: websites, books, articles and computer code. Everything the model “knows” comes from this material, and so does every gap in its knowledge.",
+            "When a subject is underrepresented in the training data, the model performs poorly on it.",
+            "**ʻŌlelo Hawaiʻi (the Hawaiian language), Hawaiian cultural practice, and knowledge passed down through families and oral tradition** all appear far less often on the open internet than English-language material. No one designed this gap. It is a direct result of what the model read.",
+            "The model also has no way of detecting the gap. It answers a question about Hawaiian protocol with the same confidence it brings to a general-knowledge question. This is the origin of bias and missing cultural context, which Module 3 returns to."
           ],
           sources: ["ibm-2025"]
         },
         {
           id: "parameters",
-          heading: "Parameters",
+          heading: "Parameters: where the learning is stored",
           lesson: "m2-parameters",
           body: [
-            "Parameters are the model's learned internal settings, the “knobs” that control how it weighs and combines information.",
-            "They work a bit like the channels water carves into the earth. Each time rain falls, water follows the easiest path downhill, and over time some channels deepen while others fill in and fade. What the landscape “knows” about where water should flow isn't stored in any single groove. It's in the overall shape of the terrain, the whole pattern of deep cuts and shallow dips that guides each new rainfall along familiar routes.",
-            "During pre-training, these settings get adjusted over and over until the model's predictions improve. A change to the parameters changes the probabilities the model assigns to each possible next word. All else being equal, more parameters generally means greater capability."
+            "**Parameters** are the model's internal settings, a very large number of adjustable values that control how it weighs and combines information. They are often described as “knobs.”",
+            "They work somewhat like the channels water carves into the land. Each time rain falls, water follows the easiest path downhill, and over time some channels deepen while others fill in and fade. What the landscape “knows” about where water should flow is not stored in any single groove. It lies in the overall shape of the terrain, the whole pattern of deep cuts and shallow dips that guides each new rainfall along familiar routes.",
+            "During training, these settings are adjusted repeatedly until the model's predictions improve. Changing them changes which next word the model considers most likely. In general, models with more parameters tend to be more capable, although not always."
           ],
           sources: ["3b1b-2024"]
         },
         {
           id: "learning-stops",
-          heading: "Learning stops at training",
+          heading: "Learning stops when training ends",
           lesson: "m2-pretraining-inference",
           body: [
-            "Because learning happens during training and stops there, correcting a model during a conversation does not correct the model. It may acknowledge the error and give the right answer in that conversation, then repeat the same error in a new one. Its learning concluded before release.",
-            "Two questions are worth keeping separate: whether a model learns from what you type, and whether a provider stores it. Some products keep conversations or offer memory features, and some providers use conversations to train future versions of their models, depending on their data policy and your settings. None of this changes the model you are talking to, but it does mean your input may not stay private."
+            "Because learning happens during training and then stops, correcting a chatbot does not correct the underlying model. It may acknowledge the error and give the right answer within that conversation, then repeat the same mistake in a new one. Its learning was complete before it was released.",
+            "Two questions are worth keeping separate: whether the model learns from what you type, and whether the company stores what you type. Some products save conversations or offer memory features, and some companies use conversations to train future versions of their models, depending on their policies and your settings. None of this changes the model you are using, but it does mean that what you type may not remain private."
           ]
         },
         {
           id: "generation-loop",
-          heading: "The generation loop",
+          heading: "The generation loop: how it writes an answer",
           lesson: "m2-loop",
           body: [
-            "Every response comes out of the same five-stage loop, repeated once for each token generated.",
+            "Every response is produced by the same five-step loop, repeated once for each **token** the model writes. A token is a small unit of text: often a whole word, sometimes part of one.",
             { steps: [
-              "**Tokenization.** The input text is divided into units called tokens, each assigned an ID number.",
-              "**Embeddings.** Each token is converted into a list of numbers that positions it within a “meaning space,” where words used in similar contexts sit near one another.",
-              "**Transformers.** For each token, the model works out which other tokens are most relevant to it, a mechanism called attention.",
-              "**Probabilities.** Based on the full context, the model assigns a probability to every possible next token.",
-              "**Sampling.** The model selects one token, typically a likely one, though not necessarily the most likely. The selected token is added to the text, and the loop repeats until the model selects an end-of-sequence token."
+              "**Tokenization.** The input text is divided into tokens, and each token is assigned an ID number.",
+              "**Embeddings.** Each token is converted into a list of numbers that places it within a “meaning space,” where words used in similar contexts sit close together.",
+              "**Attention.** For each token, the model determines which other tokens are most relevant to it. This is the work of the **transformer**, the design that today's chatbots are built on.",
+              "**Probabilities.** Based on the full context, the model assigns every possible next token a probability.",
+              "**Sampling.** The model selects one token, usually a likely one but not necessarily the most likely. It adds that token to the text and repeats the loop, until it selects a special token that signals the end of the response."
             ] },
-            "Any answer is that loop running hundreds of times over. The videos below zoom in on four of the stages."
+            "A response several paragraphs long represents hundreds of passes through this loop. The videos below examine four of the steps more closely."
           ],
           parts: [
             { id: "tokenization",  heading: "Tokenization",           lesson: "m2-tokenization",
-              body: ["The model never sees words. It sees numbered chunks of text, and how a language gets chopped up decides how much it costs to process."] },
+              body: ["The model does not read words the way people do. It processes numbered units of text, and the way a language is divided into tokens affects how much it costs to process. This is also why chatbots often struggle with letter-level tasks, such as counting the letters in a word."] },
             { id: "embeddings",    heading: "Embeddings",             lesson: "m2-embeddings",
-              body: ["Each token becomes a list of numbers, a position in a space where distance means similarity of meaning."] },
+              body: ["Each token becomes a list of numbers: a position on a map where nearby positions indicate similar meanings."] },
             { id: "attention",     heading: "Transformers and attention", lesson: "m2-transformers",
-              body: ["For every token, the model decides which other tokens matter most to it. That weighing is what lets context change meaning."] },
+              body: ["For every token, the model weighs which other words matter most to it. This is how the same word can carry different meanings in different sentences."] },
             { id: "next-token",    heading: "Next-token prediction",  lesson: "m2-next-token",
-              body: ["Given everything so far, the model scores every possible next token, picks one, adds it, and does it again."] }
+              body: ["Given everything so far, the model scores every possible next token, selects one, adds it to the text, and repeats the process."] }
           ],
           sources: ["3b1b-2024", "learnthatstack-2025"]
         },
         {
           id: "sampling",
-          heading: "Probabilistic output and sampling",
+          heading: "Probabilistic output: why the same question gets different answers",
           lesson: "m2-sampling",
           body: [
-            "A deterministic system, such as a calculator, produces the same output for the same input every time. A probabilistic system, such as an LLM, selects from weighted options, so the same question can produce different answers. This variation is expected behavior.",
-            "A setting called **temperature** governs how much variation there is. At a low temperature, the model almost always selects the most probable token. At a higher temperature, it selects less probable tokens more often.",
-            "The essential point is that no stage of this loop retrieves information or verifies facts. The model's apparent confidence reflects how likely its words are, not whether they are true."
+            "A calculator produces the same answer every time you enter the same input. This is called **deterministic** behavior. A chatbot is **probabilistic**: it selects from weighted options, so the same question can produce different answers. This variation is expected, not a malfunction.",
+            "A setting called **temperature** controls how much variation there is. At a low temperature, the model almost always selects the most likely token. At a higher temperature, it selects less likely tokens more often, so its responses vary more.",
+            "The most important point in this module is that no step of the loop retrieves information or verifies facts. When a chatbot sounds confident, that confidence reflects how likely its words are, not whether they are true."
           ],
           sources: ["learnthatstack-2025"]
         },
         {
           id: "context-windows",
-          heading: "Context windows",
+          heading: "Context windows: how much it can consider at once",
           lesson: "m2-context-window",
           body: [
-            "The context window is how much text a model can consider at one time. Your prompt, the conversation history, and any documents you supply all share that space.",
-            "As a conversation gets longer, older messages may be dropped, summarized, or given less weight, depending on the product. The same limit applies to a long document, and many tools will not tell you when only part of it was processed. In practice, start a new conversation for each new topic, and restate anything essential."
+            "The **context window** is the amount of text a model can take into account at one time. Your message, the conversation history, and any documents you provide all share that space.",
+            "As a conversation grows longer, earlier messages may be dropped, summarized or given less weight, depending on the product. Long documents are subject to the same limit, and many tools do not indicate when only part of a document was processed. As a practical habit, start a new conversation for each new topic, and restate anything essential."
           ],
-          takeaway: "An LLM does not look up answers. It predicts them one token at a time, and on its own it is only as reliable as its training data."
+          takeaway: "A chatbot does not look up answers. It predicts them one token at a time, and on its own it is only as reliable as the text it learned from."
         },
         {
           id: "built-and-adapted",
-          heading: "How models are built and adapted",
+          heading: "How chatbots are built and refined",
           body: [
-            "Commercial AI assistants pass through several development stages before release, and each one shapes what the model knows and how it behaves.",
+            "Before a chatbot is released, the model behind it passes through several stages of development. Each stage shapes what the model knows and how it behaves.",
             { steps: [
-              "**Pre-training.** The model processes a very large body of general text and learns to predict the next token. This takes data centers full of specialized processors (GPUs) running for weeks or months. The result is a base model, with broad knowledge and no particular skill at following instructions.",
-              "**Fine-tuning.** The base model gets additional training on a smaller, targeted set of examples, which teaches it a specific task, style or subject area. Fine-tuning adjusts the same parameters, building on what the model already learned.",
-              "**Reinforcement learning from human feedback (RLHF).** People compare and rate model responses, and the model is trained to favor the kinds of responses rated more highly. This accounts for much of a chatbot's careful manner. It also shapes the model's values and its blind spots, which depend on who did the rating and what they were told to reward."
+              "**Pre-training.** The model processes a very large body of general text and learns to predict the next token. This requires data centers full of specialized computer chips (GPUs) running for weeks or months. The result is a **base model**, which has broad knowledge but little ability to follow instructions.",
+              "**Fine-tuning.** The base model receives additional training on a smaller, carefully selected set of examples, which teaches it a specific task, style or subject area. Fine-tuning adjusts the same parameters, building on what the model has already learned.",
+              "**Reinforcement learning from human feedback (RLHF).** People compare and rate the model's responses, and the model is trained to favor the kinds of responses that were rated more highly. This accounts for much of a chatbot's courteous, careful manner. It also shapes the model's values and blind spots, which depend on who did the rating and what they were asked to reward."
             ] },
-            "**Alignment** is the broader effort to make a model's behavior match human intentions and values, and fine-tuning and RLHF are among its main methods. For Indigenous communities, the central question is whose values a model has been aligned to."
+            "**Alignment** is the broader effort to make a model's behavior match human intentions and values, and fine-tuning and RLHF are two of its main methods. This raises an important question for any community, and especially for Indigenous communities: whose values has the model been aligned to?"
           ],
           sources: ["ouyang-2022"]
         },
@@ -291,11 +297,11 @@ window.SITE = {
           heading: "Model families, open weights and agents",
           lesson: "m3-model-families",
           body: [
-            "Different companies develop different models, and each company releases a series of versions over time, called a **model family**. ChatGPT is built on OpenAI's GPT family, Claude is developed by Anthropic, and Gemini by Google. Successive versions usually reflect more training, more data, or a better design, much as each new generation of a phone builds on the last. Model names change often, so check current names before citing them in public.",
-            "**Open weights** means a model's trained parameters have been published. That is different from fully open source, which would also include the code and detailed information about the training data. The distinction matters for data sovereignty, since a community can only control a model it is able to run and adapt.",
-            "An **agent** is an LLM set up to take actions instead of only writing text: searching the web, operating software tools, or running a multi-step workflow. Agents run on the same next-token loop, so every limitation in Module 3 still applies, and the stakes rise, because the model is now acting rather than drafting."
+            "Different companies develop different models, and each company releases a series of versions over time, known as a **model family**. ChatGPT is built on OpenAI's GPT family, Claude is developed by Anthropic, and Gemini by Google. Newer versions usually reflect more training, more data or an improved design, much as each new generation of a phone builds on the last. Model names change frequently, so confirm the current name before citing one.",
+            "**Open weights** means that a model's trained parameters have been published, so that others can download and run it. This differs from fully **open source**, which would also include the code and detailed information about the training data. The distinction matters for communities seeking control over their own data (often called data sovereignty), because a community can only control a model it is able to run and adapt itself.",
+            "An **agent** is an AI system set up to take actions rather than only produce text: searching the web, operating other software, or completing a task with several steps. Agents run on the same next-token loop, so every limitation described in Module 3 still applies. The stakes are higher, however, because the system is now acting rather than drafting."
           ],
-          takeaway: "Each stage of development shapes both what a model knows and whose values it reflects.",
+          takeaway: "Each stage of a model's development shapes both what it knows and whose values it reflects.",
           sources: ["osi-2024"]
         }
       ]
@@ -305,59 +311,67 @@ window.SITE = {
       id: "using-llms-well",
       track: "using-llms",
       image: "assets/video/fake-citation.jpg",
-      title: "Using LLMs well",
-      summary: "Prompting, grounding and checking the answer, then the limits: hallucinations, bias, privacy, and who signs off.",
-      lede: "A model cannot know what only you know, and it does not check its own work. Give it context, ground it in real sources, and verify what comes back.",
+      title: "Using AI well",
+      summary: "How to ask for what you need, how to check what comes back, and the limits to keep in mind: hallucinations, bias, privacy, and who's responsible.",
+      lede: "A chatbot cannot know what only you know, and it does not check its own work. Provide context, ground it in real sources, and verify what comes back.",
       sections: [
         {
           id: "prompting",
-          heading: "Prompting and context",
+          heading: "Prompting: providing context",
           lesson: "m3-prompts",
           body: [
-            "The quality of a model's output depends heavily on the input it receives. It has extensive general knowledge, but no knowledge of your specific situation.",
-            "A helpful frame is to treat the model as a capable new employee on their first day. They bring broad general knowledge but don't know your organization, its records or its voice, and can only work with what they are given. So write prompts with enough context: the format you want, who it's for, the tone, and any source material that matters."
+            "The quality of a chatbot's response depends heavily on the input it receives. That input is called a **prompt**. The model has extensive general knowledge, but no knowledge of your particular situation unless you provide it.",
+            "A useful way to think about this is to treat the chatbot as a capable new colleague on their first day. They bring broad general knowledge, but they do not know you, your project or your preferences, and they can only work with what they are given. An effective prompt therefore states:",
+            { list: [
+              "**The task**, and its purpose",
+              "**The audience**, and the appropriate tone",
+              "**The length and format**, such as a list, an email or a table",
+              "**The source material**, such as notes, a document or an example to follow"
+            ] },
+            "Compare “Write a thank-you note” with “Write a short, warm thank-you note to my neighbor Leilani, who watered my plants for two weeks while I was away. Keep it under 80 words and mention the tomatoes she saved.” The second prompt supplies everything the model could not have known.",
+            "If the first response falls short, there is no need to start over. Explain what to change, as you would with a colleague: make it shorter, adjust the tone, or expand on a particular point."
           ],
           sources: ["anthropic-prompting"]
         },
         {
           id: "grounding",
-          heading: "Grounding and retrieval-augmented generation",
+          heading: "Grounding: connecting it to real sources",
           lesson: "m3-grounding",
           body: [
-            "On its own, an LLM generates responses only from patterns in its training data and does not consult any reference. **Grounding** pairs the model with real, retrievable sources, so its responses are based on actual documents rather than statistical likelihood alone.",
+            "On its own, a chatbot generates responses only from patterns in its training data, without consulting any reference. **Grounding** connects the model to real, retrievable sources, so that its responses are based on actual documents rather than on statistical likelihood alone.",
             "The most widely used grounding method is **retrieval-augmented generation (RAG)**, which works in three steps:",
             { steps: [
-              "**Retrieve.** The system searches a defined set of trusted sources, such as a website, a search engine, or an organization's own files, for the passages most relevant to the question.",
+              "**Retrieve.** The system searches a defined set of trusted sources, such as a website, a search engine or an organization's own files, for the passages most relevant to the question.",
               "**Augment.** The retrieved passages are added to the context window alongside the question.",
-              "**Generate.** The model writes its response from the retrieved material. A well-designed system also shows which sources it used."
+              "**Generate.** The model writes its response from the retrieved material. A well-designed tool also shows which sources it used."
             ] },
-            "RAG does not eliminate errors. A model can still misread a source or retrieve an irrelevant one. But a grounded response comes with citations you can check yourself, and an ungrounded one does not.",
-            "RAG and fine-tuning solve different problems. RAG supplies specific, current information at the moment of the question without changing the model. Fine-tuning changes the model itself, to adjust its abilities or style. For “What does our 2025 annual report say?”, RAG is the right tool. For “write every response in our voice and format”, fine-tuning is."
+            "Grounding does not eliminate errors. A model can still misread a source or retrieve an irrelevant one. A grounded response, however, comes with sources you can check yourself, and an ungrounded one does not.",
+            "Grounding also differs from fine-tuning, described in Module 2. Grounding supplies specific, current information at the moment of the question without changing the model. Fine-tuning changes the model itself, to adjust its abilities or its style."
           ],
           sources: ["lewis-2020"]
         },
         {
           id: "verification",
-          heading: "Verifying what comes back",
+          heading: "Verifying the output",
           body: [
             { list: [
-              "Treat all AI output as a draft, not a finished product.",
+              "Treat all AI output as a first draft, not a finished product.",
               "Check factual claims yourself, especially names, dates, figures, quotations and citations.",
               "Where accuracy matters, use tools that cite their sources, and read those sources directly.",
-              "When a response shows step-by-step reasoning, find the step the conclusion depends on and check that step yourself."
+              "When a response presents step-by-step reasoning, identify the step the conclusion depends on and verify that step yourself."
             ] }
           ],
-          takeaway: "A model cannot infer what only you know, so that context has to be provided. Ground the model in trustworthy sources whenever you can, and verify its output yourself."
+          takeaway: "A chatbot cannot infer what only you know, so that context must be provided. Ground it in trustworthy sources whenever possible, and verify its output yourself."
         },
         {
           id: "hallucinations",
-          heading: "Hallucinations",
+          heading: "Hallucinations: confident but false",
           lesson: "m3-hallucinations",
           body: [
-            "Every limitation in this module follows from two things you saw in Module 2: the model predicts likely text rather than checking facts, and its knowledge is limited to its training data.",
-            "A **hallucination** is output that looks factual, such as a claim, a name or a citation, but is false. Ask a model for a quotation from a book with a page number, and it may cite a real book while inventing both the quotation and the page.",
-            "Hallucination is not lying. Lying requires knowing the truth, and the model has no such knowledge. Having seen a great many citations during training, it reproduces their form and fills it with the most probable content. Models are also generally rewarded during training for giving an answer rather than admitting uncertainty.",
-            "As a result, models are most persuasive on exactly the details readers are most inclined to trust, such as names, dates, page numbers and quotations, and those are among the details most often wrong."
+            "Every limitation in this module follows from two points made in Module 2: the model predicts likely text rather than checking facts, and its knowledge is limited to its training data.",
+            "A **hallucination** is output that appears factual, such as a claim, a name or a citation, but is false. Asked for a quotation from a book with a page number, a chatbot may cite a real book while inventing both the quotation and the page.",
+            "Hallucination is not lying. Lying requires knowing the truth, and the model has no such knowledge. Having encountered a great many citations during training, it reproduces their form and fills it with the most probable content. Models are also generally rewarded during training for giving an answer rather than acknowledging uncertainty.",
+            "As a result, chatbots tend to be most persuasive on exactly the details readers are most inclined to trust, such as names, dates, page numbers and quotations, and those are among the details most often wrong."
           ],
           sources: ["ji-2023", "kalai-2025"]
         },
@@ -366,20 +380,21 @@ window.SITE = {
           heading: "Bias and missing cultural context",
           lesson: "m3-bias",
           body: [
-            "Bias in an LLM starts in its training data, which reflects the existing imbalances of the internet: which voices, languages and histories are well represented, and which are not. A model can reproduce and amplify those imbalances.",
-            "For Purple Maiʻa, this is a central concern rather than an edge case. A model trained mostly on English and Western sources may answer a question about Hawaiian cultural protocol with a generic outside interpretation rather than deferring to community and Native sources.",
-            "Research with educators in Hawaiʻi has documented models reproducing outside, colonial framings of Hawaiian history, such as a sanitized portrayal of Captain Cook. Kumu in Kaiapuni programs have also raised concerns about cultural misalignment and the reliability of AI-generated content. These biases are not opinions the model formed. They reflect the material it was trained on."
+            "Bias in a chatbot originates in its training data, which reflects the existing imbalances of the internet: whose voices, languages and histories are well represented, and whose are not. A model can reproduce those imbalances and even amplify them.",
+            "The effects are greatest for communities whose knowledge is underrepresented online. A model trained mostly on English-language and Western sources may answer a question about Hawaiian cultural protocol with a generic outside interpretation, rather than deferring to community and Native sources.",
+            "Research with educators in Hawaiʻi has documented models reproducing outside, colonial framings of Hawaiian history, such as a sanitized portrayal of Captain Cook. Kumu (teachers) in Kaiapuni (Hawaiian-language immersion) programs have also raised concerns about cultural misalignment and the reliability of AI-generated content. These biases are not opinions the model has formed. They reflect the material it was trained on.",
+            "Before relying on a chatbot for information about any culture, community or place, consider who holds that knowledge, and consult them directly."
           ],
           sources: ["bender-2021", "zhao-2026", "mhasakar-2025"]
         },
         {
           id: "reasoning",
-          heading: "Reasoning, and what it isn't",
+          heading: "Reasoning, and what it is not",
           lesson: "m3-reasoning",
           body: [
-            "Some models show step-by-step reasoning before giving an answer. This often improves accuracy on complex tasks, but it runs on the same next-token loop. Each step is the most plausible continuation, and no step is checked independently.",
-            "So a model can produce an orderly, confident sequence of steps that arrives at a wrong conclusion, with every step presented as fact. The reasoning it shows may not even reflect what actually drove the answer.",
-            "Showing reasoning and verifying reasoning are two different things. Asking for step-by-step reasoning can make a response more persuasive without making it more reliable."
+            "Some chatbots display step-by-step reasoning before giving an answer. This often improves accuracy on complex tasks, but it runs on the same next-token loop. Each step is the most plausible continuation of the text, and no step is checked independently.",
+            "A chatbot can therefore produce an orderly, confident sequence of steps that arrives at a wrong conclusion, with every step presented as fact. The reasoning it displays may not even reflect what actually produced the answer.",
+            "Displaying reasoning and verifying reasoning are two different things. Asking for step-by-step reasoning can make a response more persuasive without making it more reliable."
           ],
           sources: ["wei-2022", "turpin-2023"]
         },
@@ -387,8 +402,8 @@ window.SITE = {
           id: "privacy",
           heading: "Privacy and data retention",
           body: [
-            "Anything you type into an AI tool is sent to the company that runs it. Depending on the product and its settings, the provider may store conversations, have people review them, or use them to train future versions of the model. That does not change the model you are talking to, but the information has left your hands.",
-            "This matters most for students' records, personal details, and community or cultural knowledge that is not ours to share. Before entering anything sensitive, check the tool's data policy, and when in doubt, leave it out."
+            "Anything you enter into an AI tool is sent to the company that operates it. Depending on the product and your settings, the company may store conversations, have staff review them, or use them to train future versions of the model. This does not change the model you are using, but the information is no longer under your control.",
+            "Take particular care with health and financial information, passwords, other people's personal information (including children's and students' records), and community or cultural knowledge that is not yours to share. Before entering anything sensitive, review the tool's privacy policy and settings. When in doubt, leave it out."
           ],
           sources: ["nist-2023"]
         },
@@ -397,29 +412,29 @@ window.SITE = {
           heading: "Human judgment and oversight",
           lesson: "m3-oversight",
           body: [
-            "AI is a tool for drafting, exploring and speeding up work. It cannot tell whether a draft is accurate, whose knowledge it contains, or how it will be received. Nor can it take responsibility for errors once they are published.",
-            "Anything made with AI should be reviewed before it goes out by a person who knows the subject, who checks it and corrects it. That applies without exception, and most of all to public-facing material and to anything about culture and community."
+            "AI is a tool for drafting, exploring ideas and accelerating work. It cannot judge whether a draft is accurate, whose knowledge it contains, or how it will be received. Nor can it take responsibility for errors once they are published.",
+            "Anything produced with AI should therefore be reviewed before release by a person with knowledge of the subject, who checks it and corrects it. This applies without exception, and most of all to public-facing material and to anything concerning culture or community. A useful test: if you would not put your name to it without reading it, it is not ready to send."
           ],
-          takeaway: "Plausible output may still be false, so a person with subject knowledge reviews anything made with AI before it is released.",
+          takeaway: "Plausible output may still be false, so a person with subject knowledge should review anything produced with AI before it is released.",
           sources: ["nist-2023"]
         },
         {
           id: "practices",
           heading: "Recommended practices",
           body: [
-            "Everything in these three modules, turned into habits. The right-hand column is the reason for each one.",
+            "The guidance from all three modules, summarized as practices. The right-hand column gives the reason for each one.",
             { table: {
-              head: ["Practice", "Why"],
+              head: ["Practice", "Reason"],
               rows: [
-                ["Say who it's for, how long, and what tone, and supply the source material", "The model knows nothing about your situation unless you tell it"],
-                ["Treat all output as a draft", "The model predicts likely text. No stage of generation checks facts"],
-                ["Check names, dates, figures, quotations and citations", "These are the details where models are most persuasive and most often wrong"],
-                ["Use source-citing tools where accuracy matters", "Grounded answers can be checked independently"],
-                ["Start a new conversation for each new topic, and restate what matters", "Earlier text falls outside the context window"],
-                ["Don't assume a correction will stick", "Models do not learn from individual conversations"],
-                ["Ask knowledgeable people about culture, ʻōlelo Hawaiʻi, or community", "These subjects are underrepresented in training data, and models cannot detect the gap"],
-                ["Read the data policy before entering sensitive or community information", "What you type may be kept by the provider"],
-                ["Have someone who knows the subject review anything before it goes out", "Responsibility rests with people, not tools"]
+                ["State the task, audience, length and tone, and supply the source material", "The model knows nothing about your situation unless you provide it"],
+                ["Treat all output as a draft", "The model predicts likely text. No stage of that process checks facts"],
+                ["Check names, dates, figures, quotations and citations", "These are the details on which models are most persuasive and most often wrong"],
+                ["Where accuracy matters, use tools that cite sources, and read them", "Grounded answers can be verified independently"],
+                ["Start a new conversation for each new topic, and restate what matters", "Earlier text can fall outside the context window"],
+                ["Do not assume a correction will persist", "Models do not learn from individual conversations"],
+                ["Consult knowledgeable people on culture, ʻōlelo Hawaiʻi or community matters", "These subjects are underrepresented in training data, and models cannot detect the gap"],
+                ["Review the privacy policy before entering sensitive information", "The provider may retain what you enter"],
+                ["Have someone with subject knowledge review anything before release", "Responsibility rests with people, not tools"]
               ]
             } }
           ]
@@ -507,8 +522,8 @@ window.SITE = {
       videoAspect: "9/16",
       takeaways: [
         "NLP: live captions and transcription, translation tools, grammar and spell-check, voice-to-text.",
-        "Generative AI: social graphics, first-draft copy, meeting summaries, curriculum brainstorming.",
-        "LLMs: drafting and editing emails, summarizing long documents, quick how-to help, session prep.",
+        "Generative AI: image generators, AI-made graphics, first-draft writing.",
+        "LLMs: drafting and editing emails, summarizing long documents, meeting summaries, quick how-to help.",
         "If you have used Otter, Google Translate or autocorrect, you have been using NLP for years."
       ],
       resources: [
@@ -718,13 +733,13 @@ window.SITE = {
       track: "using-llms",
       level: "Module 3",
       duration: "4 min",
-      summary: "The most immediately useful thing in this whole session. Treat it like a capable new hire.",
+      summary: "The most immediately useful thing in the whole course. Treat it like a capable new coworker.",
       video: "file:assets/video/like-a-new-hire.mp4",
       videoLength: "1:30",
       takeaways: [
         "It has vast general knowledge and knows nothing about your specific situation. Be explicit about audience, format and tone.",
-        "Hand it the source material. Do not expect it to already know your program, your people or your numbers.",
-        "Weak: \"Write a bio for Keiko.\" Strong: \"Write a 100-word bio for Keiko, our program director, for a grant funder audience, warm but concise, drawing on the notes below.\""
+        "Hand it the source material. Do not expect it to already know your project, your people or your numbers.",
+        "Weak: \"Write a thank-you note.\" Strong: \"Write a short, warm thank-you note to my neighbor Leilani, who watered my plants for two weeks. Under 80 words, and mention the tomatoes she saved.\""
       ],
       resources: [
         { label: "Prompt library", url: "#prompts" },
@@ -812,7 +827,7 @@ window.SITE = {
       track: "using-llms",
       level: "Module 3",
       duration: "3 min",
-      summary: "The clearest, most actionable takeaway of the entire session.",
+      summary: "The clearest, most actionable takeaway of the whole course.",
       video: "file:assets/video/who-signs-it.mp4",
       videoLength: "1:27",
       takeaways: [
@@ -860,50 +875,76 @@ window.SITE = {
      options only make sense in the order given.
   --------------------------------------------------------------- */
   quizzes: {
+    /* ===== Module 1 — What is AI? ===== */
     "m1-map": [
       {
-        q: "Which of these nests inside the others correctly?",
+        q: "Which statement correctly describes how these terms fit together?",
         options: [
           "LLMs sit inside generative AI, which sits inside machine learning, which sits inside AI",
           "AI sits inside machine learning, which sits inside NLP",
-          "They are four names for the same thing, used by different companies"
+          "They are different names for the same technology, used by different companies"
         ],
         answer: 0,
-        why: "AI is the umbrella. Machine learning is one way of building AI, generative AI is machine learning that creates new content, and LLMs are the specific technology behind most generative text AI today."
+        why: "AI is the broadest category. Machine learning is one way of building AI, generative AI is machine learning that creates new content, and LLMs are the technology behind AI chatbots."
       },
       {
-        q: "A translation tool is an example of…",
-        options: ["NLP — machine learning applied to language", "Generative AI", "Neither; translation is hand-coded rules"],
+        q: "What distinguishes machine learning from other ways of building AI?",
+        options: [
+          "The system learns patterns from examples instead of following rules written by a person",
+          "It always produces text or images",
+          "It only runs on very large computers"
+        ],
         answer: 0,
-        why: "Translation, captions and spell-check are all NLP. Most of them long predate ChatGPT, which is why you have been using NLP for years without calling it that."
+        why: "Machine learning systems learn from data. Generating content is what generative AI adds, and many machine learning systems, such as spam filters, generate nothing at all."
+      },
+      {
+        q: "A translation app is an example of…",
+        options: [
+          "Natural language processing: machine learning applied to language",
+          "Generative AI that creates images",
+          "Neither; translation apps follow hand-written rules"
+        ],
+        answer: 0,
+        why: "Translation, live captions and spell-check are all natural language processing. Most of these tools predate AI chatbots, which is why many people have used NLP for years without calling it AI."
       }
     ],
 
     "m1-daily": [
       {
-        q: "You dictate a text message and your phone types it out. What did you just use?",
-        options: ["NLP", "An LLM", "Nothing — that is not AI"],
+        q: "You dictate a text message and your phone types it out. Which technology did you use?",
+        options: ["Natural language processing", "A large language model", "None; voice-to-text is not AI"],
         answer: 0,
-        why: "Voice-to-text is NLP: machine learning applied to language. No large language model has to be involved for that to count."
+        why: "Voice-to-text is natural language processing: machine learning applied to language. It does not require a large language model."
+      },
+      {
+        q: "A streaming service recommends a show based on what you watched last week. Which technology is this?",
+        options: ["Machine learning", "A large language model", "Generative AI"],
+        answer: 0,
+        why: "Recommendations come from patterns learned from viewing data. Nothing new is generated, and no language is being processed."
       }
     ],
 
-    "m2-loop": [
+    /* ===== Module 2 — How AI chatbots work ===== */
+    "m2-pretraining-inference": [
       {
-        q: "How many times does the loop run to produce a three-paragraph answer?",
-        options: ["Once per token — so hundreds of times", "Once, for the whole answer", "Once per sentence"],
-        answer: 0,
-        why: "Tokenization → embeddings → transformers → probabilities → sampling, then back to the top. Every word you see is another lap."
-      },
-      {
-        q: "While the base model runs that loop, what is it looking facts up in?",
+        q: "What is the difference between training and inference?",
         options: [
-          "Nothing — there is no fact database inside the loop",
-          "An internal encyclopedia built during training",
-          "The live web, on every request"
+          "Training is when the model learns from text; inference is when it uses what it learned to answer you",
+          "Training happens every time you send a message; inference happens once",
+          "They are two names for the same process"
         ],
         answer: 0,
-        why: "Search and document tools get bolted on top of the model (Module 3), but they are an addition. The loop itself is prediction, not lookup."
+        why: "Pre-training happens once for each version of a model, before release. Inference happens every time someone sends a prompt."
+      },
+      {
+        q: "You correct a chatbot partway through a conversation. Has the model learned from you?",
+        options: [
+          "No. It can use the correction within this conversation, but the model itself has not changed",
+          "Yes, its parameters were updated immediately",
+          "Yes, but only after you close the conversation"
+        ],
+        answer: 0,
+        why: "Learning ends when training ends. Some products save conversations or offer memory features, but that is a product feature, not the model retraining itself."
       }
     ],
 
@@ -911,12 +952,22 @@ window.SITE = {
       {
         q: "Why is a model weaker on ʻōlelo Hawaiʻi than on English?",
         options: [
-          "There is far less of it in the training data",
-          "Hawaiian grammar is too irregular to model",
+          "There is far less ʻōlelo Hawaiʻi in its training data",
+          "Hawaiian grammar is too irregular for a model to learn",
           "The companies deliberately excluded it"
         ],
         answer: 0,
-        why: "Underrepresented in, weak on. And it will still answer confidently rather than tell you it is out of its depth — which is exactly what makes it risky."
+        why: "Subjects that are underrepresented in training data are subjects the model performs poorly on. No one designed the gap; it follows from what the model read."
+      },
+      {
+        q: "When a model has very little training data on a subject, how does it usually respond to questions about it?",
+        options: [
+          "With the same confidence it brings to any other question",
+          "By telling you it does not know enough",
+          "By refusing to answer"
+        ],
+        answer: 0,
+        why: "The model has no way of detecting gaps in its training data, so it answers with the same confidence either way. That is what makes those gaps risky."
       }
     ],
 
@@ -924,82 +975,102 @@ window.SITE = {
       {
         q: "Parameters are best described as…",
         options: [
-          "The model's learned settings — internal knobs that decide how it weighs information",
-          "The documents the model can search",
-          "The settings you change in the app, like tone or length"
+          "The model's internal settings, adjusted during training, that control how it weighs information",
+          "The documents the model searches when you ask a question",
+          "The options you choose in the app, such as tone or length"
         ],
         answer: 0,
-        why: "They are set during pre-training and fixed by the time you use it. Change them and the same input produces different probabilities."
+        why: "Parameters are set during training and are fixed by the time you use the model. Changing them changes which next word the model considers most likely."
       },
       {
-        q: "More parameters means…",
-        options: ["Generally, though not always, more capability", "Always a better model", "A bigger context window"],
+        q: "In the water-channel comparison, where is the model's learning stored?",
+        options: [
+          "In the overall pattern of all its parameters, not in any single one",
+          "In one parameter for each fact it knows",
+          "In a separate database of facts"
+        ],
         answer: 0,
-        why: "Size correlates with capability but does not guarantee it, and it is a separate thing from how much text the model can hold in view at once."
+        why: "Just as a landscape's shape guides water without any single groove holding the route, a model's knowledge lies in the whole pattern of its parameters."
+      },
+      {
+        q: "What do more parameters generally mean?",
+        options: ["Greater capability, though not always", "A model that is always better", "A larger context window"],
+        answer: 0,
+        why: "Size tends to go with capability but does not guarantee it. It is also separate from the context window, which is how much text the model can consider at once."
       }
     ],
 
-    "m2-pretraining-inference": [
+    "m2-loop": [
       {
-        q: "You correct the model mid-conversation. Has it learned from you?",
+        q: "How many times does the generation loop run to produce a response several paragraphs long?",
+        options: ["Once per token, so hundreds of times", "Once for the whole response", "Once per sentence"],
+        answer: 0,
+        why: "Tokenization, embeddings, attention, probabilities, sampling, then back to the start. Every token you see is another pass through the loop."
+      },
+      {
+        q: "At which step of the generation loop does the model look up facts?",
         options: [
-          "No — it is applying what it already learned, and it will use your correction only within this conversation",
-          "Yes, its parameters just updated",
-          "Yes, but only after you close the chat"
+          "None. No step of the loop retrieves information or checks facts",
+          "The attention step",
+          "The sampling step"
         ],
         answer: 0,
-        why: "Pre-training happened once, before you opened the app. Everything you do is inference. Some products separately remember things about you, but that is a product feature, not the model retraining itself."
+        why: "The loop is prediction, not lookup. Some tools add search or document retrieval on top of the model (grounding, in Module 3), but that is an addition, not part of the loop."
       }
     ],
 
     "m2-tokenization": [
       {
-        q: "Which is more tokens?",
-        options: ["“indistinguishable”, one long word", "“the cat sat”, three short ones", "They are identical — one token per word"],
+        q: "What happens to your text in the first step of the loop?",
+        options: [
+          "It is divided into tokens, and each token is given an ID number",
+          "Each word is looked up in a dictionary",
+          "It is read one letter at a time"
+        ],
         answer: 0,
-        why: "Common words are usually a single token; long or uncommon ones get split into several. “Indistinguishable” is about four tokens, “the cat sat” is three."
+        why: "A token is a small unit of text, often a whole word and sometimes part of one. The model works with these numbered units, not with words or letters."
       },
       {
-        q: "Why is it unreliable at counting the letters in a word?",
+        q: "Why do chatbots often struggle to count the letters in a word?",
         options: [
-          "It works with token chunks, not individual letters",
-          "It is bad at arithmetic",
+          "They process tokens, not individual letters",
+          "They are not able to do arithmetic",
           "Counting is blocked for safety reasons"
         ],
         answer: 0,
-        why: "Same reason it struggles to reverse a word or rhyme on spelling. The letters are not what it is looking at."
+        why: "The model sees numbered chunks of text. The individual letters inside a token are not what it is working with."
       }
     ],
 
     "m2-embeddings": [
       {
-        q: "In embedding space, what does it mean for two words to sit close together?",
-        options: ["They get used in similar ways", "They are spelled similarly", "They appear equally often"],
-        answer: 0,
-        why: "Distance stands in for similarity of use. “King” lands near “queen” because of the company those words keep, not because of their letters."
-      },
-      {
-        q: "At the embedding step, does Python-the-language get a different position from Python-the-snake?",
+        q: "What is an embedding?",
         options: [
-          "No — one token, one position. The surrounding words sort it out later",
-          "Yes, the model picks the right sense immediately",
-          "Yes, they are different tokens entirely"
+          "A list of numbers that places a token in a “meaning space”",
+          "The ID number a token receives",
+          "A summary of the conversation so far"
         ],
         answer: 0,
-        why: "Separating the two senses is attention's job, in the next lesson. It reads whether “import” or “reptile” is nearby and pulls that one position toward one meaning or the other."
+        why: "Tokenization gives each token an ID. The embedding step then turns it into a list of numbers that positions it among other words."
+      },
+      {
+        q: "In that meaning space, what does it mean when two words sit close together?",
+        options: ["They are used in similar contexts", "They are spelled similarly", "They appear equally often"],
+        answer: 0,
+        why: "Distance reflects similarity of use, not spelling or frequency."
       }
     ],
 
     "m2-transformers": [
       {
-        q: "In “The honu swam toward the ocean”, attention is deciding…",
+        q: "What does the attention step do?",
         options: [
-          "Which words matter most to each other — honu↔swam strongly, the second “the” barely at all",
-          "Which words to delete before answering",
-          "The alphabetical order of the tokens"
+          "For each token, it weighs which other tokens are most relevant to it",
+          "It removes unimportant words before the model answers",
+          "It checks the response against reliable sources"
         ],
         answer: 0,
-        why: "It is weighting relationships, many times in parallel across different attention heads, each catching a different kind of link."
+        why: "Attention is the core of the transformer design. Weighing the surrounding words is how the same word can carry different meanings in different sentences."
       }
     ],
 
@@ -1007,155 +1078,229 @@ window.SITE = {
       {
         q: "At each step, what does the model actually produce?",
         options: [
-          "A ranked list of probabilities — ocean 45%, shore 20%, reef 15%…",
+          "A probability for every possible next token",
           "The single correct next word",
-          "A sentence, which it then checks"
+          "A complete sentence, which it then checks"
         ],
         answer: 0,
-        why: "One ranked list, one pick, then the whole thing runs again with that pick included."
+        why: "The model scores every possible next token, selects one, adds it to the text, and repeats the process."
       },
       {
-        q: "Why does it sound just as confident when it is wrong?",
+        q: "Why does a chatbot sound just as confident when it is wrong?",
         options: [
-          "It is optimizing for a plausible next token, never for a true statement",
-          "It is trained to never admit uncertainty",
-          "It is confident only when it has checked a source"
+          "Its confidence reflects how likely its words are, not whether they are true",
+          "It only answers when it has checked a source",
+          "Its confidence is a reliable sign that it is right"
         ],
         answer: 0,
-        why: "Confidence in the writing and correctness of the content are unrelated here. That gap is where hallucination lives."
+        why: "Nothing in the loop checks facts. A fluent, confident sentence and a true sentence are produced the same way."
       }
     ],
 
     "m2-sampling": [
       {
-        q: "Same question, asked twice, two different answers. What happened?",
+        q: "You ask the same question twice and get two different answers. Why?",
         options: [
-          "It sampled from the ranked list instead of always taking the top pick",
-          "The model was updated between the two questions",
-          "Something is broken and you should report it"
+          "The model is probabilistic: it selects from weighted options rather than always taking the top one",
+          "The model was updated between your two questions",
+          "Something is broken and should be reported"
         ],
         answer: 0,
-        why: "Probabilistic, not deterministic. A word at 15% comes up about one time in seven. Expected behaviour, not a bug."
+        why: "A calculator is deterministic: the same input always gives the same output. A chatbot is probabilistic, so variation is expected behavior."
       },
       {
-        q: "You turn the temperature up. What changes?",
+        q: "What happens when the temperature setting is raised?",
         options: [
-          "The odds flatten, so lower-ranked words land more often",
-          "The model thinks for longer",
-          "The answer gets longer"
+          "The model selects less likely tokens more often, so responses vary more",
+          "The model takes longer to think",
+          "The responses become longer"
         ],
         answer: 0,
-        why: "Temperature reshapes the distribution before the dice roll. Low sharpens it toward the favourite; high gives the long shots a real chance."
+        why: "At a low temperature the model almost always selects the most likely token. At a higher temperature, less likely tokens are chosen more often."
       }
     ],
 
     "m2-context-window": [
       {
-        q: "A long conversation seems to “forget” what you said at the start. Why?",
+        q: "Late in a long conversation, a chatbot seems to have forgotten something you said at the start. What is the most likely reason?",
         options: [
-          "The oldest material fell outside the context window, so the model cannot see it at all",
+          "The earlier messages fell outside its context window, or were summarized or given less weight",
           "The model deliberately discards old topics",
-          "Its memory degrades the longer it runs"
+          "The model's memory wears out the longer it runs"
         ],
         answer: 0,
-        why: "The window covers your prompt, the conversation so far and any documents you shared. Past the limit, it is not faded — it is gone."
+        why: "Your messages, the conversation history and any documents all share the context window. As a conversation grows, earlier material may be dropped, summarized or given less weight."
+      },
+      {
+        q: "Given how context windows work, which habit is most useful?",
+        options: [
+          "Start a new conversation for each new topic, and restate anything essential",
+          "Keep every topic in one long conversation so the model remembers more",
+          "Paste in the longest documents you have"
+        ],
+        answer: 0,
+        why: "A shorter, focused conversation keeps what matters inside the window. Many tools do not tell you when only part of a long document was processed."
       }
     ],
 
+    /* `m3-model-families` plays in Module 2 ("Model families, open weights and
+       agents"), so its questions join Module 2's quiz. The RLHF question covers
+       "How chatbots are built and refined", which has no video of its own. */
+    "m3-model-families": [
+      {
+        q: "What is a “model family”?",
+        options: [
+          "A series of versions of one company's model, released over time",
+          "A group of companies that share their models",
+          "Models trained on the same data"
+        ],
+        answer: 0,
+        why: "ChatGPT is built on OpenAI's GPT family, Claude is made by Anthropic, and Gemini by Google. Each new version builds on the last, much as each generation of a phone does."
+      },
+      {
+        q: "What does “open weights” mean?",
+        options: [
+          "The model's trained parameters have been published, so others can run and adapt it",
+          "The model is free to use in a company's app",
+          "The model's code and all of its training data have been published"
+        ],
+        answer: 0,
+        why: "Publishing the code and training data as well would make a model fully open source. Open weights is a narrower step."
+      },
+      {
+        q: "What is RLHF mainly responsible for?",
+        options: [
+          "Much of a chatbot's careful manner, and some of its values and blind spots",
+          "Teaching the model to predict the next token in the first place",
+          "Connecting the model to search results"
+        ],
+        answer: 0,
+        why: "In reinforcement learning from human feedback, people rate responses and the model is trained to favor the higher-rated kind. What it learns depends on who did the rating and what they were asked to reward."
+      },
+      {
+        q: "Why do the stakes rise when an AI is set up as an agent?",
+        options: [
+          "It takes actions, not just drafts text, while running on the same next-token loop",
+          "Agents use a different technology that makes more mistakes",
+          "Agents learn from every action they take"
+        ],
+        answer: 0,
+        why: "An agent has every limitation of a chatbot, but its output is an action rather than a draft for a person to review."
+      }
+    ],
+
+    /* ===== Module 3 — Using AI well ===== */
     "m3-prompts": [
       {
         q: "Which is the stronger prompt?",
         options: [
-          "“Write a 100-word bio for Keiko, our program director, for a grant funder audience, warm but concise, from the notes below.”",
-          "“Write a bio for Keiko.”",
-          "They produce the same thing; the model knows who Keiko is"
+          "“Write a 100-word bio of me for our neighborhood newsletter. I am a retired nurse who now coaches youth soccer. Keep it warm and informal; my notes are below.”",
+          "“Write a bio for me.”",
+          "They produce the same result, because the model knows who you are"
         ],
         answer: 0,
-        why: "Treat it like a capable new hire: vast general knowledge, zero knowledge of your situation. Audience, length, tone and the source material all have to come from you."
-      }
-    ],
-
-    "m3-hallucinations": [
+        why: "The model has broad general knowledge but no knowledge of your situation. The audience, length, tone and source material all have to come from you."
+      },
       {
-        q: "It gives you an exact page number for a quote. What do you do?",
+        q: "The first response is close, but too long and too formal. What is the best next step?",
         options: [
-          "Check it — specific-sounding citations are a classic invention",
-          "Trust it; that level of detail means it looked it up",
-          "Ask it again, and trust it if the answer matches"
+          "Explain what to change, as you would with a colleague",
+          "Start a new conversation with the same prompt",
+          "Accept it, because the model has done its best"
         ],
         answer: 0,
-        why: "Asking twice does not help much either — it can produce the same plausible fiction twice. Go to the actual source."
+        why: "There is no need to start over. Specific follow-up instructions, such as “shorter and warmer”, are usually the quickest way to the result you want."
       }
     ],
 
     "m3-grounding": [
       {
-        q: "Which parts of an AI draft deserve the closest check?",
-        options: ["Numbers, quotes and names", "Grammar and spelling", "Length and formatting"],
+        q: "What does retrieval-augmented generation (RAG) do?",
+        options: [
+          "It finds relevant passages in trusted sources and gives them to the model before it answers",
+          "It retrains the model on your documents",
+          "It guarantees that the answer is correct"
+        ],
         answer: 0,
-        why: "Those are the high-risk items: specific, confident, and the easiest for the model to fabricate. Grounding means pairing it with real sources you can click through to."
+        why: "Retrieve, augment, generate. Retraining the model would be fine-tuning, and RAG does not eliminate errors, but it does give you sources you can check."
+      },
+      {
+        q: "Which parts of an AI-generated draft deserve the closest checking?",
+        options: ["Names, dates, figures, quotations and citations", "Grammar and spelling", "Length and formatting"],
+        answer: 0,
+        why: "These are the details on which models are most persuasive and most often wrong. Where accuracy matters, use a tool that cites its sources, and read them."
+      }
+    ],
+
+    "m3-hallucinations": [
+      {
+        q: "A chatbot gives you an exact page number for a quotation. What should you do?",
+        options: [
+          "Check it against the source, because specific-sounding citations are often invented",
+          "Trust it, because that level of detail means it looked it up",
+          "Ask again, and trust it if the answer matches"
+        ],
+        answer: 0,
+        why: "Asking twice does not help: the model can produce the same plausible invention twice. Only the actual source can confirm it."
+      },
+      {
+        q: "Why is a hallucination not the same as lying?",
+        options: [
+          "Lying requires knowing the truth, and the model has no such knowledge",
+          "The model is trying to be helpful",
+          "Hallucinations are too rare to count as lies"
+        ],
+        answer: 0,
+        why: "The model reproduces the form of a fact or citation and fills it with the most probable content. It has no way of knowing whether that content is true."
       }
     ],
 
     "m3-bias": [
       {
-        q: "Where does model bias mainly come from?",
+        q: "Where does bias in a chatbot mainly come from?",
         options: [
-          "Training data — whose voices and languages are well represented in it, and whose are not",
-          "The opinions of the engineers who built it",
-          "The way you word the question"
+          "Its training data: whose voices, languages and histories are well represented, and whose are not",
+          "The personal opinions of the engineers who built it",
+          "The way you word your question"
         ],
         answer: 0,
-        why: "This is the Module 2 training-data lesson showing up in practice. A model can reproduce and amplify existing skews rather than flag them."
+        why: "This is the training-data point from Module 2, seen in practice. A model can reproduce existing imbalances and even amplify them."
       },
       {
-        q: "You ask about Hawaiian cultural protocol and get a fluent, confident answer. What is the risk?",
+        q: "You ask about Hawaiian cultural protocol and receive a fluent, confident answer. What is the risk?",
         options: [
-          "It may be an outside guess dressed up as knowledge, where it should have deferred",
-          "There is none — fluency means it found good sources",
-          "It will refuse, so the question is moot"
+          "It may be a generic outside interpretation, where it should have deferred to community and Native sources",
+          "There is none, because fluency means it found good sources",
+          "There is none, because the model will refuse questions it cannot answer"
         ],
         answer: 0,
-        why: "The failure mode is not silence, it is confidence. Community and Native sources hold the authority here, and the model has no way to know it should stand down."
+        why: "The failure is not silence but confidence. Community and Native sources hold the authority here, and the model has no way to know it should defer to them."
       }
     ],
 
     "m3-reasoning": [
       {
-        q: "The model shows its reasoning step by step. Does that mean the answer is right?",
+        q: "A chatbot shows its reasoning step by step. Does that mean the answer is right?",
         options: [
-          "No — the steps are plausible-sounding text too",
-          "Yes, visible steps can be verified by the model",
-          "Yes, reasoning mode turns off hallucination"
+          "No. Each step is generated text too, and no step is checked independently",
+          "Yes, because the model has verified each step",
+          "Yes, because showing reasoning prevents hallucination"
         ],
         answer: 0,
-        why: "A tidy, confident-looking chain of steps can add up to the wrong final answer. Looking rigorous is not the same as being correct."
+        why: "An orderly, confident sequence of steps can still reach a wrong conclusion. Displaying reasoning and verifying it are two different things."
       }
     ],
 
     "m3-oversight": [
       {
-        q: "AI drafts a social post about a cultural practice. What happens next?",
+        q: "AI drafts a social media post about a cultural practice. What should happen next?",
         options: [
-          "Someone who actually knows the topic reads it and fixes what is off, before it posts",
-          "Post it — a second AI pass can check it",
-          "Post it if it reads well and nobody objects"
+          "Someone with knowledge of the subject reviews and corrects it before it is posted",
+          "Post it after a second AI tool has checked it",
+          "Post it if it reads well and no one objects"
         ],
         answer: 0,
-        why: "AI drafts, explores and accelerates. A person stays responsible for what goes out the door. Every time, no exceptions, and doubly so for anything touching culture or community."
-      }
-    ],
-
-    "m3-model-families": [
-      {
-        q: "“Model family” means…",
-        options: [
-          "Versions of the same model line released over time, like GPT-4 then GPT-5",
-          "Models from companies that partner with each other",
-          "Models that share the same training data"
-        ],
-        answer: 0,
-        why: "The way iPhone 15 and iPhone 16 are versions of one line. Different companies build different families, with similar general ideas underneath."
+        why: "AI can draft, but it cannot take responsibility. A person with subject knowledge reviews anything produced with AI before release, especially anything concerning culture or community."
       }
     ]
   },
@@ -1183,63 +1328,63 @@ window.SITE = {
       type: "scenarios",
       title: "Which one is it?",
       tag: "Module 1 · AI, ML, NLP, generative AI, LLMs",
-      blurb: "Five everyday things. For each one, name the narrowest label that actually fits. The point is not the vocabulary — it is noticing that these nest inside each other, so more than one label is often technically true and only one is useful.",
-      note: "Every one of these is machine learning, and everything inside NLP is also machine learning. The question is always which ring you are standing in.",
+      blurb: "Five everyday examples. For each one, choose the most specific label that fits. Because the terms fit inside one another, more than one label is often technically true, but only one is precise.",
+      note: "Every example here is machine learning, and everything inside natural language processing is also machine learning. The question is always which circle is the most specific fit.",
       items: [
         {
-          q: "Your photo app quietly groups every picture of the same person together.",
+          q: "Your photo app automatically groups every picture of the same person.",
           options: [
-            "Machine learning — but nothing to do with language",
-            "NLP",
+            "Machine learning, but not language-related",
+            "Natural language processing",
             "Generative AI, but not a language model",
-            "An LLM"
+            "A large language model"
           ],
           answer: 0,
-          why: "It learned the pattern from data rather than being programmed face by face, so it is machine learning — but it is looking at pixels, not language. NLP is the ring inside machine learning that deals with words."
+          why: "The app learned to recognize faces from examples rather than following hand-written rules, so it is machine learning. It works with images, not language, so it is not natural language processing."
         },
         {
           q: "Live captions appear under a speaker on a video call.",
           options: [
-            "NLP",
-            "Machine learning — but nothing to do with language",
+            "Natural language processing",
+            "Machine learning, but not language-related",
             "Generative AI, but not a language model",
-            "An LLM"
+            "A large language model"
           ],
           answer: 0,
-          why: "Speech turned into text is language work, so it is NLP. Nothing new is being created — it is transcribing what was said. This is the ring most people have been using for years without calling it AI."
+          why: "Turning speech into text is language work, so it is natural language processing. Nothing new is created; the captions transcribe what was said."
         },
         {
-          q: "Your phone fixes \"teh\" to \"the\" before you notice.",
+          q: "Your phone corrects “teh” to “the” as you type.",
           options: [
-            "NLP",
-            "Machine learning — but nothing to do with language",
+            "Natural language processing",
+            "Machine learning, but not language-related",
             "Generative AI, but not a language model",
-            "An LLM"
+            "A large language model"
           ],
           answer: 0,
-          why: "Also NLP, and also nothing to do with LLMs. Autocorrect predates ChatGPT by decades. If you have used spell-check, translation or voice-to-text, you have been using NLP the whole time."
+          why: "Spell-check is natural language processing, and it does not involve a large language model. Tools like this were in use long before AI chatbots."
         },
         {
-          q: "You type a sentence into Canva and it produces an image.",
+          q: "You type a description into a design app and it produces an image.",
           options: [
             "Generative AI, but not a language model",
-            "An LLM",
-            "NLP",
-            "Machine learning — but nothing to do with language"
+            "Machine learning, but not language-related",
+            "Natural language processing",
+            "A large language model"
           ],
           answer: 0,
-          why: "It is creating something new, so it is generative AI — but what comes out is an image, not text. LLMs are the part of generative AI that produces language. This is the pair people merge most often."
+          why: "It creates something new, so it is generative AI. The output is an image rather than text, so it is not a large language model. These two are the pair people most often confuse."
         },
         {
-          q: "Claude drafts your monthly funder update from notes you pasted in.",
+          q: "Claude drafts an email to your landlord from notes you pasted in.",
           options: [
-            "An LLM",
-            "Generative AI, but not a language model",
-            "NLP",
-            "Machine learning — but nothing to do with language"
+            "A large language model",
+            "Machine learning, but not language-related",
+            "Natural language processing",
+            "Generative AI, but not a language model"
           ],
           answer: 0,
-          why: "The innermost ring. It is an LLM, which makes it generative AI, which makes it NLP, which makes it machine learning — all four are true at once. \"LLM\" is just the most specific and therefore the most useful thing to say."
+          why: "This is the innermost circle. It is a large language model, which also makes it generative AI, natural language processing and machine learning. “LLM” is the most specific, and therefore the most useful, label."
         }
       ]
     },
@@ -1251,7 +1396,7 @@ window.SITE = {
       type: "tokens",
       title: "Token chopper",
       tag: "Module 2 · Tokenization",
-      blurb: "Type anything and watch it come apart into the chunks a model actually sees. Type an English sentence, then the same length in ʻōlelo Hawaiʻi, and compare the characters-per-token. The gap is not about word length — it is about what the model read.",
+      blurb: "Type any text to see the tokens a model would divide it into. Try an English sentence, then a sentence of similar length in ʻōlelo Hawaiʻi, and compare the characters per token. The difference reflects what the model read, not the length of the words.",
       sample: "Aloha kākou! The honu swam toward the ocean, indistinguishable from the reef.",
       note: "A tokenizer's vocabulary is built from its training data, so a word that appeared constantly gets one token and a word the data barely contains has no entry and shatters. ʻOkina and kahakō are several bytes each and rare in an English-heavy corpus, so they tend to come apart on their own. That is the same fact the bias lesson rests on, visible here. Approximate: a real vocabulary holds about 100,000 entries, this one holds a few hundred.",
       link: { label: "The real thing: Tiktokenizer", url: "https://tiktokenizer.vercel.app/" }
@@ -1264,8 +1409,8 @@ window.SITE = {
       type: "predict",
       title: "Roll the dice",
       tag: "Module 2 · Prediction & sampling",
-      blurb: "Pick the word you think comes next, then let the model roll. Move the temperature slider and roll again — the odds are the same machinery, reshaped.",
-      note: "The percentages are illustrative, in the spirit of the Module 2 example. A real model ranks every token it knows, not five.",
+      blurb: "Choose the word you think comes next, then let the model sample one. Adjust the temperature and sample again to see how the same probabilities are reshaped.",
+      note: "The percentages are illustrative. A real model assigns a probability to every token in its vocabulary, not just five.",
       rounds: [
         {
           stem: "The honu swam toward the",
@@ -1299,15 +1444,38 @@ window.SITE = {
         }
       ]
     },
+    /* Term match, once per module. Each draws its definitions and its wrong
+       answers only from glossary entries whose `module` is the same track id,
+       so every question covers something that module taught. */
     {
-      id: "match",
-      module: "all",
+      id: "match-1",
+      module: "overview",
       group: "quiz",
       type: "match",
       title: "Term match",
-      tag: "All modules · Glossary",
-      blurb: "Six definitions, no jargon. Name the term each one describes. Drawn at random from the glossary, so it is a different run every time.",
+      tag: "Module 1 · Key terms",
+      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
+      rounds: 4
+    },
+    {
+      id: "match-2",
+      module: "how-it-works",
+      group: "quiz",
+      type: "match",
+      title: "Term match",
+      tag: "Module 2 · Key terms",
+      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
       rounds: 6
+    },
+    {
+      id: "match-3",
+      module: "using-llms",
+      group: "quiz",
+      type: "match",
+      title: "Term match",
+      tag: "Module 3 · Key terms",
+      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
+      rounds: 5
     },
     {
       id: "cite",
@@ -1317,8 +1485,8 @@ window.SITE = {
       type: "cite",
       title: "Spot the real one",
       tag: "Module 3 · Hallucinations",
-      blurb: "Four references, same field, same formatting. One is a real paper — the other three were assembled a moment ago out of plausible parts. Pick the real one before you scroll.",
-      note: "The real papers are the ones cited in the deck, and the reveal links straight to each. The three fakes are stamped once revealed and are generated fresh every round, so the answer is never in the same place. Nothing here was looked up — which is exactly what a model does when it invents a citation.",
+      blurb: "Four references in the same field and the same format. One is a real paper; the other three were assembled a moment ago from plausible parts. Try to identify the real one.",
+      note: "The real papers are among those cited in this course, and the reveal links directly to each. The three fakes are stamped once revealed and are generated fresh every round, so the answer is never in the same place. Nothing here was looked up — which is exactly what a model does when it invents a citation.",
       /* Real papers. Keep these EXACT — they are the control in the experiment,
          and the reveal links to them so anyone can check. */
       real: [
@@ -1390,7 +1558,7 @@ window.SITE = {
       type: "corpus",
       title: "How much did it read?",
       tag: "Module 2 · Training data → Module 3 · Bias",
-      blurb: "Pick a question. The top bar is roughly how much relevant material the model read before it ever met you. The bottom bar is how certain it sounds answering. Work down the list and watch what happens to the gap.",
+      blurb: "Choose a question. The top bar shows roughly how much relevant material the model read during training. The bottom bar shows how confident its answer sounds. Work down the list and notice what happens to the gap between them.",
       note: "The proportions are illustrative rather than measured — nobody publishes an exact breakdown of a frontier model's training data. The direction is not in dispute: ʻōlelo Hawaiʻi and community-held moʻolelo are a vanishingly small share of what these models read, and the certainty in the answer does not drop to match.",
       questions: [
         {
@@ -1437,56 +1605,60 @@ window.SITE = {
       group: "quiz",
       type: "scenarios",
       title: "Would you send it?",
-      tag: "Module 3 · Oversight",
-      blurb: "Six real situations, the kind that come up once you use these tools for real things. There is a defensible answer to each one — and the reasoning matters more than the score.",
+      tag: "Module 3 · Using AI well",
+      blurb: "Six realistic situations of the kind that arise once you use these tools for real work. Each has a defensible answer, and the reasoning matters more than the score.",
       items: [
         {
-          q: "An LLM drafts your monthly funder update. The numbers match the ones you pasted in. What now?",
-          options: ["Read it, fix the tone, send it", "Send it as written — the numbers check out", "Do not use AI for funder communication at all"],
+          q: "A chatbot drafts your monthly update for work. The figures match the ones you pasted in. What should you do?",
+          options: ["Read it, adjust the tone, then send it", "Send it as written, since the figures are correct", "Never use AI for work updates"],
           answer: 0,
-          why: "This is close to the ideal use: you supplied the facts, it did the drafting, a person signs off. Grounded in your own source material, with a human between the draft and the door."
+          why: "This is close to ideal use: you supplied the facts, the model drafted, and a person reviews it before it goes out."
         },
         {
-          q: "You ask for the protocol around a specific Hawaiian cultural practice. The answer is detailed and confident.",
+          q: "You ask about the protocol for a specific Hawaiian cultural practice. The answer is detailed and confident.",
           options: [
-            "Do not use it — take the question to people who hold that ʻike",
-            "Use it as a first draft and lightly fact-check",
-            "Use it; the detail suggests it found real sources"
+            "Do not rely on it; take the question to people who hold that ʻike (knowledge)",
+            "Use it as a first draft and fact-check it lightly",
+            "Use it, since the level of detail suggests it found real sources"
           ],
           answer: 0,
-          why: "Underrepresented in training data and answered with full confidence anyway. Cultural authority sits with community and Native sources, not with a model, and “lightly fact-check” is not a real safeguard here."
+          why: "The subject is underrepresented in training data and was answered with full confidence anyway. Cultural authority rests with community and Native sources, not with a model, and a light fact-check is not an adequate safeguard here."
         },
         {
-          q: "It cites a 2019 study with an author, a journal and a page number to support a grant claim.",
-          options: ["Find the study before the claim goes anywhere", "Cite it — that detail is too specific to be invented", "Drop the claim entirely"],
+          q: "It cites a 2019 study, with an author, a journal and a page number, to support a point you are making.",
+          options: ["Find the study before using the claim", "Cite it, since that detail is too specific to be invented", "Drop the claim entirely"],
           answer: 0,
-          why: "Invented citations look exactly like this: specific, formatted, plausible. It might well be real. You will not know until you look, and a funder proposal is the wrong place to find out."
+          why: "Invented citations look exactly like this: specific, well formatted and plausible. The study may well be real, but you will not know until you check, and anything with your name on it is the wrong place to find out."
         },
         {
-          q: "You paste in meeting notes and ask for action items. Two of them have no owner named anywhere in the notes.",
+          q: "You ask a chatbot to turn meeting notes into action items. Some tasks in the notes have no owner named. What is the best approach?",
           options: [
-            "Good — you told it to write UNASSIGNED rather than guess",
+            "Tell it to mark those items “unassigned” rather than guess a name",
             "Let it assign the most likely person",
-            "Rewrite the notes so every item has an owner"
+            "Accept whatever names it adds, since it read the notes"
           ],
           answer: 0,
-          why: "Left to itself, it will fill the gap with a plausible name, because a name is the plausible next token. Telling it to mark gaps explicitly turns invisible guessing into a visible hole you can go fill."
+          why: "Left to itself, the model may fill the gap with a plausible name, which is a small hallucination. Asking it to mark gaps explicitly turns an invisible guess into a visible question you can resolve."
         },
         {
-          q: "Asked to explain a haumāna's assessment result, it produces a step-by-step chain of reasoning ending in a recommendation.",
+          q: "Asked to explain your child's school test results, it produces a step-by-step chain of reasoning that ends in a recommendation.",
           options: [
             "Treat the steps as a draft argument and check each one yourself",
-            "Follow the recommendation — the reasoning is right there",
+            "Follow the recommendation, since the reasoning is shown",
             "Ask it to check its own reasoning, then follow it"
           ],
           answer: 0,
-          why: "Visible steps are generated text like everything else, and asking it to grade its own work generates more of the same. A tidy chain can land on the wrong answer, and this decision is about a real person."
+          why: "Displayed reasoning is generated text like everything else, and asking the model to review its own work generates more of the same. An orderly chain can still reach the wrong conclusion, and this decision concerns a real person."
         },
         {
-          q: "A partner asks whether you used AI on a document you sent them.",
-          options: ["Tell them what it did and who reviewed it", "Say no — a person edited it, so it counts as yours", "Avoid the question"],
+          q: "You want help writing a message about a friend's medical condition, and you are about to paste in their full name and diagnosis.",
+          options: [
+            "Leave out identifying details, or check the tool's privacy policy and settings first",
+            "Paste it in, since the model does not learn from conversations",
+            "Paste it in, since only the model will see it"
+          ],
           answer: 0,
-          why: "The honest answer is usually the easy one: it drafted, a named person reviewed and is accountable for it. That is the standard we are asking others to hold too."
+          why: "The model does not learn from your conversation, but the company may store it, have staff review it, or use it for future training. Health information about someone else is exactly the kind of detail to leave out when in doubt."
         }
       ]
     }
@@ -1522,93 +1694,110 @@ window.SITE = {
   /* ---------- 9. PROMPT LIBRARY (each gets a copy button) ---------- */
   prompts: [
     {
-      title: "The capable new hire",
-      use: "Your default shape for anything that matters. Audience, format, tone, source material.",
-      text: "You are helping me write for [audience].\n\nTask: [what you want done]\n\nContext they need that they could not guess: [program, people, numbers, history]\n\nFormat: [length, structure, tone]\n\nAvoid: [what would make this useless]\n\n[paste your source material]"
+      title: "The capable new coworker",
+      use: "A general-purpose structure for any task that matters: the audience, the task, the background and the format.",
+      text: "You are helping me write for [audience].\n\nTask: [what you want done]\n\nBackground you could not guess: [who is involved, what happened, numbers, anything specific to me]\n\nFormat: [length, structure, tone]\n\nAvoid: [what would make this useless]\n\n[paste your source material]"
     },
     {
-      title: "Bio for a funder",
-      use: "The Module 3 example, ready to use. Note how much context it carries.",
-      text: "Write a 100-word bio for [name], our [role], for a grant funder audience. Warm but concise. Draw only on the notes below — do not add accomplishments that are not there.\n\n[paste notes]"
+      title: "A short bio",
+      use: "Note how much context it provides, and the instruction that prevents it from inventing details.",
+      text: "Write a 100-word bio of [name] for [where it will appear: a newsletter, a program, a website]. Tone: [warm, formal, playful]. Use only the notes below — do not add accomplishments that are not there.\n\n[paste notes]"
+    },
+    {
+      title: "Explain it simply",
+      use: "For learning about a new subject, with a built-in reminder to verify.",
+      text: "Explain [topic] to me as someone new to it. Use one everyday example and keep it under 200 words.\n\nThen list the specific facts in your answer that I should double-check with a reliable source before I repeat them."
     },
     {
       title: "Source-checked answer",
-      use: "Makes guessing visible instead of invisible. The practical antidote to hallucination.",
+      use: "Makes any guessing visible. A practical safeguard against hallucination.",
       text: "Answer using only the document below. Before each claim, quote the exact sentence it came from.\n\nIf the document does not answer the question, say \"Not in the document\" and stop. Do not fill the gap from general knowledge.\n\n[paste document]"
     },
     {
       title: "Meeting notes to actions",
-      use: "The most reliably useful thing most of us do with an LLM.",
+      use: "One of the most consistently useful tasks for a chatbot.",
       text: "Turn these notes into: (1) decisions made, (2) open questions, (3) action items with an owner and a due date where one was stated.\n\nIf an owner or date was never mentioned, write UNASSIGNED. Do not invent either one.\n\n[paste notes]"
     },
     {
       title: "Honest critique",
-      use: "When you want the problems, not the praise.",
+      use: "For when you need candid criticism rather than praise.",
       text: "Here is my draft. Do not tell me what works.\n\nGive me the three strongest objections a skeptical [audience] would raise, ranked by how much damage each one does. For each, say what would have to be true for the objection to be wrong.\n\n[paste your work]"
     },
     {
       title: "Check me before I present",
-      use: "Before you speak publicly about something you are still learning.",
+      use: "Before presenting on a subject you are still learning.",
       text: "I am going to explain [topic] to [audience]. Here is my explanation in my own words.\n\nTell me: what is wrong, what is oversimplified in a misleading way, and what a knowledgeable person in the room would push back on. Flag anything I should not say with confidence.\n\n[paste your explanation]"
     }
   ],
 
   /* ---------- 10. GLOSSARY ---------- */
+  /* `module` is the track id of the module that teaches the term. Each
+     module's Term match only asks about its own terms (and needs at least
+     four). A term with no `module` appears in the glossary but is never
+     quizzed: use that for terms no module explains. */
   glossary: [
-    { term: "Machine learning (ML)", def: "A way of building AI. Systems learn patterns from data instead of being explicitly programmed rule by rule." },
-    { term: "Natural language processing (NLP)", def: "Machine learning applied specifically to language: getting computers to read, understand and produce human speech and text." },
-    { term: "Generative AI", def: "Machine learning that creates new content — text, images, audio, video — rather than only classifying or predicting." },
-    { term: "Large language model (LLM)", def: "The specific technology behind most generative text AI today. ChatGPT, Claude and Gemini are products built on LLMs." },
-    { term: "Training data", def: "The websites, books, articles and code a model reads during pre-training. The source of both its knowledge and its gaps." },
-    { term: "Parameters", def: "The model's learned settings — internal knobs that determine how it weighs and combines information to produce the next word." },
-    { term: "Pre-training", def: "The first phase, which happens once. The model reads enormous amounts of text and adjusts its parameters to get better at predicting language." },
-    { term: "Inference", def: "Using the model. Happens in real time, every message you send. The model applies what it already learned and is not learning from you." },
-    { term: "Token", def: "A chunk of text, roughly three-quarters of a word. Each one gets a number. Common words are one token; long words get split into several." },
-    { term: "Embedding / vector", def: "A token turned into coordinates in a \"meaning space\". Words used in similar ways end up close together." },
-    { term: "Transformer", def: "The architecture underneath modern LLMs. For every token it decides which other tokens matter most." },
-    { term: "Attention", def: "The weighting of relationships between tokens. Strong links carry meaning; weak links barely register. Runs in parallel across many attention heads." },
-    { term: "Next-token prediction", def: "The core loop: given everything so far, produce a ranked list of probabilities for what comes next, pick one, repeat." },
-    { term: "Probabilistic", def: "Uses statistical likelihood, so the same input can produce different outputs. The opposite of deterministic, like a calculator." },
-    { term: "Greedy decoding", def: "Always picking the highest-probability token. Predictable, and flatter." },
-    { term: "Temperature", def: "A dial on how confident the probability distribution is. Higher temperature makes lower-ranked tokens more likely to get picked." },
-    { term: "Context window", def: "How much text the model can see at once: your prompt, the conversation, and shared documents. Past the limit, the oldest material drops out of view." },
-    { term: "Hallucination", def: "Fluent, confident output that is simply false. A side effect of optimizing for plausible next word rather than true statement." },
-    { term: "Grounding", def: "Pairing the model with real, retrievable sources so answers can be traced and checked instead of taken on trust." },
-    { term: "Model family", def: "Versions of the same model line released over time — GPT-4 and GPT-5, or Claude's successive releases." },
-    // From the white paper's glossary (AI 101 Learning Materials, pp. 18–20).
-    { term: "Artificial intelligence (AI)", def: "The umbrella term for computers doing tasks that seem to need human thinking. It names a family of technologies, not one." },
-    { term: "Tokenization", def: "Splitting text into tokens and giving each one an ID number. The first step of the loop that writes every answer." },
-    { term: "Sampling", def: "Choosing one token from the scored options. A likely token is usually chosen, but not always the top one." },
-    { term: "Deterministic", def: "Gives the same output every time for the same input, like a calculator. An LLM is not; it is probabilistic." },
-    { term: "Prompt", def: "The instructions and material you give a model. It knows nothing about your situation beyond what you put here." },
-    { term: "Base model", def: "A model after pre-training, before it is fine-tuned to follow instructions. Broad knowledge, no particular manners." },
-    { term: "Fine-tuning", def: "Further training a model on a smaller, focused set of examples to teach it a task, style or subject." },
-    { term: "RLHF", def: "Reinforcement learning from human feedback: training a model toward the answers people rated higher. Shapes its manner, and its blind spots." },
-    { term: "Alignment", def: "Efforts to make a model's behavior match human intentions and values. The open question is whose values." },
-    { term: "Retrieval-augmented generation (RAG)", def: "A grounding method: retrieve relevant documents, add them to the prompt, then generate an answer from them." },
-    { term: "Proprietary model", def: "A model only its company can run, used through the company's app or API." },
-    { term: "Open weights", def: "A model whose trained parameters are published, so anyone can run and adapt it. Not the same as fully open source." },
-    { term: "Agent", def: "An LLM set up to take actions, such as searching or running a workflow, not just write text. Same loop, higher stakes." }
+    { module: "overview", term: "Artificial intelligence (AI)", def: "The broad term for computer systems performing tasks that typically require human intelligence. It names a family of technologies, not a single one." },
+    { module: "overview", term: "Machine learning (ML)", def: "A way of building AI in which systems learn patterns from data instead of following rules written out by a person." },
+    { module: "overview", term: "Natural language processing (NLP)", def: "Machine learning applied to language, so that computers can read, interpret and produce human speech and text." },
+    { module: "overview", term: "Generative AI", def: "AI that creates new content, such as text, images, audio or video, rather than only sorting or predicting." },
+    { module: "overview", term: "Large language model (LLM)", def: "The technology behind AI chatbots. ChatGPT, Claude and Gemini are products built on LLMs." },
+
+    { module: "how-it-works", term: "Training data", def: "The websites, books, articles and code a model reads while it learns. The source of both its knowledge and its gaps." },
+    { module: "how-it-works", term: "Parameters", def: "The model's internal settings, adjusted during training, that determine how it weighs and combines information to predict the next word." },
+    { module: "how-it-works", term: "Pre-training", def: "The first stage of training, which happens once for each model version. The model reads enormous amounts of text and adjusts its parameters to predict language better." },
+    { module: "how-it-works", term: "Inference", def: "The phase in which a trained model is used. Each time you send a message, it applies what it already learned; it is not learning from you." },
+    { module: "how-it-works", term: "Token", def: "A small unit of text, often a whole word and sometimes part of one. Each token is assigned an ID number." },
+    { module: "how-it-works", term: "Tokenization", def: "Dividing text into tokens and assigning each one an ID number. The first step of the loop that produces every response." },
+    { module: "how-it-works", term: "Embedding", def: "A token converted into a list of numbers that places it in a “meaning space”, where words used in similar contexts sit close together." },
+    { module: "how-it-works", term: "Transformer", def: "The design behind today's AI chatbots. For every token, it determines which other tokens are most relevant." },
+    { module: "how-it-works", term: "Attention", def: "How a model weighs which words in a passage matter most to one another. It allows the same word to carry different meanings in different sentences." },
+    { module: "how-it-works", term: "Next-token prediction", def: "The core of the loop: given everything so far, assign a probability to every possible next token, select one, and repeat." },
+    { module: "how-it-works", term: "Sampling", def: "Selecting one token from the scored options. A likely token is usually chosen, but not necessarily the most likely one." },
+    { module: "how-it-works", term: "Probabilistic", def: "Selecting from weighted options, so the same input can produce different outputs. An LLM is probabilistic." },
+    { module: "how-it-works", term: "Deterministic", def: "Producing the same output every time for the same input, as a calculator does." },
+    { module: "how-it-works", term: "Temperature", def: "A setting that controls how much variation a model's responses have. At a higher temperature, less likely words are selected more often." },
+    { module: "how-it-works", term: "Context window", def: "How much text a model can take into account at once, including your prompt, the conversation history and any documents you provide." },
+    { module: "how-it-works", term: "Base model", def: "A model after pre-training and before fine-tuning. It has broad knowledge but little ability to follow instructions." },
+    { module: "how-it-works", term: "Fine-tuning", def: "Additional training on a smaller, carefully selected set of examples, to teach a model a specific task, style or subject." },
+    { module: "how-it-works", term: "RLHF", def: "Reinforcement learning from human feedback: training a model to favor the kinds of responses people rated more highly. It shapes the model's manner, and its blind spots." },
+    { module: "how-it-works", term: "Alignment", def: "The broader effort to make a model's behavior match human intentions and values. An open question is whose values." },
+    { module: "how-it-works", term: "Model family", def: "A series of versions of one company's model, released over time, such as OpenAI's GPT models or Anthropic's Claude models." },
+    { module: "how-it-works", term: "Open weights", def: "A model whose trained parameters have been published, so others can run and adapt it. Not the same as fully open source." },
+    { module: "how-it-works", term: "Agent", def: "An AI system set up to take actions, such as searching the web or operating other software, rather than only producing text." },
+
+    { module: "using-llms", term: "Prompt", def: "The instructions and material you give a model. It knows nothing about your situation beyond what you provide." },
+    { module: "using-llms", term: "Grounding", def: "Connecting a model to real, retrievable sources, so that its responses can be traced and checked rather than taken on trust." },
+    { module: "using-llms", term: "Retrieval-augmented generation (RAG)", def: "A grounding method: retrieve relevant passages from trusted sources, add them to the context window, then generate a response from them." },
+    { module: "using-llms", term: "Hallucination", def: "Output that appears factual but is false, such as an invented quotation or citation. It occurs because the model predicts likely words, not true ones." },
+    { module: "using-llms", term: "Bias", def: "A systematic skew in a model's output that comes from imbalances in its training data, such as which voices, languages and histories are well represented." },
+    { module: "using-llms", term: "Data retention", def: "A company keeping what you enter into its AI tool. Depending on its policy and your settings, it may store, review or train on your conversations." },
+    { module: "using-llms", term: "Human oversight", def: "Review of AI-generated work by a person with knowledge of the subject, who checks and corrects it before it is released." },
+
+    // Kept for reference; no module explains these, so Term match skips them.
+    { term: "Greedy decoding", def: "Always selecting the single most likely next token. Predictable, but repetitive." },
+    { term: "Proprietary model", def: "A model only its company can run. You use it through the company's own app or services." }
   ],
 
   /* ---------- 11. FAQ ---------- */
   faq: [
     { q: "Who is this for?",
-      a: "Anyone who wants an accurate baseline on AI, at a 101 level. It started as Purple Maiʻa’s shared baseline for staff and is open to everyone, with no login. There is no account to make and nothing on this page is gated. The only time it asks who you are is if you want a certificate at the end, and that is entirely optional." },
+      a: "Anyone curious about AI who wants a clear, accurate place to start: what it is, how chatbots work, and how to use them well. There is no login, no account, and nothing on this page is locked. Purple Maiʻa first made it for its own staff, and it is open to everyone." },
     { q: "Do I need any technical background?",
-      a: "None. There is no math anywhere in these three modules, and nothing assumes you have used a particular tool." },
+      a: "None. There is no math in any of the three modules, and nothing assumes you have used a particular tool." },
     { q: "Is the model learning from what I type?",
-      a: "Not in real time. Pre-training happened once, before you ever opened the app, and inference is the model applying what it already learned. Some products are separately built to remember things about you — that is a product feature, not the model retraining itself." },
+      a: "Not as you chat. A chatbot does its learning before it is released, and when you talk to it, it uses what it already learned. That is why correcting it will not fix the mistake for next time. Separately, some products save your conversations or remember things about you, and some companies use conversations to train future models. That is a privacy question, and Module 3 covers it." },
     { q: "Why do I get a different answer when I ask the same question twice?",
-      a: "Because an LLM is probabilistic rather than deterministic. It samples from a ranked list of likely next tokens instead of always taking the top one. That variation is expected behaviour, not a bug." },
-    { q: "Why is it weak on ʻōlelo Hawaiʻi and Hawaiian cultural context?",
-      a: "Training data. If something is underrepresented in what the model read, the model is weaker on it — and it will still answer confidently rather than tell you it is out of its depth. This is covered in Module 2 and returns in Module 3 under bias." },
-    { q: "It showed its reasoning step by step. Doesn't that mean it is right?",
-      a: "No. Visible reasoning is still plausible-sounding text generated one step at a time. A tidy chain of steps can lead to a wrong answer, and looking rigorous is not the same as being correct." },
-    { q: "Can I use this to draft something public-facing?",
-      a: "Yes, as a draft. A person who actually knows the subject reads it and fixes what is off before it goes out — every time, especially for anything touching culture or community." },
-    { q: "How deep does it go on fine-tuning, RLHF, agents and open weights?",
-      a: "Fine-tuning, RLHF, open weights and agents get a short introduction at the end of Module 2. The deeper material — governance, data provenance and consent, Indigenous data sovereignty, cultural authority — belongs with the Sovereign Stack work and a 200-level follow-up. This is the 101 baseline." },
+      a: "Because a chatbot is probabilistic, not deterministic like a calculator. At each step it picks from a list of likely next words instead of always taking the top one. That variation is expected, not a bug." },
+    { q: "Why is it weaker on some languages and cultures, like ʻōlelo Hawaiʻi?",
+      a: "Because of what it learned from. If a language or subject barely appears in its training data, the model is weaker on it, and it will still answer confidently rather than tell you it is out of its depth. Module 2 explains why, and Module 3 comes back to it under bias." },
+    { q: "If a chatbot shows its reasoning step by step, does that mean it is right?",
+      a: "No. Displayed reasoning is still text generated one step at a time, and no step is checked independently. An orderly chain of steps can reach a wrong answer, and appearing rigorous is not the same as being correct." },
+    { q: "Can I use AI to draft something other people will read?",
+      a: "Yes, as a draft. Before it is released, a person with knowledge of the subject should review it, check the facts and correct any errors. This applies every time, and especially to anything concerning culture or community." },
+    { q: "Which AI chatbot should I use?",
+      a: "This course does not recommend one. ChatGPT, Claude, Gemini and the others work the same basic way, so everything here applies to all of them. A practical approach is to try more than one on a task you know well, see which suits you, and review the privacy settings of the one you choose." },
+    { q: "How deep does it go?",
+      a: "This is an introductory course: enough to understand how these tools work and to use them sensibly. Fine-tuning, RLHF, open weights and agents get a short introduction at the end of Module 2. Broader questions, such as who governs AI, where training data comes from and whether people agreed to it, and Indigenous data sovereignty, need more room than a 101 can give them." },
     { q: "Are the quizzes graded, and does anyone see my score?",
       a: "No and no. The practice at the end of each module is for you. Like your reading progress, answers are kept in your own browser and nothing is uploaded anywhere. Two things on this page can send anything, and both wait for you to press a button: the feedback form, which sends only what you type into it, and the certificate, which only appears once you have finished every module and only if you want one." },
     { q: "What does the feedback button send?",
@@ -1618,60 +1807,60 @@ window.SITE = {
     { q: "Where are the Purple Maiʻa videos?",
       a: "Seventeen of the 19 videos in the modules are Purple Maiʻa's own, and more are being animated. The other two are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
     { q: "Will these materials stay up?",
-      a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
+      a: "Yes. The page is free and public. Teachers and groups are welcome to use it in their own sessions, and the source is on GitHub if you want to make your own copy." }
   ],
 
   /* ---------- 12. RESOURCES ---------- */
   resources: [
     {
-      group: "Video sequence (~35 min)",
+      group: "Outside videos worth watching (~35 min)",
       items: [
-        { label: "Natural Language Processing: Crash Course AI #7", url: "https://www.youtube.com/watch?v=oi0JXuL19TA", desc: "13:29 · embedded in Module 1, “AI, ML, NLP, generative AI, LLMs”." },
-        { label: "How LLMs Actually Generate Text — LearnThatStack", url: "https://www.youtube.com/watch?v=NKnZYvZA7w4", desc: "9:24 · embedded in Module 2, “The loop, end to end”. The source for most of that module." },
-        { label: "Large Language Models explained briefly — 3Blue1Brown", url: "https://www.youtube.com/watch?v=LPZh9BOjkQs", desc: "7:58 · embedded in Module 2, “Parameters”." },
-        { label: "ChatGPT, AI and Māori data sovereignty", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty", desc: "3:47 · linked from Module 3, “Bias”. Hosted by Science Learning Hub, with a full transcript." }
+        { label: "Natural Language Processing: Crash Course AI #7", url: "https://www.youtube.com/watch?v=oi0JXuL19TA", desc: "13:29 · A friendly introduction to how computers work with language, the NLP circle from Module 1." },
+        { label: "How LLMs Actually Generate Text — LearnThatStack", url: "https://www.youtube.com/watch?v=NKnZYvZA7w4", desc: "9:24 · How a model writes text one token at a time. One of the sources for Module 2." },
+        { label: "Large Language Models explained briefly — 3Blue1Brown", url: "https://www.youtube.com/watch?v=LPZh9BOjkQs", desc: "7:58 · A short, visual explainer. Plays in Module 2, under “Parameters”." },
+        { label: "ChatGPT, AI and Māori data sovereignty", url: "https://www.sciencelearn.org.nz/videos/2194-chatgpt-ai-and-maori-data-sovereignty", desc: "3:47 · Māori perspectives on AI and who controls data. Hosted by Science Learning Hub, with a full transcript." }
       ]
     },
     {
       group: "Demos worth playing with",
       items: [
-        { label: "LLM visualizer", url: "https://bbycroft.net/llm", desc: "Walk through a working model layer by layer. The best companion to Module 2." },
-        { label: "Embedding projector", url: "https://projector.tensorflow.org/", desc: "Meaning space you can rotate and search. Makes embeddings click." },
-        { label: "TensorFlow Playground", url: "https://playground.tensorflow.org/", desc: "Train a tiny neural net in the browser and watch it learn." },
-        { label: "Survival of the Best Fit", url: "https://www.survivalofthebestfit.com/resources", desc: "Hiring-algorithm game about how bias gets baked in. Good before Module 3." },
+        { label: "LLM visualizer", url: "https://bbycroft.net/llm", desc: "Step through a working model layer by layer. A strong companion to Module 2." },
+        { label: "Embedding projector", url: "https://projector.tensorflow.org/", desc: "A meaning space you can rotate and search. A clear illustration of embeddings." },
+        { label: "TensorFlow Playground", url: "https://playground.tensorflow.org/", desc: "Train a small neural network in your browser and watch its settings adjust as it learns." },
+        { label: "Survival of the Best Fit", url: "https://www.survivalofthebestfit.com/resources", desc: "A game about a hiring algorithm that shows how bias enters a system. Useful alongside Module 3." },
         { label: "Google PAIR Explorables", url: "https://pair.withgoogle.com/explorables/", desc: "Interactive essays on bias, privacy and model behaviour." },
-        { label: "Quick, Draw!", url: "https://quickdraw.withgoogle.com/?locale=en_US", desc: "Thirty seconds, and everyone understands training data." },
-        { label: "AI4Hawaiʻi", url: "https://www.ai4hawaii.org/", desc: "Local context for the conversation." }
+        { label: "Quick, Draw!", url: "https://quickdraw.withgoogle.com/?locale=en_US", desc: "A thirty-second drawing game that demonstrates how training data works." },
+        { label: "AI4Hawaiʻi", url: "https://www.ai4hawaii.org/", desc: "Local perspectives on AI in Hawaiʻi." }
       ]
     },
     {
-      group: "Sources cited in the deck",
+      group: "Research behind the course",
       items: [
-        { label: "On the Dangers of Stochastic Parrots — Bender et al., FAccT 2021", url: "https://dl.acm.org/doi/10.1145/3442188.3445922", desc: "The bias slide." },
-        { label: "Retrieval-Augmented Generation — Lewis et al., NeurIPS 2020", url: "https://arxiv.org/abs/2005.11401", desc: "The grounding slide." },
-        { label: "Chain-of-Thought Prompting — Wei et al., 2022", url: "https://arxiv.org/abs/2201.11903", desc: "The reasoning slide." },
-        { label: "Survey of Hallucination in NLG — Ji et al., 2023", url: "https://arxiv.org/abs/2202.03629", desc: "The hallucination slide." },
-        { label: "NIST AI Risk Management Framework 1.0", url: "https://www.nist.gov/itl/ai-risk-management-framework", desc: "The human oversight slide." }
+        { label: "On the Dangers of Stochastic Parrots — Bender et al., FAccT 2021", url: "https://dl.acm.org/doi/10.1145/3442188.3445922", desc: "Behind “Bias and missing cultural context” in Module 3." },
+        { label: "Retrieval-Augmented Generation — Lewis et al., NeurIPS 2020", url: "https://arxiv.org/abs/2005.11401", desc: "Behind “Grounding” in Module 3." },
+        { label: "Chain-of-Thought Prompting — Wei et al., 2022", url: "https://arxiv.org/abs/2201.11903", desc: "Behind “Reasoning, and what it is not” in Module 3." },
+        { label: "Survey of Hallucination in NLG — Ji et al., 2023", url: "https://arxiv.org/abs/2202.03629", desc: "Behind “Hallucinations” in Module 3." },
+        { label: "NIST AI Risk Management Framework 1.0", url: "https://www.nist.gov/itl/ai-risk-management-framework", desc: "Behind “Privacy and data retention” and “Human judgment and oversight” in Module 3." }
       ]
     },
     {
       /* Purple Maiʻa's own short-form animations. As each one lands, drop the
-         file in assets/ and set the matching lesson's
-         video: "file:assets/<name>.mp4" — the placeholder disappears on its own. */
+         file in assets/video/ and set the matching lesson's
+         video: "file:assets/video/<name>.mp4" — the stand-in label disappears
+         on its own. Keep the count below in step with the FAQ. */
       group: "Purple Maiʻa originals",
       items: [
-        { label: "Short-form animations — in production", url: "#/", desc: "Animated from this course’s scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
-        { label: "Scripts these are built from", url: "#/", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
+        { label: "Our own short videos", url: "#/", desc: "17 of the 19 videos in the modules were made by Purple Maiʻa for this course. The other two are outside explainers, labelled under the player until ours are ready." }
       ]
     },
     {
-      group: "For facilitators",
+      group: "For teachers and facilitators",
       items: [
-        { label: "Fork this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page/fork", desc: "Run the same session for your own group." },
+        { label: "Fork this page", url: "https://github.com/KenethM/PurpleMaia---AI-Page/fork", desc: "Make your own copy of this site to use with your own group." },
         /* A PDF in the repo rather than a hosted deck link on purpose: no sign-in
            wall for people outside the org, and it survives being forked. */
         { label: "Slide deck (PDF)", url: "assets/llm-nlp-101.pdf", desc: "All 35 slides, as presented. 15 MB." },
-        { label: "Prompt library", url: "#prompts", desc: "The prompts above, ready to copy." },
+        { label: "Prompt library", url: "#prompts", desc: "The prompts on this page, ready to copy." },
         /* Regenerate with tools/make-qr.js if the canonical URL ever moves. A QR
            is the one asset that cannot be redirected once it is on a printed slide. */
         { label: "QR code for this page", url: "assets/qr-slide.png", desc: "A slide to project — people scan it and open this page on their own phone." }

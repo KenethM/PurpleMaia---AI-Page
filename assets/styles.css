@@ -686,6 +686,14 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 /* One component, three homes: the lesson dialog, Term match and Would you send it? */
 .quiz { display: flex; flex-direction: column; gap: 14px; }
 .quiz-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.quiz-meta { flex-shrink: 0; display: inline-flex; align-items: baseline; gap: 10px; }
+.quiz-streak {
+  white-space: nowrap; font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 9px;
+}
+.quiz-streak[hidden] { display: none; }
+.quiz-streak.bump { animation: streak-bump .5s cubic-bezier(.16,1,.3,1); }
+@keyframes streak-bump { 0% { transform: scale(.6); opacity: 0; } 55% { transform: scale(1.12); opacity: 1; } }
 .quiz-step { flex-shrink: 0; white-space: nowrap; font-size: .76rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .quiz-q { font-weight: 600; font-size: 1rem; margin: 0; line-height: 1.45; }
 .quiz-options { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -706,9 +714,130 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .quiz-option.is-correct .mark { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .quiz-option.is-wrong { border-color: var(--coral); background: var(--coral-soft); color: var(--text); }
 .quiz-option.is-wrong .mark { background: var(--coral); border-color: var(--coral); color: #fff; }
+.quiz-option .mark svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The stamp. A right pick presses down like the ʻohe kāpala hitting paper:
+   the row dips, the mark lands from a slight lift, violet floods out from it
+   across the row, the tick inks in and a few flecks spatter off the mark.
+   Every resting style is the finished state, so reduced motion (which
+   collapses durations) simply shows the answer stamped. */
+.quiz-option.just-stamped {
+  position: relative; isolation: isolate;
+  background: var(--surface);
+  animation: stamp-press .38s cubic-bezier(.3,0,.2,1);
+}
+.quiz-option.just-stamped::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; background: var(--accent-soft);
+  animation: stamp-flood .7s cubic-bezier(.16,1,.3,1) .08s backwards;
+}
+.quiz-option.just-stamped .mark { position: relative; animation: stamp-land .38s cubic-bezier(.3,0,.2,1); }
+.quiz-option.just-stamped .mark svg path { stroke-dasharray: 24; animation: stamp-ink .32s cubic-bezier(.16,1,.3,1) .16s backwards; }
+.quiz-option .ink, .seal .ink {
+  position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  border-radius: 50%; pointer-events: none; opacity: 0; color: var(--accent);
+  box-shadow:
+    0 -17px 0 0, 13px -11px 0 -.5px, 17px 2px 0 .5px, 10px 14px 0 -.5px,
+    -4px 17px 0 0, -15px 8px 0 -.5px, -16px -6px 0 .5px, -7px -16px 0 -1px;
+  animation: stamp-fleck .6s cubic-bezier(.16,1,.3,1) .1s backwards;
+}
+@keyframes stamp-press {
+  0% { transform: scale(1); }
+  40% { transform: scale(.975); }
+  100% { transform: scale(1); }
+}
+@keyframes stamp-land {
+  0% { transform: translateY(-3px) scale(1.35) rotate(-10deg); }
+  45% { transform: scale(.88) rotate(0); }
+  100% { transform: none; }
+}
+@keyframes stamp-flood { from { clip-path: circle(0 at 24px 50%); } to { clip-path: circle(140% at 24px 50%); } }
+@keyframes stamp-ink { from { stroke-dashoffset: 24; } }
+@keyframes stamp-fleck {
+  from { opacity: 1; transform: scale(.35); }
+  60% { opacity: .9; }
+  to { opacity: 0; transform: scale(1.15); }
+}
+
+/* Sealed result (80% or better). The tally fills pip by pip, then the seal
+   stamps down at --land and Violet Wash floods out from it, the same motion
+   as a right answer, one size up. */
+.quiz-sealed {
+  position: relative; isolation: isolate;
+  display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start;
+  padding: 22px 24px; border-radius: var(--radius-md);
+}
+.quiz-sealed::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: var(--accent-soft);
+  animation: seal-flood .9s cubic-bezier(.16,1,.3,1) calc(var(--land) + 60ms) backwards;
+}
+.seal {
+  position: relative; width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: 0 2px 4px rgba(26,0,45,.08), 0 8px 18px rgba(26,0,45,.14);
+  animation: seal-land .5s cubic-bezier(.3,0,.2,1) var(--land) backwards;
+}
+.seal::before {                       /* the stamp's pressed rim */
+  content: ''; position: absolute; inset: 5px; border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--accent-ink) 55%, transparent);
+}
+.seal svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.seal svg path { stroke-dasharray: 24; animation: stamp-ink .4s cubic-bezier(.16,1,.3,1) calc(var(--land) + 180ms) backwards; }
+.seal .ink { width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; animation:seal-fleck .75s cubic-bezier(.16,1,.3,1) calc(var(--land) + 120ms) backwards; }
+.sealed-body { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.sealed-score {
+  margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+  font: 700 1.6rem/1.15 var(--font-display); letter-spacing: -.022em; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.sealed-score:focus { outline: none; }   /* focused only so screen readers start here; not a control */
+.quiz-sealed.is-perfect .sealed-score b { color: var(--accent); }
+.sealed-score b { font-weight: inherit; }
+.sealed-pct { font: 600 .95rem var(--font-body); letter-spacing: 0; color: var(--text-2); }
+.sealed-best {
+  align-self: center; font: 700 .72rem var(--font-body); letter-spacing: 0;
+  color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 3px 10px;
+  animation: streak-bump .5s cubic-bezier(.16,1,.3,1) calc(var(--land) + 200ms) backwards;
+}
+.sealed-note { margin: 0; color: var(--text-2); font-size: .93rem; line-height: 1.55; }
+.tally { list-style: none; margin: 2px 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tally li {
+  width: 10px; height: 10px; border-radius: 50%;
+  animation: pip-in .4s cubic-bezier(.16,1,.3,1) var(--d) backwards;
+}
+.tally .is-right { background: var(--accent); }
+.tally .is-miss { border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+@keyframes pip-in { from { opacity: 0; transform: scale(0); } 60% { transform: scale(1.3); } }
+@keyframes seal-land {
+  0% { opacity: 0; transform: translateY(-12px) scale(1.5) rotate(-14deg); }
+  40% { opacity: 1; transform: scale(.9) rotate(0); }
+  100% { transform: none; }
+}
+@keyframes seal-flood { from { clip-path: circle(0 at 56px 54px); } to { clip-path: circle(150% at 56px 54px); } }
+@keyframes seal-fleck {
+  from { opacity: 1; transform: scale(.9); }
+  60% { opacity: .9; }
+  to { opacity: 0; transform: scale(2.4); }
+}
+@media (max-width: 420px) {
+  .quiz-sealed { gap: 14px; padding: 18px 16px; }
+  .seal { width: 52px; height: 52px; }
+  .seal svg { width: 24px; height: 24px; }
+  .sealed-score { font-size: 1.35rem; }
+  @keyframes seal-flood { from { clip-path: circle(0 at 42px 44px); } to { clip-path: circle(150% at 42px 44px); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* the global rule shortens durations but not delays; drop the stamp outright */
+  .quiz-option.just-stamped, .quiz-option.just-stamped::before, .quiz-option.just-stamped .mark,
+  .quiz-option.just-stamped .mark svg path, .quiz-option .ink, .quiz-streak.bump,
+  .quiz-sealed::before, .seal, .seal svg path, .seal .ink, .sealed-best, .tally li { animation: none; }
+}
 .quiz-why {
   margin: 0; padding: 13px 15px; border-radius: var(--radius-sm);
-  background: var(--surface-2); border-left: 3px solid var(--accent);
+  background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text-2); font-size: .91rem; line-height: 1.55;
 }
 .quiz-why strong { color: var(--text); }
@@ -1202,6 +1331,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-practice-sub { margin-bottom: 8px; }
 .art-practice h3 { margin-top: 26px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .art-practice h3 .quiz-step { font-family: var(--font-body); font-weight: 500; }
+.art-practice h2 .quiz-step { margin-left: 6px; font-family: var(--font-body); font-weight: 500; letter-spacing: 0; vertical-align: middle; }
 /* A hands-on demo inside the section it illustrates. */
 .art-demo { margin: 24px 0 28px; }
 .art-demo .practice-card { box-shadow: none; }
@@ -1257,7 +1387,9 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   .art-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
   /* On a narrow screen the contents list comes first, as a plain list. */
   .art-body, .art-toc { grid-column: 1; grid-row: auto; }
-  .art-toc { position: relative; margin-bottom: 40px; }
+  /* `top: auto` matters: the sticky offset above would otherwise shift a
+     relative box 92px down, onto the first heading. */
+  .art-toc { position: relative; top: auto; margin-bottom: 40px; }
 }
 @media (max-width: 760px) {
   .art-head { grid-template-columns: 1fr; gap: 6px; padding: 34px 0 30px; margin-bottom: 30px; }
