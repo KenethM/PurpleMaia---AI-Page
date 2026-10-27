@@ -16,6 +16,125 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-26 (latest) — Nineteen of nineteen, and Sam's four merged in
+
+**Who:** Keneth, with Claude
+**Branch:** `main` at `50cf9f0`, then merged down to `community-hub`
+**State:** committed and pushed. **Not deployed.**
+**Files:** `content.js`, `README.md`, `HANDOFF.md`, `assets/video/{where-the-odds-come-from,ask-it-twice}.{mp4,jpg}`, plus Sam's eight via merge
+
+### What changed
+
+**Every lesson now carries Purple Maiʻa's own video.** Sam's 13, 14, 15 and 19
+came in on her `community-hub`; 17 and 18 were cut here. That is the last six
+stand-ins gone, 19 of 19, 32:01 of film.
+
+**Her branch merged clean into `main`.** Despite its name, `sam/community-hub`
+carries *main's* `index.html`, not the community one — checked before merging,
+because merging the community `index.html` onto `main` is exactly the trap from
+23 October. Her four lesson edits and our two touch different hunks, so there
+were no conflicts.
+
+**Videos 17 and 18 are 9:16.** Same as 1 and 16: shot for social, exported onto
+a 1920×1080 canvas, so both carry `videoAspect: "9/16"` and the page crops the
+pillarbox off at display time. `cropdetect` gives `608:1080:656:0` on both —
+centred on 959.5, and 9/16 of 1080 is 607.5 — so the crop is symmetric and
+exact and **nothing is re-encoded**. All four of Sam's are true landscape and
+need no such line.
+
+**Posters are caption-free frames found by looking**, at 1:04 and 1:02. Both
+films carry burned-in captions nearly end to end, so a threshold scan is no use
+here; the two gaps were found by rendering candidates and looking at them.
+
+**The stand-in copy is retired in five places.** The FAQ, the pathways blurb,
+two `content.js` comments and the README all still described a page with
+outside explainers on it. Details in `50cf9f0`. The *machinery* stays — it is
+keyed to the kind of video rather than a flag anyone has to clear, so it costs
+nothing and comes back on its own if a lesson ever goes back to an explainer.
+
+**`duration` turns out to be dead data.** It is not read by `app.js` anywhere;
+the module cards compute minutes from word count. Worth knowing before anyone
+spends time reconciling it — the long-standing "two clocks" note in
+`content.js` is about a number nothing draws.
+
+### Decisions worth knowing
+
+**The 128 wpm planning figure is retired.** All six remaining scripts were
+timed at it, and five of six came in long — scripts 14 and 15 by 52 and 50
+seconds. Measured across all nineteen films, delivery spans **79 to 155 wpm**,
+mean 111, and nothing in a script predicts where it lands: 13 and 15 are within
+twenty words of each other and came in fifty seconds apart. `VIDEO-SCRIPTS.md`
+now says plan at 111 and expect ±40%.
+
+**Two films call back to a film the viewer has not reached yet.** This is a real
+defect and the shoot made it permanent in the film, but it is fixable by
+*lesson order*:
+
+| Film | Sits at | Calls back to | Which sits at |
+|---|---|---|---|
+| 17, as its cold open — *"Remember these?"* | `m2-parameters`, 2nd of 11 | script 2's bars | `m2-next-token`, **8th** |
+| 13, one beat at 0:09 | `m3-grounding`, 2nd of 6 | script 3's closed book | `m3-hallucinations`, **3rd** |
+
+17 is the bad one: it opens by asking for a memory nobody has yet. Moving
+`m2-parameters` after `m2-next-token` and swapping `m3-grounding` with
+`m3-hallucinations` fixes both and touches no film. **Left alone deliberately**
+— it changes the teaching sequence Sam designed, so it is her call, not a repo
+chore.
+
+### Held back deliberately
+
+**Script 19's cultural read is not recorded anywhere.** The script says it
+should get one before shooting, the same as script 1 did, because it is the
+second film that speaks about Hawaiian knowledge. It has now been shot. That
+read may well have happened off the repo — but nothing here says so, and this
+is the one film where it matters most. One question to Sam settles it.
+
+**Script 19 shipped under a different title.** Written as *It sounds just as
+sure*, delivered as `the-uneven-library.mp4`. The site uses the file so nothing
+is broken, but the two names should be reconciled before either is cited.
+
+**Nothing was deployed.** See the trap below.
+
+### How it was tested
+
+The jsdom suite from 23 October, extended: **69 assertions, both editions, all
+passing.** Every one of the 19 `file:` videos and its poster confirmed on disk,
+every lesson reachable from a section, no section pointing at a missing lesson,
+the portrait count in Module 2 now 3 rather than 1, and no dead in-page anchors
+in either edition.
+
+Speaking rate was measured rather than claimed: voiceover word counts parsed out
+of `VIDEO-SCRIPTS.md` against `ffprobe` durations for all nineteen files.
+
+Not tested: anything in a real browser. **The four portrait films have still
+never been looked at on a screen or on a phone.** The crop is arithmetic, and
+that arithmetic is now carrying four films instead of two.
+
+### Open / next
+
+- [ ] **Look at the four portrait videos in a browser.** Oldest open item in
+      this log, and it just doubled in weight: 1, 16, 17, 18.
+- [ ] **Ask Sam about script 19's cultural read**, and about the title.
+- [ ] **Decide the two lesson-order moves above**, or decide to live with them.
+- [ ] **Do not `git push dokku main` without thinking.** It looks like pure
+      upside and is not: the live Dokku build still carries the staff/partners
+      `?for=` switcher, and `main` has had no `audiences` block since Sam's
+      rebuild (`26fbde8`). Deploying `main` as-is **deletes `?for=partners`
+      from the live site.** Restore `audiences` first — it is recoverable from
+      `53abaf9` and every bit of switcher code is still in `app.js` — or accept
+      losing it on purpose. The live site is now a month behind and has none of
+      the 19 videos, so this will keep looking tempting.
+- [ ] Certificate Apps Script still undeployed, `certificate.endpoint` still
+      `""`. **Edit `ALLOWED_ORIGINS` before deploying it.**
+- [ ] The deployed feedback Apps Script still mails a "LLM/NLP 101" subject
+      until `tools/feedback-apps-script.js` is re-pasted into it.
+- [ ] `assets/llm-nlp-101.pdf` and its slides still carry the old course name.
+- [ ] White paper: five old-name mentions, three citation years that disagree
+      with the Sources entries, Wei uncited in the body.
+- [ ] `ai.purplemaia.org` — still needs David.
+
+---
+
 ## 2026-10-26 (later) — Video 19 on bias
 
 **Who:** splimon, with Claude Code
