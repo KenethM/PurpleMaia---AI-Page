@@ -1299,6 +1299,16 @@
       '</div>' +
       '<figcaption><span><strong>Video:</strong> ' + esc(l.title) + '</span>' +
         '<span>' + (p && p.kind === 'file' ? 'Purple Maiʻa' : 'Outside explainer') + '</span></figcaption>' +
+      /* Ours is the lesson. This is the long version for anyone who wants it,
+         so it is a link and not a second embed: a second player would read as
+         "watch both" rather than "there is more if you want it", and it would
+         pull a third-party frame into the page nobody asked for. */
+      (l.deeper
+        ? '<p class="art-deeper">Want it in more depth? ' +
+            '<a href="' + esc(l.deeper.url) + '" target="_blank" rel="noopener"' +
+            ' aria-label="Longer outside explainer on ' + esc(l.title) + ', ' + esc(l.deeper.length) + ', opens on YouTube">' +
+            'Outside explainer, ' + esc(l.deeper.length) + '</a></p>'
+        : '') +
     '</figure>';
   }
 
