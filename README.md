@@ -418,6 +418,10 @@ Each entry also takes `group`, which decides where it appears:
   the module's **Check your understanding**, after the lesson quizzes. `module` is
   a track id (`overview`, `how-it-works`, `using-llms`); `"all"` adds it to the
   last module. Term match draws fresh glossary questions on every "Try again".
+  Each module has its own Term match (`match-1` to `match-3`), and it only uses
+  glossary entries whose `module` is that track id, for both the answers and
+  the wrong options. A glossary term with no `module` is never quizzed, and a
+  module needs at least four tagged terms.
 - `group: "demo"` (the other four): it sits inside the article section named by
   `section`, a section or part id from `modules`. Token chopper is under
   Tokenization, Roll the dice under Sampling, Spot the real one under
@@ -559,9 +563,9 @@ computed from the words, at about 200 a minute, video not included):
 
 | Module | Track id | Sections | Videos | Read |
 |---|---|---|---|---|
-| 1 — What is generative AI? | `overview` | 3 | 2 | ~1 min |
-| 2 — How an LLM works | `how-it-works` | 9 | 11 | ~6 min |
-| 3 — Using LLMs well | `using-llms` | 9 | 6 | ~6 min |
+| 1 — What is AI? | `overview` | 3 | 2 | ~1 min |
+| 2 — How AI chatbots work | `how-it-works` | 9 | 11 | ~6 min |
+| 3 — Using AI well | `using-llms` | 9 | 6 | ~6 min |
 
 "Model families" is a Module 2 section now, following the white paper, though
 its lesson still carries `track: "using-llms"`; the module a lesson appears in is

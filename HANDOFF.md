@@ -16,7 +16,278 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
-## 2026-10-26 (latest) — Nineteen of nineteen, and Sam's four merged in
+## 2026-10-27 — Sam's rewrite merged, and film 17's forward reference cut out
+
+**Who:** Keneth, with Claude
+**Branch:** `main`, then merged down to `community-hub`
+**State:** committed and pushed. **Not deployed.**
+**Files:** `content.js`, `HANDOFF.md`, `assets/video/where-the-odds-come-from.mp4`, plus Sam's six via merge
+
+### What changed
+
+**Sam's general-audience rewrite is in.** 959 lines of `content.js`, plus quiz
+animations in `app.js` and `styles.css`, and plain-language copy through
+`index.html`. Modules are renamed: *What is AI?*, *How AI chatbots work*,
+*Using AI well*.
+
+**One conflict, and her shape won it.** She renamed the originals pathway item
+to *"Our own short videos"* and dropped *"Scripts these are built from"* on
+purpose — both are the point of her commit. Only her count was stale, written
+before 17 and 18 landed. It reads 19 now, with no stand-in claim.
+
+**Nothing of ours broke.** All 19 lesson ids and both module orderings are
+untouched by her rewrite, so the video wiring survived as-is: `m2-parameters`
+and `m2-sampling` still carry the 9:16 films, four portrait videos in total.
+
+**The community overlay still applies.** `gist()` needed no change and nothing
+was left empty. Her prose is tighter, so the same rule now cuts deeper: **2,225
+words down to 831, 63% where it used to be 49%.** Worth a look at some point —
+831 words across three modules is thin even for "a mile wide, an inch deep", and
+nobody has decided that is the right depth.
+
+### The film 17 fix, and why it is not the fix we wanted
+
+Film 17 opened on script 2's probability bars with *"Remember these?"*, but it
+sits 2nd in Module 2 and script 2 sits 8th. It asked for a memory the viewer had
+no way of having.
+
+**The obvious fix — move `m2-parameters` after `m2-next-token` — breaks the
+article.** Module 2 runs *training data → parameters → learning stops*, and that
+is a chain rather than a list. The parameters section is the one that says the
+settings are adjusted during training, and the section after it opens
+**"Because learning happens during training and then stops…"**. Pull the middle
+section out and that conjunction refers to nothing, and the parameters prose
+lands inside the inference walkthrough where it does not belong. Checked by
+reading all three sections, not assumed. The prose order is right. It was the
+film that was wrong for the slot.
+
+**So the film was cut, not re-recorded.** The whole callback lives in the first
+5.6 seconds: "Remember these?" is spoken at 1.81–2.50s, 3.6s of silence follows,
+and the burned-in caption clears between 5.4s and 5.6s. Trimming the head at
+5.6s removes the beat whole. The film now opens on *"Where do those numbers come
+from?"* over bars that are already complete, with the honu sentence above them —
+self-contained, and it reads cold.
+
+**1:37 to 1:31**, re-encoded from the untouched `.mov` master at the same
+settings as the other eighteen. No voiceover was re-recorded, the poster still
+points at a frame that exists, and reverting is a re-encode from the master.
+
+**Film 13's version of this is left open.** Same prose argument applies to
+Module 3, and at one beat and one lesson early, a closed book is a weak enough
+callback that a viewer who has not seen script 3 just reads it as a closed book.
+
+### How it was tested
+
+**69 assertions, both editions, all passing**, against the merged tree. The
+overlay's reduction was measured rather than assumed, and the non-prose blocks
+were counted before and after `gist()` to confirm the two it drops sit past
+position 2, which is the rule working rather than failing.
+
+The trim was verified three ways: a silence map of the new opening (0.53s, then
+the question), frames at 1s intervals confirming no *"Remember these?"* caption
+survives, and the new duration read back off the file.
+
+Not tested: anything in a real browser. **The four portrait films have still
+never been looked at on a screen or a phone**, and film 17 now has a trimmed
+head on top of that.
+
+### Open / next
+
+- [ ] **Look at the four portrait videos in a browser.** Still the oldest open
+      item, and film 17 is now a fresh cut as well.
+- [ ] **Decide whether the community edition is too thin at 831 words.** The
+      overlay rule did not change; her prose got tighter underneath it.
+- [ ] **Ask Sam about script 19's cultural read**, and about its title — written
+      as *It sounds just as sure*, delivered as `the-uneven-library.mp4`.
+- [ ] Film 13's forward reference, if it is worth the same treatment.
+- [ ] **Do not `git push dokku main` without thinking.** Unchanged from
+      yesterday: the live build still has the staff/partners `?for=` switcher
+      and `main` has had no `audiences` block since `26fbde8`, so deploying as-is
+      deletes it. Recoverable from `53abaf9`.
+- [ ] Certificate Apps Script still undeployed. **Edit `ALLOWED_ORIGINS` first.**
+- [ ] Feedback Apps Script still mails a "LLM/NLP 101" subject until
+      `tools/feedback-apps-script.js` is re-pasted into it.
+- [ ] `assets/llm-nlp-101.pdf` and its slides still carry the old course name.
+- [ ] White paper: five old-name mentions, three citation years that disagree
+      with the Sources entries, Wei uncited in the body.
+- [ ] `ai.purplemaia.org` — still needs David.
+
+---
+
+## 2026-10-26 (latest) — Quiz: right answers get stamped, good results get sealed
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`
+**State:** working tree only
+**Files:** `assets/app.js`, `assets/styles.css`, `HANDOFF.md`
+
+### Why
+Getting a quiz question right felt the same as any other click. The ask was to
+make it feel exciting, without turning a learning page into a game show.
+
+### What changed
+- **The stamp (`renderQuiz()`, `.just-stamped`).** A right pick dips like a
+  stamp hitting paper. Its mark lands from a slight lift, Violet Wash floods
+  out across the row from the mark, the tick draws itself in, and a few violet
+  flecks spatter off. About 0.7s, and nothing waits on it. A wrong pick, or the
+  right answer shown after one, gets no ceremony.
+- **Streak pill.** "2 in a row", "3 in a row"… beside the question counter. It
+  pops on each new right answer and quietly disappears on a miss.
+- **Sealed result at 80% or better (`drawSealed()`).** The end card becomes a
+  Violet Wash panel. One dot per question fills in order (hollow for a
+  miss) while the score counts up beside it, then a violet seal stamps down
+  and the wash floods out from it. It shows the percentage, a "New best" pill
+  when the run beats the saved best for that quiz, and, on a module quiz, an
+  "On to Module N" button (or "Back to all modules" after the last). Focus
+  moves to the score. A perfect run turns the number violet. Under 80%, the
+  card is unchanged: the one-line score and Try again.
+- **Icons.** The ✓ / ✕ text glyphs in the answer marks are now drawn SVG
+  strokes, the same tick as the contents rail.
+- **Accessibility.** The explanation line is `role="status"`, so screen
+  readers hear "Yes." / "Not quite." and the reason. Focus moves to "Next
+  question" after answering, because the clicked option becomes disabled.
+  Reduced motion drops every stamp animation and shows the finished state.
+
+Because `renderQuiz()` is shared, Term match and Would you send it? get the
+same treatment.
+
+- **Explanation box.** `.quiz-why` lost its 3px violet left border (a
+  DESIGN.md Don't) for a 1px hairline all round.
+
+### Open / next
+- `.corpus-punch` (the corpus activity's callout) still has a 3px coral left
+  border, which DESIGN.md also rules out. Left for a decision.
+
+---
+
+## 2026-10-26 — Module articles rewritten for a general audience
+
+**Who:** splimon, with Claude Code
+**Branch:** `community-hub`, on top of `a663585`
+**State:** working tree only
+**Files:** `content.js`, `index.html`, `README.md`, `PRODUCT.md`, `HANDOFF.md`
+
+### Why
+The site's purpose is teaching the basics of AI (what it is, how it works, how
+to use it well) to a wide, general audience. The module articles still read
+like the white paper and carried staff framing ("For Purple Maiʻa, this is a
+central concern", "your organization, its records", a grant-funder prompt).
+
+### What changed
+- **Module titles:** "What is AI?", "How AI chatbots work", "Using AI well"
+  (were "What is generative AI?", "How an LLM works", "Using LLMs well"). Also
+  changed in the JSON-LD `hasPart`, the README table and PRODUCT.md.
+- **Every section rewritten in plain words.** Each technical term is bolded and
+  explained the first time it appears, and the reader meets "AI chatbots like
+  ChatGPT, Claude and Gemini" before meeting "LLM". Headings are plainer too
+  ("Two phases: learning, then answering", "When it makes things up",
+  "You're still responsible").
+- **More on using it well:** prompting now has a checklist (what, who, how
+  long, what to work from), an everyday weak/strong example and a line on
+  follow-ups. Privacy names concrete things to keep out. Bias ends with a habit
+  ("ask who would actually know, and go to them"). Oversight ends with a test
+  ("if you wouldn't put your name on it without reading it, don't send it").
+- Module 1 gained a `lede`. Module word counts went from 251 / 1,285 / 1,129 to
+  301 / 1,425 / 1,322, so read times are about 2 / 7 / 7 min.
+- **Staff examples swapped for everyday ones** in the quizzes and scenarios:
+  funder update → work update or landlord email, Keiko's grant bio →
+  neighborhood-newsletter bio, haumāna's assessment → your child's test
+  results, partner → someone. Hero tagline and meta descriptions now say
+  "how to use them well".
+
+### Decisions worth knowing
+- **No ids or structure changed.** Every module, section and part `id`, every
+  `lesson` link and every `sources` list is the same as before (checked in
+  node against HEAD). Deep links and reading progress still work.
+- **No new factual claims.** The rewrite keeps each section's claims and
+  sources. The added material is practical advice, not facts that need a citation.
+- **The Hawaiian examples and research stay**, with glosses (ʻōlelo Hawaiʻi,
+  kumu, Kaiapuni). The Indigenous-alignment line was widened to "any community,
+  and especially Indigenous communities". Someone who runs those rooms should
+  read the bias, training-data and alignment passages before this ships.
+
+### How it was tested
+`node --check` on both JS files, JSON-LD parses, and all three modules render
+in headless Chrome with the new titles and section counts.
+**Not checked:** a real browser or phone.
+
+### Later the same session: Reference page, and the phone contents list
+- **"In this module" on phones** (`assets/styles.css`, the 980px rule). The
+  desktop sticky rule's `top: calc(var(--header-h) + 30px)` was still applied
+  once the list became `position: relative`, which pushed it 92px down. That
+  left a gap above it and made it overlap the first heading. The fix is
+  `top: auto`. Measured over the DevTools protocol with a real mobile viewport:
+  40px clear above the article at 390 and 820 wide, and no horizontal scroll.
+  The right-edge "clipping" seen earlier was an artifact of
+  `--window-size` screenshots, not a bug.
+- **Reference copy written for a general reader:**
+  - Glossary: plainer definitions for LLM, embedding, transformer, attention,
+    greedy decoding, temperature, hallucination, proprietary model and agent.
+  - Prompts: "Bio for a funder" is now a generic "A short bio", and there's a
+    new "Explain it simply" prompt.
+  - FAQ: plainer answers, a new "Which AI chatbot should I use?" (it doesn't
+    name a pick), and the internal "Sovereign Stack / 200-level" mention is gone.
+  - Section blurbs in `index.html` reworded.
+- **Fixed stale Resources entries.** Crash Course and LearnThatStack were
+  described as "embedded" in modules they no longer play in. The Māori data
+  sovereignty video was "linked from" a lesson whose links no longer render.
+  "Purple Maiʻa originals" told readers to "open a lesson". "Sources cited in
+  the deck" is now "Research behind the course", with each entry pointing at
+  its Module 3 section.
+- **Left exactly as written:** the feedback and certificate FAQ answers and
+  the "quizzes graded" answer, because their wording is deliberately precise.
+
+### Later still: a more professional register
+The owner asked for the articles to read slightly more professional while staying
+beginner-friendly. Contractions and chatty asides are gone ("That's a fine
+everyday meaning", "Here's the most important point"). Headings now lead with
+the proper term followed by a plain gloss ("Hallucinations: confident but false",
+"Training and inference: learning, then answering"). Several white-paper headings
+are back, because they suit this register: "Recommended practices", "Human
+judgment and oversight", "Privacy and data retention", "Reasoning, and what it
+is not". The owner's three edits made beforehand (the AI definition, the Module
+2 summary and "hallucinations" in the Module 3 summary) were kept word for word.
+Ids and structure are unchanged, checked against HEAD.
+
+### Later still: quizzes and Reference in the same register
+- **Every quiz question now tests its own module's article.** Questions that
+  relied on details found only in the videos or old lessons were replaced:
+  "attention heads", Python-the-snake, the honu example and "indistinguishable
+  is four tokens". The context-window explanation no longer says old text is
+  "gone" (the article says it may be dropped, summarized or given less weight).
+  The next-token distractor "trained to never admit uncertainty" was removed,
+  because Module 3 says something close to it is true. New questions cover
+  machine learning, the water-channel comparison, open weights, RLHF, agents,
+  follow-up prompts, RAG and why hallucination is not lying. Module 2's article
+  gained one sentence (letter-counting under Tokenization) so its tokenization
+  question is backed by the text.
+- **Term match is per module** (`assets/app.js` `matchItems(n, track)`).
+  Glossary entries carry `module`, and `match-1`/`2`/`3` replace the single
+  `match` with `module: "all"`, which used to put Module 2 terms in Module 3's
+  quiz. Module 3 gained three glossary terms so it has enough to draw from:
+  Bias, Data retention and Human oversight. Greedy decoding and Proprietary
+  model have no `module`, because no article teaches them.
+- **"Would you send it?"**: the meeting-notes question was rewritten so the
+  options make sense as answers. The AI-disclosure scenario (not taught
+  anywhere) became a privacy scenario, which the Privacy section does teach.
+- **Register:** quizzes, demo blurbs, glossary, prompt notes, the FAQ and the
+  Resources descriptions now match the articles. "Questions people actually
+  ask" is now "Frequently asked questions" everywhere. The "Research behind the
+  course" entries quote the current section headings (checked by script).
+- **Tested:** in headless Chrome over the DevTools protocol. Question counts
+  are 14 / 30 / 21. A script clicked through every question in each module and
+  confirmed each Term match used only that module's terms and that the quiz
+  reaches its results screen.
+
+### Open / next
+- [ ] Cultural read of the training-data, alignment and bias passages.
+- [ ] **The certificate is off** (`certificate.endpoint` is `""`), but two
+      FAQ answers still describe asking for one. Either turn it on or trim
+      those answers.
+- [ ] Look at the contents-list fix on a real phone.
+- [ ] Lesson titles (the video captions) still use some jargon: "AI, ML, NLP,
+      generative AI, LLMs", "Probabilistic vs. deterministic".
+## 2026-10-26 (evening) — Nineteen of nineteen, and Sam's four merged in
 
 **Who:** Keneth, with Claude
 **Branch:** `main` at `50cf9f0`, then merged down to `community-hub`
