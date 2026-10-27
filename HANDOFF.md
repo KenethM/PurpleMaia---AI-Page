@@ -21,32 +21,86 @@ who needs context before reading a diff, or you in three months. The git log say
 Not an entry. These stay at the top until they stop being true, because a dated
 entry gets buried by the next one and these are the things that bite.
 
-### ⚠️ Deploying `main` to `ai-page` deletes the staff/partners switcher
+### ✅ RESOLVED 27 Oct — the `?for=partners` deploy trap
 
-**Settle this before anyone runs `git push dokku main`.** Still live as of 27
-Oct: the community edition went to its own app, `ai-community`, precisely so
-nobody had to answer this question yet. `ai-page` was not touched and still
-serves all four audiences. The live Dokku build
-still serves four audiences — `staff`, `partners`, and `workshop` + `kupuna` as
-drafts — so `?for=partners` works on it today. **`main` has carried no
-`audiences` block since `26fbde8`**, the module-article rebuild, which dropped
-it. Deploying `main` as-is therefore stops `?for=` working for everyone.
+**Kept here as history, not as a warning.** `main` carried no `audiences`
+block from `26fbde8` until 27 Oct, while the deployed staff build still had
+one, so any `git push dokku main` would have silently deleted `?for=partners`
+from a live site people hold links to.
 
-It looks like pure upside, which is the trap: the live build is months behind
-and serves none of the 19 videos, so there is always a good reason to push it.
+The block was restored whole from `53abaf9`, verified working on the rebuilt
+page, and `main` was deployed. The live staff site now serves all four
+audiences *and* all 19 videos. **`git push dokku main` is safe again.**
 
-**It is recoverable.** The block is intact in `53abaf9`, and all the machinery
-is still on `main`: `AUDIENCES`, `AUD_FIELDS`, `audienceView()` and
-`paintAudienceBar()` in `assets/app.js`, and `#audienceBar` in `index.html`.
-Nothing reads as broken today only because `AUDIENCES` falls back to
-`(S.audiences || [])`. Restoring the data alone brings the switcher back, with
-no code change.
+If `audiences` ever disappears from `content.js` again, this trap comes back
+with it. That is the thing to watch, not the command.
 
-So choose on purpose: **restore `audiences` to `main` first and deploy**, keeping
-`?for=partners` while gaining the modules and the videos — or **decide the
-switcher is retired**, deploy without it, and tell whoever hands out
-`?for=partners` links that they are about to break. The full version of this,
-with the commands, is in `README.md` beside the deploy steps.
+---
+
+## 2026-10-27 (night) — Our films in front on staff, and the switcher saved
+
+**Who:** Keneth, with Claude
+**State:** **both sites deployed and current.**
+**Files:** `content.js`, `assets/app.js`, `assets/styles.css`, `community.js`, `HANDOFF.md`
+
+### What is live now
+
+| Site | Serving | `?for=` | Videos |
+|---|---|---|---|
+| `ai-page` | `main`, **deployed today** | **works, all 4 audiences** | 19 ours + 19 deeper links |
+| `ai-community` | `community-hub` | off by design | 19 ours, no deeper links |
+
+**The staff site is finally current.** It had been on the 4 Oct build for
+three weeks, serving zero videos and calling itself *LLM/NLP 101*.
+
+### Our films in front, outside explainers behind
+
+Every lesson plays Purple Maiʻa's own film, with the outside explainer it
+used to carry kept underneath as a link — *"Want it in more depth? Outside
+explainer, 7:58"*. Ours run **1:04–2:52**, theirs run **3:23–27:39**, so the
+split falls out naturally: ours is the lesson, theirs is the long version.
+
+**A link, not a second embed.** Two players read as "watch both" rather than
+"there is more if you want it", and a second embed would pull a third-party
+frame into a page that currently loads none until asked.
+
+All 19 ids were taken off the deployed staff build and **re-checked against
+live YouTube via oEmbed**, not recalled — a watch URL returns 200 for a dead
+video, so oEmbed is the only honest check.
+
+**The community edition strips them** (`delete l.deeper`). It is the
+inch-deep one by design, and 3-to-27 minute outside videos are exactly the
+depth it is meant not to have.
+
+### `audiences` restored, which is what made the deploy safe
+
+Lifted whole from `53abaf9`. **Verified on the rebuilt page rather than
+assumed:** the switcher bar renders with both non-draft audiences, and
+`tagline`, `time` and `location` swap per audience. The staff and partner
+views differ (1,259 vs 1,315 characters of hero text), so `?for=partners`
+still means something.
+
+**Two fields no longer land anywhere.** `badge` and `intro` lost their markup
+in the rebuild; `facts`, `pathways` and `agenda` point at retired sections.
+They are left in rather than pruned, because they are the record of what each
+audience is *for* — pruning them would make restoring any of that markup a
+rewrite instead of a re-bind. The switcher works, it just changes less of the
+page than it used to.
+
+`workshop` and `kupuna` stay `draft: true`, so the bar shows two buttons, not
+four. Cultural review before either ships.
+
+### Open / next
+
+- [ ] **The two drafts still need cultural review** before `workshop` or
+      `kupuna` can lose `draft: true`.
+- [ ] Consider whether `badge` and `intro` deserve markup again, or whether
+      the partner view changing only the tagline and session details is
+      enough.
+- [ ] Team review of the community site, then flip `robots` to `index, follow`.
+- [ ] Settle the app name before any link or QR goes out.
+- [ ] `ALLOWED_ORIGINS` needs **both** hosts when the certificate script deploys.
+- [ ] Script 19's cultural read, and its title.
 
 ---
 
