@@ -16,6 +16,104 @@ who needs context before reading a diff, or you in three months. The git log say
 
 ---
 
+## 2026-10-27 — Sam's rewrite merged, and film 17's forward reference cut out
+
+**Who:** Keneth, with Claude
+**Branch:** `main`, then merged down to `community-hub`
+**State:** committed and pushed. **Not deployed.**
+**Files:** `content.js`, `HANDOFF.md`, `assets/video/where-the-odds-come-from.mp4`, plus Sam's six via merge
+
+### What changed
+
+**Sam's general-audience rewrite is in.** 959 lines of `content.js`, plus quiz
+animations in `app.js` and `styles.css`, and plain-language copy through
+`index.html`. Modules are renamed: *What is AI?*, *How AI chatbots work*,
+*Using AI well*.
+
+**One conflict, and her shape won it.** She renamed the originals pathway item
+to *"Our own short videos"* and dropped *"Scripts these are built from"* on
+purpose — both are the point of her commit. Only her count was stale, written
+before 17 and 18 landed. It reads 19 now, with no stand-in claim.
+
+**Nothing of ours broke.** All 19 lesson ids and both module orderings are
+untouched by her rewrite, so the video wiring survived as-is: `m2-parameters`
+and `m2-sampling` still carry the 9:16 films, four portrait videos in total.
+
+**The community overlay still applies.** `gist()` needed no change and nothing
+was left empty. Her prose is tighter, so the same rule now cuts deeper: **2,225
+words down to 831, 63% where it used to be 49%.** Worth a look at some point —
+831 words across three modules is thin even for "a mile wide, an inch deep", and
+nobody has decided that is the right depth.
+
+### The film 17 fix, and why it is not the fix we wanted
+
+Film 17 opened on script 2's probability bars with *"Remember these?"*, but it
+sits 2nd in Module 2 and script 2 sits 8th. It asked for a memory the viewer had
+no way of having.
+
+**The obvious fix — move `m2-parameters` after `m2-next-token` — breaks the
+article.** Module 2 runs *training data → parameters → learning stops*, and that
+is a chain rather than a list. The parameters section is the one that says the
+settings are adjusted during training, and the section after it opens
+**"Because learning happens during training and then stops…"**. Pull the middle
+section out and that conjunction refers to nothing, and the parameters prose
+lands inside the inference walkthrough where it does not belong. Checked by
+reading all three sections, not assumed. The prose order is right. It was the
+film that was wrong for the slot.
+
+**So the film was cut, not re-recorded.** The whole callback lives in the first
+5.6 seconds: "Remember these?" is spoken at 1.81–2.50s, 3.6s of silence follows,
+and the burned-in caption clears between 5.4s and 5.6s. Trimming the head at
+5.6s removes the beat whole. The film now opens on *"Where do those numbers come
+from?"* over bars that are already complete, with the honu sentence above them —
+self-contained, and it reads cold.
+
+**1:37 to 1:31**, re-encoded from the untouched `.mov` master at the same
+settings as the other eighteen. No voiceover was re-recorded, the poster still
+points at a frame that exists, and reverting is a re-encode from the master.
+
+**Film 13's version of this is left open.** Same prose argument applies to
+Module 3, and at one beat and one lesson early, a closed book is a weak enough
+callback that a viewer who has not seen script 3 just reads it as a closed book.
+
+### How it was tested
+
+**69 assertions, both editions, all passing**, against the merged tree. The
+overlay's reduction was measured rather than assumed, and the non-prose blocks
+were counted before and after `gist()` to confirm the two it drops sit past
+position 2, which is the rule working rather than failing.
+
+The trim was verified three ways: a silence map of the new opening (0.53s, then
+the question), frames at 1s intervals confirming no *"Remember these?"* caption
+survives, and the new duration read back off the file.
+
+Not tested: anything in a real browser. **The four portrait films have still
+never been looked at on a screen or a phone**, and film 17 now has a trimmed
+head on top of that.
+
+### Open / next
+
+- [ ] **Look at the four portrait videos in a browser.** Still the oldest open
+      item, and film 17 is now a fresh cut as well.
+- [ ] **Decide whether the community edition is too thin at 831 words.** The
+      overlay rule did not change; her prose got tighter underneath it.
+- [ ] **Ask Sam about script 19's cultural read**, and about its title — written
+      as *It sounds just as sure*, delivered as `the-uneven-library.mp4`.
+- [ ] Film 13's forward reference, if it is worth the same treatment.
+- [ ] **Do not `git push dokku main` without thinking.** Unchanged from
+      yesterday: the live build still has the staff/partners `?for=` switcher
+      and `main` has had no `audiences` block since `26fbde8`, so deploying as-is
+      deletes it. Recoverable from `53abaf9`.
+- [ ] Certificate Apps Script still undeployed. **Edit `ALLOWED_ORIGINS` first.**
+- [ ] Feedback Apps Script still mails a "LLM/NLP 101" subject until
+      `tools/feedback-apps-script.js` is re-pasted into it.
+- [ ] `assets/llm-nlp-101.pdf` and its slides still carry the old course name.
+- [ ] White paper: five old-name mentions, three citation years that disagree
+      with the Sources entries, Wei uncited in the body.
+- [ ] `ai.purplemaia.org` — still needs David.
+
+---
+
 ## 2026-10-26 (latest) — Quiz: right answers get stamped, good results get sealed
 
 **Who:** splimon, with Claude Code

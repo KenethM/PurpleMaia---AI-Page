@@ -582,7 +582,7 @@ window.SITE = {
       duration: "11 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
       video: "file:assets/video/where-the-odds-come-from.mp4",
-      videoLength: "1:37",
+      videoLength: "1:31",
       videoAspect: "9/16",
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
