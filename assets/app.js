@@ -59,7 +59,7 @@
     // a module page: the header, then every block of the article
     '.art-num', '.art-head-copy > *',
     '.art-section:not(.art-practice) > *:not(.art-part)', '.art-part > *',
-    '.art-practice', '.art-next', '.art-sources',
+    '.art-practice', '.art-prev', '.art-next', '.art-sources',
     // Reference
     '.ref-head .crumb', '.ref-head h1', '.ref-jump', '#referenceView .section-head',
     '#referenceView .filter-input', '.term-card'
@@ -1404,6 +1404,7 @@
   function renderModule(m) {
     var n = MODULES.indexOf(m);
     var next = MODULES[n + 1];
+    var before = n > 0 ? MODULES[n - 1] : null;
     var st = moduleStats(m);
     var quiz = quizItemsFor(m);
     var demos = moduleParts(m).reduce(function (all, p) { return all.concat(demosFor(p.id)); }, []);
@@ -1458,13 +1459,25 @@
                 '</section>'
               : '') +
 
-            (next
-              ? '<a class="art-next" href="' + moduleHref(next) + '">' +
-                  '<span><small>Next: Module ' + (n + 2) + ' of ' + MODULES.length + '</small><strong>' + esc(next.title) + '</strong></span>' +
-                  '<span class="art-next-cta">Start Module ' + (n + 2) + '</span></a>'
-              : '<a class="art-next" href="#/">' +
-                  '<span><small>That was the last module</small><strong>Back to all modules</strong></span>' +
-                  '<span class="art-next-cta">All modules</span></a>') +
+            // Back on the left, onward on the right, the way a book or a
+            // docs site pages. Module 1 has nothing before it, so its way back
+            // is the list of all modules.
+            '<nav class="art-pager" aria-label="Other modules">' +
+              (before
+                ? '<a class="art-prev" href="' + moduleHref(before) + '">' +
+                    '<span class="art-pager-arrow" aria-hidden="true">←</span>' +
+                    '<span><small>Previous · Module ' + n + '</small><strong>' + esc(before.title) + '</strong></span></a>'
+                : '<a class="art-prev" href="#/">' +
+                    '<span class="art-pager-arrow" aria-hidden="true">←</span>' +
+                    '<span><small>Back</small><strong>All modules</strong></span></a>') +
+              (next
+                ? '<a class="art-next" href="' + moduleHref(next) + '">' +
+                    '<span><small>Next · Module ' + (n + 2) + ' of ' + MODULES.length + '</small><strong>' + esc(next.title) + '</strong></span>' +
+                    '<span class="art-pager-arrow" aria-hidden="true">→</span></a>'
+                : '<a class="art-next" href="#/">' +
+                    '<span><small>That was the last module</small><strong>All modules</strong></span>' +
+                    '<span class="art-pager-arrow" aria-hidden="true">→</span></a>') +
+            '</nav>' +
 
             (srcs.length
               ? '<section class="art-sources" aria-labelledby="srcHeading"><h2 id="srcHeading">Sources for this module</h2><ol>' +
