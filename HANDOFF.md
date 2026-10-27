@@ -8,11 +8,42 @@ who needs context before reading a diff, or you in three months. The git log say
 
 **How to use it**
 
-- Newest entry at the top, directly under this line.
+- Newest entry at the top, directly under the standing notes below.
 - Copy the template at the bottom of the file to start an entry.
 - Keep **Open / next** honest. It is the only part anyone reads under pressure.
 - Note anything held back on purpose. A missing feature and a deliberately
   withheld one look identical from the outside, and the difference matters.
+
+---
+
+## Standing notes
+
+Not an entry. These stay at the top until they stop being true, because a dated
+entry gets buried by the next one and these are the things that bite.
+
+### ⚠️ Deploying `main` deletes the staff/partners switcher
+
+**Settle this before anyone runs `git push dokku main`.** The live Dokku build
+still serves four audiences — `staff`, `partners`, and `workshop` + `kupuna` as
+drafts — so `?for=partners` works on it today. **`main` has carried no
+`audiences` block since `26fbde8`**, the module-article rebuild, which dropped
+it. Deploying `main` as-is therefore stops `?for=` working for everyone.
+
+It looks like pure upside, which is the trap: the live build is months behind
+and serves none of the 19 videos, so there is always a good reason to push it.
+
+**It is recoverable.** The block is intact in `53abaf9`, and all the machinery
+is still on `main`: `AUDIENCES`, `AUD_FIELDS`, `audienceView()` and
+`paintAudienceBar()` in `assets/app.js`, and `#audienceBar` in `index.html`.
+Nothing reads as broken today only because `AUDIENCES` falls back to
+`(S.audiences || [])`. Restoring the data alone brings the switcher back, with
+no code change.
+
+So choose on purpose: **restore `audiences` to `main` first and deploy**, keeping
+`?for=partners` while gaining the modules and the videos — or **decide the
+switcher is retired**, deploy without it, and tell whoever hands out
+`?for=partners` links that they are about to break. The full version of this,
+with the commands, is in `README.md` beside the deploy steps.
 
 ---
 

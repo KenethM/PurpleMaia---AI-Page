@@ -102,6 +102,37 @@ has one alongside its sandbox vhost. That is the route to something like
 Dokku auto-detects the `Dockerfile` and skips buildpacks. There is no build step —
 nginx just serves the repo, which is what GitHub Pages does too.
 
+> ### ⚠️ Settle this before you `git push dokku main`
+>
+> **Deploying `main` as-is deletes the staff/partners switcher from the live
+> site.** It looks like pure upside — the live build is months behind and has
+> none of the 19 videos — and it is not.
+>
+> The deployed build still serves four audiences (`staff`, `partners`, and
+> `workshop` + `kupuna` as drafts), so `?for=partners` works on it today.
+> **`main` has carried no `audiences` block since `26fbde8`**, the module-article
+> rebuild, which dropped it. Push `main` and `?for=` stops working for everyone.
+>
+> It is recoverable: the block is intact in **`53abaf9`**, and every bit of the
+> switcher machinery is still in `assets/app.js` (`AUDIENCES`, `AUD_FIELDS`,
+> `audienceView()`, `paintAudienceBar()`) with `#audienceBar` still in
+> `index.html`. Nothing reads as broken today only because `AUDIENCES` falls back
+> to `(S.audiences || [])`. **Restoring the data alone brings the switcher back —
+> no code change needed:**
+>
+> ```
+> git show 53abaf9:content.js > old-content.js   # lift the audiences block across
+> ```
+>
+> So pick one, on purpose, before deploying:
+>
+> 1. **Restore `audiences` to `main` first**, then deploy, and the live site keeps
+>    `?for=partners` while gaining the modules and the videos.
+> 2. **Decide the switcher is retired**, deploy without it, and tell whoever sends
+>    out `?for=partners` links that they will stop working.
+>
+> What is not OK is finding out which one happened by deploying.
+
 ```
 H=dokku@dokku-pmf-sandbox.westus2.cloudapp.azure.com
 
