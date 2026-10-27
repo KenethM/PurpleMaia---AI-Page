@@ -264,10 +264,16 @@
   var ev = S.event;
   /* `headline` is the <h1>, `shortName` the word in the header, and `name`
      is what the browser tab ends up saying. All three, or the edition
-     half-renames itself. */
-  ev.name = "Intro to AI";
-  ev.shortName = "Intro to AI";
-  ev.headline = "Intro to AI.";
+     half-renames itself.
+
+     This edition carries the staff course's name on purpose: it is the same
+     course, cut shorter, not a different one. The two sites stay apart by
+     host and by depth rather than by name. No period on the headline — the
+     staff name has none, and the two have to match exactly to read as one
+     course. */
+  ev.name = "Artificial Intelligence 101";
+  ev.shortName = "Artificial Intelligence 101";
+  ev.headline = "Artificial Intelligence 101";
   ev.badge = "";
   ev.tagline = "Every big idea about AI, a minute or two each. Plain words, no math, no login.";
   ev.date = ""; ev.time = ""; ev.location = "";
@@ -278,6 +284,12 @@
      The overlay has to claim this too, or somebody who finishes the
      community edition is handed a certificate for the staff course. */
   if (S.certificate) {
+    /* Deliberately still "Intro to AI" while the rest of the edition reads
+       "Artificial Intelligence 101". Asked for and chosen on 27 Oct, so that
+       certificates issued later stay consistent with any issued earlier.
+       Nothing has been issued yet — `certificate.endpoint` is still "" — so if
+       that reasoning stops applying, this is a one-line change. Until then it
+       prints a course name that appears nowhere else on the page. */
     S.certificate.courseName = "Intro to AI";
     S.certificate.blurb = "You went through all of it. Put your name on it and keep a copy.";
   }
@@ -344,6 +356,6 @@
     }
   ];
 
-  S.footer.note = "Intro to AI, from Purple Maiʻa. Free to share and adapt.";
+  S.footer.note = "Artificial Intelligence 101, from Purple Maiʻa. Free to share and adapt.";
 
 })(window.SITE);
