@@ -47,6 +47,70 @@ with the commands, is in `README.md` beside the deploy steps.
 
 ---
 
+## 2026-10-27 (later) — Team meeting: two pages, two names, a session with David
+
+**Who:** Keneth, Samantha, David and the team
+**State:** nothing changed in the repo. Decisions pending.
+
+### What was decided, and what was not
+
+**Two pages, confirmed:** one for staff and partners, one public and
+community-facing. That is the shape the repo has been built around since 20
+October, so nothing here changes.
+
+**Samantha proposed calling them "AI Staff" and "AI Community".** Not finalised.
+Current names are *Artificial Intelligence 101* (staff) and *Intro to AI*
+(community), set on 23 October.
+
+**David offered a screen-share** to check deploy access, rename the existing
+Dokku app, and stand up the community one. Possibly after 2:30pm.
+
+**The page was called nearly ready**, and the team was asked for another review.
+
+### The thing to settle before that session
+
+**Renaming the Dokku app and renaming the page are two different decisions with
+very different costs, and the meeting treated them as one.**
+
+Creating a *new* app for the community edition is free — `*.sandbox.purplemaia.org`
+is a wildcard, so a new host answers immediately and nothing points at it yet.
+
+Renaming the *existing* app is not free. The host is `ai-page.sandbox.purplemaia.org`
+and it is written into **21 places across 9 files**, including:
+
+| Where | Why it matters |
+|---|---|
+| `assets/qr.png`, `qr.svg`, `qr-slide.png` | **A QR cannot be redirected once printed.** `README.md:167` already says this. |
+| Slide deck | The QR slide is dropped into it. Anything already handed out dies. |
+| `tools/certificate-apps-script.js` | `ALLOWED_ORIGINS` is an exact-match list. Wrong host, and the magic-link sign-in silently stops working. |
+| `index.html` ×8 | canonical, `og:url`, JSON-LD `@id`s |
+| `WHITEPAPER.md` ×3 | a distributed document |
+
+**So the cheap version of Samantha's proposal is available:** use *AI Staff* and
+*AI Community* as the **app and repo names**, which is what they read like, and
+leave the learner-facing titles alone. Dokku app name and page title do not have
+to match, and nothing outside the box ever sees the app name. That gets the
+distinctness she asked for at zero URL churn.
+
+If the hostname really should change, the moment to do it is **before** the
+certificate Apps Script is deployed, since `ALLOWED_ORIGINS` has to be edited
+then anyway, and **before** any more QR codes are printed.
+
+### Open / next
+
+- [ ] **Decide: rename the app, or only the display names.** See above. Cheap
+      version strongly preferred unless there is a reason the public hostname
+      must change.
+- [ ] **Settle the `audiences` question before David deploys anything.** Already
+      written up under Standing notes and in `README.md`; it is the one that
+      silently deletes `?for=partners`.
+- [ ] If the host does change: regenerate all three QR assets with
+      `tools/make-qr.js`, verify with `tools/check-qr.js`, re-export the deck
+      slide, and update `ALLOWED_ORIGINS` before deploying the certificate.
+- [ ] Review feedback from the team is still outstanding.
+
+---
+
 ## 2026-10-27 — Sam's rewrite merged, and film 17's forward reference cut out
 
 **Who:** Keneth, with Claude
