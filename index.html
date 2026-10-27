@@ -3,38 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Intro to AI — Purple Maiʻa</title>
-<meta name="description" content="Every big idea about AI, a minute or two each. Plain words, short videos, free, no login. From Purple Maiʻa.">
+<title>Artificial Intelligence 101 — Purple Maiʻa</title>
+<meta name="description" content="A free, plain-language course on what AI is, how chatbots like ChatGPT come up with an answer, and how to use them well. Three modules, no math, no login.">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#6b2f96" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#120a18" media="(prefers-color-scheme: dark)">
 
-<!-- COMMUNITY EDITION. Deployed 27 Oct 2026 to its own Dokku app, so it now has
-     an address of its own and no longer reads as a duplicate of the staff site.
-     The canonical, og:url, JSON-LD ids and absolute image URLs below all point
-     at it.
-
-     STILL NOINDEX ON PURPOSE. The address exists so the team can review it; the
-     team has not reviewed it yet. Flipping robots to "index, follow" is the
-     launch act and it is one line. Do that, and make a QR with
-     tools/make-qr.js, once the review is in and the name is settled. -->
-<meta name="robots" content="noindex, follow">
-<link rel="canonical" href="https://ai-community.sandbox.purplemaia.org/">
+<link rel="canonical" href="https://ai-page.sandbox.purplemaia.org/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 
 <!-- Social preview. Absolute URLs — scrapers do not resolve relative paths. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Purple Maiʻa">
-<meta property="og:url" content="https://ai-community.sandbox.purplemaia.org/">
-<meta property="og:title" content="Intro to AI — Purple Maiʻa">
-<meta property="og:description" content="Every big idea about AI, a minute or two each. Plain words, short videos, free and public.">
-<meta property="og:image" content="https://ai-community.sandbox.purplemaia.org/assets/social-intro.png">
+<meta property="og:url" content="https://ai-page.sandbox.purplemaia.org/">
+<meta property="og:title" content="Artificial Intelligence 101 — Purple Maiʻa">
+<meta property="og:description" content="What AI is, how chatbots like ChatGPT come up with an answer, and how to use them well. Three modules, free and public.">
+<meta property="og:image" content="https://ai-page.sandbox.purplemaia.org/assets/social.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Intro to AI, from Purple Maiʻa">
+<meta property="og:image:alt" content="Artificial Intelligence 101 — a free course from Purple Maiʻa">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Intro to AI — Purple Maiʻa">
-<meta name="twitter:description" content="Every big idea about AI, a minute or two each. Plain words, short videos, free and public.">
-<meta name="twitter:image" content="https://ai-community.sandbox.purplemaia.org/assets/social-intro.png">
+<meta name="twitter:title" content="Artificial Intelligence 101 — Purple Maiʻa">
+<meta name="twitter:description" content="What AI is, how chatbots like ChatGPT come up with an answer, and how to use them well. Three modules, free and public.">
+<meta name="twitter:image" content="https://ai-page.sandbox.purplemaia.org/assets/social.png">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,10 +55,10 @@
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": "https://ai-community.sandbox.purplemaia.org/#website",
-      "url": "https://ai-community.sandbox.purplemaia.org/",
-      "name": "Intro to AI — Purple Maiʻa",
-      "description": "Every big idea about AI, a minute or two each. Plain words, short videos, free and public, no login.",
+      "@id": "https://ai-page.sandbox.purplemaia.org/#website",
+      "url": "https://ai-page.sandbox.purplemaia.org/",
+      "name": "Artificial Intelligence 101 \u2014 Purple Mai\u02bba",
+      "description": "A free, plain-language course on what AI is, how chatbots like ChatGPT come up with an answer, and how to use them well. Three modules, no math, no login.",
       "inLanguage": "en",
       "publisher": {
         "@type": "Organization",
@@ -77,10 +68,10 @@
     },
     {
       "@type": "Course",
-      "@id": "https://ai-community.sandbox.purplemaia.org/#course",
-      "name": "Intro to AI",
-      "description": "Every big idea about AI, a minute or two each. Plain words, short videos, free and public, no login.",
-      "url": "https://ai-community.sandbox.purplemaia.org/",
+      "@id": "https://ai-page.sandbox.purplemaia.org/#course",
+      "name": "Artificial Intelligence 101",
+      "description": "A free, plain-language course on what AI is, how chatbots like ChatGPT come up with an answer, and how to use them well. Three modules, no math, no login.",
+      "url": "https://ai-page.sandbox.purplemaia.org/",
       "isAccessibleForFree": true,
       "inLanguage": "en",
       "educationalLevel": "Beginner",
@@ -98,7 +89,7 @@
       },
       "hasCourseInstance": {
         "@type": "CourseInstance",
-        "name": "Intro to AI",
+        "name": "Artificial Intelligence 101",
         "courseMode": "blended",
         "courseWorkload": "PT59M"
       },
@@ -145,7 +136,7 @@
   <div class="wrap header-inner">
     <a class="brand" href="#/">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-text" data-bind="event.shortName">Intro to AI</span>
+      <span class="brand-text" data-bind="event.shortName">Artificial Intelligence 101</span>
     </a>
 
     <nav class="site-nav" aria-label="Sections">
@@ -454,7 +445,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="content.js"></script>
-<script src="community.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
