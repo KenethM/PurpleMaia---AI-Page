@@ -21,9 +21,12 @@ who needs context before reading a diff, or you in three months. The git log say
 Not an entry. These stay at the top until they stop being true, because a dated
 entry gets buried by the next one and these are the things that bite.
 
-### ⚠️ Deploying `main` deletes the staff/partners switcher
+### ⚠️ Deploying `main` to `ai-page` deletes the staff/partners switcher
 
-**Settle this before anyone runs `git push dokku main`.** The live Dokku build
+**Settle this before anyone runs `git push dokku main`.** Still live as of 27
+Oct: the community edition went to its own app, `ai-community`, precisely so
+nobody had to answer this question yet. `ai-page` was not touched and still
+serves all four audiences. The live Dokku build
 still serves four audiences — `staff`, `partners`, and `workshop` + `kupuna` as
 drafts — so `?for=partners` works on it today. **`main` has carried no
 `audiences` block since `26fbde8`**, the module-article rebuild, which dropped
@@ -44,6 +47,78 @@ So choose on purpose: **restore `audiences` to `main` first and deploy**, keepin
 switcher is retired**, deploy without it, and tell whoever hands out
 `?for=partners` links that they are about to break. The full version of this,
 with the commands, is in `README.md` beside the deploy steps.
+
+---
+
+## 2026-10-27 (evening) — Two sites on the sandbox, side by side
+
+**Who:** Keneth, with Claude
+**State:** **deployed.** Both apps live on the PMF Dokku box.
+**Files:** `index.html` on `community-hub`, `HANDOFF.md`
+
+### What is running now
+
+| App | Host | Serving | HTTPS |
+|---|---|---|---|
+| `ai-page` | `ai-page.sandbox.purplemaia.org` | the 4 Oct staff build, **untouched** | yes |
+| `ai-community` | `ai-community.sandbox.purplemaia.org` | `community-hub`, **new** | **no — see below** |
+
+**`ai-page` was deliberately not touched.** It still serves all four audiences
+(`staff`, `partners`, `workshop`, `kupuna`) and `?for=partners` still returns
+200, checked after the new deploy. Standing up a second app sidesteps the whole
+`audiences` problem rather than solving it — which is the point. Nobody had to
+decide anything to get a community site up.
+
+**`ai-community` serves the real thing.** All 19 videos return 200, where the
+staff app still 404s every one of them. Title *Intro to AI*, overlay loaded.
+
+**The community edition now points at its own address.** Its pre-launch comment
+listed exactly what to do once it had a URL, so: canonical, `og:url`, four
+JSON-LD ids, and absolute `og:image`/`twitter:image` — relative ones do not
+survive a scraper, and this link is about to be pasted around for review.
+`community.js` still points `FULL` at `ai-page`, which is correct: that is the
+community edition's link back to the full course.
+
+### What is not done
+
+**HTTPS is not enabled on `ai-community`.** `letsencrypt:enable` is a certificate
+action and was refused in this session. The site answers on **http only**, so a
+browser will mark it Not secure. One command fixes it, from someone with the
+access:
+
+```
+ssh dokku@dokku-pmf-sandbox.westus2.cloudapp.azure.com letsencrypt:enable ai-community
+```
+
+**It is still `noindex`, on purpose.** The address exists so the team can
+review; the team has not reviewed. Flipping `robots` to `index, follow` is the
+launch act and it is one line.
+
+### The problems worth knowing about
+
+**The two sites now disagree with each other, loudly.** Community has 19 videos,
+module articles and the current name. Staff has none of the videos, the old
+lesson grid, and still calls itself *LLM/NLP 101*. Anyone who opens both will
+notice within seconds. That gap is the `audiences` decision, still deferred —
+deploying `main` to `ai-page` fixes the staleness and costs `?for=partners`
+unless `audiences` is restored from `53abaf9` first.
+
+**The app name `ai-community` was chosen, not agreed.** It follows Samantha's
+proposal from today's meeting. Renaming it is free *right now* — nothing points
+at it, no QR exists for it. It stops being free the moment a link or a printed
+code goes out.
+
+**`ALLOWED_ORIGINS` now has to list two hosts.** The certificate Apps Script is
+still undeployed. When it goes out, it needs `ai-community.sandbox.purplemaia.org`
+as well, or the magic-link sign-in breaks on the community site specifically.
+
+### Open / next
+
+- [ ] **Enable HTTPS on `ai-community`** — command above. Until then it is http.
+- [ ] Team review of the community site, then flip `robots` to `index, follow`.
+- [ ] Settle the app name before any link or QR goes out.
+- [ ] The staff/community staleness gap, and with it the `audiences` decision.
+- [ ] `ALLOWED_ORIGINS` needs both hosts when the certificate script deploys.
 
 ---
 
