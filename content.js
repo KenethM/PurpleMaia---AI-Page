@@ -564,8 +564,9 @@ window.SITE = {
       level: "Module 2 · Pre-training",
       duration: "11 min",
       summary: "The model's learned settings — the internal knobs that decide how it weighs information.",
-      video: "youtube:LPZh9BOjkQs",
-      videoLength: "7:58",
+      video: "file:assets/video/where-the-odds-come-from.mp4",
+      videoLength: "1:37",
+      videoAspect: "9/16",
       takeaways: [
         "Parameters determine how the model combines what it is reading to produce a probability for the next word.",
         "Change the parameters and you change those probabilities for the same input.",
@@ -676,11 +677,9 @@ window.SITE = {
       level: "Module 2 · Inference",
       duration: "2 min",
       summary: "Why asking the same question twice gives you two different answers — and why that is normal.",
-      /* Back on its stand-in. "The autocomplete trick" sat here too, because the
-         script table maps script 2 to both lessons, but the same film on two cards
-         in a row reads as a mistake. It lives on next-token prediction. */
-      video: "youtube:MkaazQttbpc",
-      videoLength: "14:51",
+      video: "file:assets/video/ask-it-twice.mp4",
+      videoLength: "1:41",
+      videoAspect: "9/16",
       takeaways: [
         "A deterministic system gives the same output every time for the same input. A calculator.",
         "A probabilistic system uses statistical likelihood to produce varied outputs. An LLM.",
