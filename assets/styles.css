@@ -1343,16 +1343,53 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-demo .practice-tag { display: none; }   /* the section already says which topic */
 .practice-card > h4 { font-size: 1.12rem; margin: 0; }
 
+/* Previous and next share one row and one height. Next is the filled card in
+   the wider column; previous is outlined and narrower, so the forward step
+   reads first without the way back being hard to find. */
+.art-pager {
+  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px;
+  margin: 0 0 52px;
+}
+.art-prev, .art-next {
+  display: flex; align-items: center; gap: 16px; min-height: 104px;
+  padding: 22px 26px; border-radius: var(--radius-lg); text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.art-prev small, .art-next small { display: block; font-size: .86rem; margin-bottom: 4px; }
+.art-prev strong, .art-next strong { display: block; font: 700 1.2rem/1.25 var(--font-display); letter-spacing: -.015em; }
+
+.art-prev {
+  grid-column: 1;
+  border: 1px solid var(--border-strong); color: var(--text);
+}
+.art-prev:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.art-prev small { color: var(--text-2); }
+
 .art-next {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin: 0 0 52px; padding: 26px 30px; border-radius: var(--radius-lg);
-  background: var(--accent); color: var(--accent-ink); text-decoration: none;
-  transition: background .15s ease;
+  grid-column: 2; justify-content: space-between; text-align: left;
+  background: var(--accent); color: var(--accent-ink);
 }
 .art-next:hover { background: var(--accent-hover); color: var(--accent-ink); }
-.art-next small { display: block; font-size: .88rem; color: color-mix(in srgb, var(--accent-ink) 80%, transparent); }
-.art-next strong { font: 700 1.5rem/1.2 var(--font-display); letter-spacing: -.02em; }
-.art-next-cta { background: var(--accent-ink); color: var(--accent); font-weight: 600; padding: 11px 20px; border-radius: 11px; }
+.art-next small { color: color-mix(in srgb, var(--accent-ink) 80%, transparent); }
+.art-next strong { font-size: 1.4rem; }
+
+.art-pager-arrow {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px;
+  border-radius: 50%; font-size: 1.15rem; transition: transform .15s ease;
+}
+.art-prev .art-pager-arrow { color: var(--accent); background: var(--accent-soft); }
+.art-next .art-pager-arrow { color: var(--accent); background: var(--accent-ink); }
+.art-prev:hover .art-pager-arrow { transform: translateX(-3px); }
+.art-next:hover .art-pager-arrow { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .art-prev:hover .art-pager-arrow, .art-next:hover .art-pager-arrow { transform: none; }
+}
+/* Too narrow for two cards: stack them, the next step first. */
+@media (max-width: 560px) {
+  .art-pager { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .art-prev, .art-next { grid-column: 1; min-height: 0; padding: 18px 20px; }
+  .art-next { order: -1; }
+}
 
 .art-sources h2 { font-size: 1.1rem; margin-bottom: 10px; }
 .art-sources ol { padding-left: 1.3em; margin: 0; font-size: .86rem; line-height: 1.55; color: var(--text-2); }
@@ -1400,7 +1437,6 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   .art-head { grid-template-columns: 1fr; gap: 6px; padding: 34px 0 30px; margin-bottom: 30px; }
   .art-num { font-size: 5.5rem; justify-self: start; text-align: left; margin-bottom: 14px; }
   .art-practice { padding: 22px 18px; }
-  .art-next { padding: 22px 20px; }
   .art-video figcaption { flex-direction: column; gap: 2px; }
 }
 
