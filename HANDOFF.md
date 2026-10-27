@@ -21,6 +21,34 @@ who needs context before reading a diff, or you in three months. The git log say
 Not an entry. These stay at the top until they stop being true, because a dated
 entry gets buried by the next one and these are the things that bite.
 
+### ⚠️ The content flow is ONE WAY: `main` → `community-hub`
+
+**Never `git merge community-hub` while on `main`.** It drags the community
+`index.html` onto `main`, and the staff site then quietly serves the overlay:
+cut-down content and no audience switcher.
+
+**It does not look broken, which is why it bit twice.** `app.js` writes
+`event.name` into the `<title>` at runtime, and `community.js` sets that to
+"Artificial Intelligence 101" too, so the tab reads correctly while the page
+underneath is the wrong edition. The tell is `?for=partners` rendering no
+switcher, because `community.js` sets `S.audiences = []`.
+
+Correct moves:
+
+```
+git checkout community-hub && git merge main      # yes, always this way
+git checkout main && git merge community-hub      # NO. this is the bug.
+```
+
+`index.html` is the only file that may differ between the branches. Check it
+with `git diff --name-only main community-hub` — if that prints anything else,
+something has crossed over.
+
+The suite now catches it: the **EDITION CONSISTENCY** block checks the working
+tree's branch against its own `index.html`, and fails if `main` loads
+`community.js` or is `noindex`. It was added after the 27 Oct incident, in
+which the staff site was deployed serving the community edition.
+
 ### ✅ RESOLVED 27 Oct — the `?for=partners` deploy trap
 
 **Kept here as history, not as a warning.** `main` carried no `audiences`
