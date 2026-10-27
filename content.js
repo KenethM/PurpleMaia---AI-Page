@@ -460,14 +460,16 @@ window.SITE = {
              "vimeo:123456789"       -> Vimeo
              "file:assets/clip.mp4"  -> a video file committed to the repo
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
-     videoLength: the embedded video's real runtime, read off YouTube rather
-             than estimated. Nothing renders it today. It used to sit bottom-right
+     videoLength: the video's real runtime, read off the file with ffprobe
+             rather than estimated. Nothing renders it today. It used to sit bottom-right
              of the thumbnail, but `duration` was what was being drawn there —
              self-paced time for the whole lesson, in the one corner every viewer
              reads as the video's length. Two different clocks, and they have not
              been reconciled since the stand-in videos landed: `duration` is
-             documented as including video time, and those values predate 16 of
-             the 19 videos. Fix the clocks, then decide what the card shows.
+             documented as including video time, and those values predate all 19
+             videos. `duration` is not read by `app.js` at all today — the module
+             cards compute minutes from word count. Fix the clocks, then decide
+             what the card shows.
   --------------------------------------------------------------- */
   lessons: [
 
@@ -1615,7 +1617,7 @@ window.SITE = {
     { q: "What is the certificate, and what does asking for one send?",
       a: "It appears once you have finished every module, and it is optional — nothing on this page is locked behind it. Asking for one sends three things: the name you want printed, an email address, and how much of the course you finished. Nothing else, and nothing at all until you press the button. There is no password and no account: you get a one-time link by email, clicking it proves the address is yours, and that is the whole sign-in. Your reading progress, your quiz answers and the sections you opened never leave your browser. The record lives in a spreadsheet in Purple Maiʻa’s own Drive, and the code printed on the certificate is how anyone can check it with us." },
     { q: "Where are the Purple Maiʻa videos?",
-      a: "Seventeen of the 19 videos in the modules are Purple Maiʻa's own, and more are being animated. The other two are outside explainers chosen for that specific topic and for how well they have been received, labelled as stand-ins under the player. Each one is replaced the moment ours is ready, and the label disappears with it." },
+      a: "All 19 of them. Every lesson in every module now carries Purple Maiʻa's own animation, made from this course's scripts, and there are no outside stand-ins left. If a lesson ever goes back to an outside explainer, a notice under the player says so — that notice is keyed to the kind of video, not to a flag anyone has to remember to set." },
     { q: "Will these materials stay up?",
       a: "Yes. The page is static and public, and the content is built to be chopped up and reused — short-form social, long-form video, workshops, curriculum." }
   ],
@@ -1659,7 +1661,7 @@ window.SITE = {
          video: "file:assets/<name>.mp4" — the placeholder disappears on its own. */
       group: "Purple Maiʻa originals",
       items: [
-        { label: "Short-form animations — in production", url: "#/", desc: "Animated from this course’s scripts. Until each lands, its lesson carries a labelled stand-in from another channel." },
+        { label: "Short-form animations", url: "#/", desc: "Animated from this course’s scripts. All 19 lessons carry one." },
         { label: "Scripts these are built from", url: "#/", desc: "Every lesson's takeaways are the script. Open a lesson to read the one you need." }
       ]
     },
