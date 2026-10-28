@@ -571,7 +571,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .resource-link span { display: block; font-size: .85rem; color: var(--muted); }
 
 /* ---------- FOOTER ---------- */
-.site-footer { border-top: 1px solid var(--border); padding: 46px 0 28px; background: var(--bg); }
+.site-footer { border-top: 1px solid var(--border); padding: 46px 0 84px; background: var(--bg); }
 .footer-inner { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; align-items: flex-start; }
 .footer-inner > div { max-width: 46ch; }
 .footer-logo { display: block; width: 200px; height: auto; margin-bottom: 14px; }
@@ -585,7 +585,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .footer-links a:hover { color: var(--accent); }
 .footer-bottom { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
 .footer-bottom p { margin: 0; }
-.to-top { background: none; border: 0; color: var(--muted); font-size: .875rem; cursor: pointer; font-weight: 500; }
+.to-top { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: .875rem; cursor: pointer; font-weight: 500; }
 .to-top:hover { color: var(--accent); }
 
 /* ---------- DIALOG CLOSE (feedback) ---------- */
