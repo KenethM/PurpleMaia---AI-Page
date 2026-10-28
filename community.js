@@ -280,7 +280,7 @@
   ev.shortName = "Artificial Intelligence 101";
   ev.headline = "Artificial Intelligence 101";
   ev.badge = "";
-  ev.tagline = "Every big idea about AI, a minute or two each. Plain words, no math, no login.";
+  ev.tagline = "The essential ideas behind AI, explained through short videos and hands-on practice. Free and open to everyone.";
   ev.date = ""; ev.time = ""; ev.location = "";
   /* ev.intro, ev.facts and the two hero buttons are no longer rendered.
      Left unset rather than filled in with copy nobody will ever read. */
