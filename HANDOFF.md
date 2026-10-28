@@ -65,6 +65,106 @@ with it. That is the thing to watch, not the command.
 
 ---
 
+## 2026-10-27 (latest) — The depth layer made real, and what actually separates the two editions
+
+**Who:** Keneth, with Claude Code
+**Branch:** `main`, then merged forward to `community-hub`
+**Files:** `assets/app.js`, `assets/styles.css`, `content.js`
+
+### Why
+
+Keneth, looking at the two deployed sites: *"I didn't want the staff site to be
+the same as the community site."* He is right, and the cause was not where either
+of us first looked.
+
+**The two editions did not drift apart; they converged, and it happened gradually
+through `main`.** Every time one of Purple Maiʻa's own films landed, it *replaced*
+the outside explainer on that lesson rather than joining it — `b34f336`,
+`5698c58`, `a663585`, `b2360e0`, and finally `50cf9f0` ("all 19 lessons carry our
+own video"). By `50cf9f0` the staff edition had no long-form video left anywhere
+on it. The thing that made it the deep one was gone, and nobody noticed, because
+each commit on its own was obviously an improvement.
+
+Measured, both editions as deployed this morning:
+
+| | staff | community |
+|---|---|---|
+| lesson cards with identical title + video + runtime | **19 / 19** | |
+| module article words | 2,109 | 715 |
+| takeaways | 62 | 38 |
+| lesson summary words | 274 | **269** |
+| prompts / FAQ / resources | 7 / 14 / 5 | 3 / 10 / 3 |
+
+The grid, the videos and the runtimes are **identical**. Everything that differs
+is prose inside a module article, which you only reach by scrolling into a
+module. Above the fold the two sites are the same site. That is exactly what
+Keneth was seeing.
+
+Note the summary row: 269 vs 274 words. The overlay's `INCH` rewrite *rewords*
+the lesson summaries, it does not shorten them. Whatever it is buying, it is not
+brevity at the card level.
+
+### What changed
+
+The follow-on explainer is now **a real player on the staff edition, not a link
+in the margin**. Under our film sits a fold — `GO DEEPER | Outside explainer,
+8:30` — that opens into a second poster, which plays on click.
+
+Two gates, deliberately:
+
+- **Shut, it costs nothing.** The YouTube thumbnail is built on first open, so a
+  closed fold makes no third-party request at all. Verified: 0 `ytimg` images and
+  0 iframes in the DOM before anything is opened.
+- **Open, it still costs no frame.** The iframe only arrives on the click after
+  that, `youtube-nocookie.com` as before.
+
+`embedFor` gained a `noStandin` argument. The stand-in notice says *ours has not
+been made yet*, and on a `deeper` video ours is the one playing directly above
+it — it would have been a lie on every one of the 19.
+
+**The community edition is untouched.** `community.js` already deletes `deeper`,
+so all of this stops at `main` by construction, not by anyone remembering.
+
+### The reversal worth recording
+
+The obvious fix — revert `8da015e`, the commit that added the links — would have
+made the two editions **more** identical, not less. That commit is the only thing
+on staff today that the community edition does not have. Reverting it leaves two
+sites with the same 19 films and no difference above the fold at all.
+
+### What should separate them (proposed, not decided)
+
+Joe's brief for the community edition was **"a mile wide and an inch deep."** The
+staff edition has no equivalent sentence, and that is the actual gap. Proposed:
+
+- **Community — a mile wide, an inch deep.** One idea per lesson, one film, no
+  long-form video, no switcher. A person finishes it.
+- **Staff/partner — the same mile, as deep as you want to go.** The film is the
+  floor, not the ceiling: the full article, the outside explainer behind the
+  fold, every takeaway, the glossary, the prompt library. A person *works from*
+  it, repeatedly, and does not finish it.
+
+Under that reading the staff edition is a **reference**, the community edition is
+a **course**. That is a real difference, and it decides the open questions
+below on its own rather than one at a time.
+
+### Open / next
+
+- [ ] **Decide the staff edition's one-sentence brief.** Everything else here is
+      downstream of it. Nothing should be built until it exists.
+- [ ] The audience switcher: 4 of its 13 fields still render (`label`, `blurb`,
+      `tagline`, `time`+`location`). It changes ~97 characters out of 31,000.
+      Measured, not estimated. Re-bind `intro`/`facts`/`agenda` to the module
+      layout, or retire it — but only after the brief above.
+- [ ] The `INCH` summaries save 5 words across 19 lessons. Either make them
+      genuinely one-line or drop that part of the overlay.
+- [ ] Look at the fold on a phone. The four portrait films still have not been
+      seen on one either.
+- [ ] Nobody outside has reviewed the community edition yet, so `robots` stays
+      `noindex`.
+
+---
+
 ## 2026-10-27 (night) — Our films in front on staff, and the switcher saved
 
 **Who:** Keneth, with Claude
