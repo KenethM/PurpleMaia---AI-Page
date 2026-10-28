@@ -70,7 +70,7 @@ with it. That is the thing to watch, not the command.
 **Who:** Sheila, with Claude
 **Branch:** `main`, on top of `c1bbafa`
 **State:** pager pushed to both branches (PRs open upstream). Certificate prep in the working tree on `main`: not committed, not merged down, not deployed.
-**Files:** `assets/app.js`, `assets/styles.css`, `index.html`, `community.js`, `content.js`, `tools/certificate-apps-script.js`
+**Files:** `assets/app.js`, `assets/styles.css`, `index.html`, `community.js`, `content.js`, `README.md`, `tools/certificate-apps-script.js`
 
 ### What changed
 - **Previous / next pager** at the end of every module (`c1bbafa`): back on the
@@ -103,7 +103,21 @@ with it. That is the thing to watch, not the command.
 - **"24 of 24 lessons" was wrong**: n/total count sections plus practices,
   not lessons. A finished run now reads "All 3 modules, practice included".
 
+- **Videos now count, and are required.** A video is watched once 90% of it
+  has actually played (`video.played`, so scrubbing to the end does not
+  count), stored under `aihub:watched`. Units per module are sections +
+  videos + practice; a section ticks only when read and its videos watched;
+  Done and the certificate need all 19. Only `file:` videos are tracked,
+  because an embed cannot report playback. Sheila chose "required".
+
 ### Decisions worth knowing
+- **Anyone who finished before this ships drops below 100%** until they watch
+  the videos. A certificate already issued stays viewable.
+- **The videos have no captions or transcripts**, and they are now required
+  for the certificate. That is an access gap for deaf and hard-of-hearing
+  learners and on low bandwidth. Captions (`<track>` + `.vtt`) are the fix.
+- Partial viewing is not carried over if the player is rebuilt (leaving the
+  module): the 90% has to be reached in one viewing of that player.
 - Whoever deploys the Apps Script is "Me": the mail comes from that account
   and uses its quota. One admin owns the deployment; both can read the Sheet.
 - The request is `no-cors`, so a rejected origin still shows "Check your
@@ -124,6 +138,12 @@ full flow end to end from `http://127.0.0.1:5500/` (request, mail, link,
 certificate). The print design was checked as Chrome PDFs from light and dark
 mode: one landscape page each, no browser header/footer. Not checked in Safari
 or Firefox print.
+
+Video tracking, in real Chrome via DevTools protocol: a played video ticks at
+~90% and shows "Watched"; one scrubbed to the end does not. Seeded storage:
+all done but one video gives 98% and "1 video left", certificate hidden; all
+19 gives Done and, on the community edition, the certificate button. Not
+checked on Safari/iOS, where autoplay and `played` can behave differently.
 
 ---
 
