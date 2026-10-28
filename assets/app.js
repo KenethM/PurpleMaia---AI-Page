@@ -59,7 +59,7 @@
     // a module page: the header, then every block of the article
     '.art-num', '.art-head-copy > *',
     '.art-section:not(.art-practice) > *:not(.art-part)', '.art-part > *',
-    '.art-practice', '.art-next', '.art-sources',
+    '.art-practice', '.art-prev', '.art-next', '.art-sources',
     // Reference
     '.ref-head .crumb', '.ref-head h1', '.ref-jump', '#referenceView .section-head',
     '#referenceView .filter-input', '.term-card'
@@ -1299,7 +1299,8 @@
     if (!l || !l.video) return '';
     var p = parseVideo(l.video);
     var thumb = thumbFor(l.video);
-    return '<figure class="art-video">' +
+    var tracked = p && p.kind === 'file';
+    return '<figure class="art-video"' + (tracked ? ' data-lesson="' + esc(l.id) + '"' : '') + '>' +
       '<div class="art-player">' +
         '<button class="art-poster' + (l.videoAspect ? ' is-portrait" style="aspect-ratio:' + esc(l.videoAspect) : '') +
           '" type="button" data-play="' + esc(l.id) + '" aria-label="Play video: ' + esc(l.title) + '">' +
@@ -1307,7 +1308,9 @@
           '<span class="play">' + icon('play') + '</span>' +
         '</button>' +
       '</div>' +
-      '<figcaption><span><strong>Video:</strong> ' + esc(l.title) + '</span>' +
+      '<figcaption><span><strong>Video:</strong> ' + esc(l.title) +
+        (tracked ? ' <span class="art-watched"' + (watchedSet.has(l.id) ? '' : ' hidden') + '>Watched</span>' : '') +
+        '</span>' +
         '<span>' + (p && p.kind === 'file' ? 'Purple Maiʻa' : 'Outside explainer') + '</span></figcaption>' +
       /* Ours is the lesson; this is the long version standing behind it. A
          real player and not a link, because depth is what separates this
@@ -1374,11 +1377,32 @@
   }
 
   /* ---------- progress ----------
-     A module is its sections plus its practice. A section is read once you
-     have scrolled to its end; practice is done once the module quiz has been
-     answered all the way through. */
+     A module is its sections, its videos and its practice. A section is read
+     once you have scrolled to its end; a video is watched once 90% of it has
+     actually played (see onVideoProgress); practice is done once the module
+     quiz has been answered all the way through. A section only counts as done
+     when it is read and its videos are watched. */
   function sectionLessonIds(s) {
     return [s.lesson].concat((s.parts || []).map(function (p) { return p.lesson; })).filter(Boolean);
+  }
+
+  /* Videos watched, by lesson id. Only our own files count: an outside embed
+     cannot report how much of it played, so it could never be ticked off. */
+  var WKEY = 'aihub:watched';
+  var watchedSet = (function () {
+    try { return new Set(JSON.parse(localStorage.getItem(WKEY) || '[]')); }
+    catch (e) { return new Set(); }
+  })();
+  function saveWatched() {
+    try { localStorage.setItem(WKEY, JSON.stringify(Array.from(watchedSet))); } catch (e) {}
+  }
+  function trackedVideo(id) {
+    var l = lessonById(id), p = l && parseVideo(l.video);
+    return !!(p && p.kind === 'file');
+  }
+  function sectionVideoIds(s) { return sectionLessonIds(s).filter(trackedVideo); }
+  function sectionDone(s) {
+    return isRead(s) && sectionVideoIds(s).every(function (id) { return watchedSet.has(id); });
   }
   function isRead(s) {
     if (readSet.has(s.id)) return true;
@@ -1396,29 +1420,40 @@
     var total = m.sections.length;
     var hasQuiz = quizItemsFor(m).length > 0;
     var practice = !hasQuiz || !!quizState['module:' + m.id];
-    var units = read + (practice ? 1 : 0), of = total + 1;
+    var vids = [];
+    m.sections.forEach(function (s) { vids = vids.concat(sectionVideoIds(s)); });
+    var watched = vids.filter(function (id) { return watchedSet.has(id); }).length;
+    var units = read + watched + (practice ? 1 : 0), of = total + vids.length + 1;
+    // "Continue" goes to the first section still short of a read or a video.
     var next = null;
-    for (var i = 0; i < m.sections.length; i++) if (!isRead(m.sections[i])) { next = m.sections[i].id; break; }
+    for (var i = 0; i < m.sections.length; i++) if (!sectionDone(m.sections[i])) { next = m.sections[i].id; break; }
     if (!next && !practice) next = 'practice';
     return {
       read: read, total: total, practice: practice,
+      watched: watched, videos: vids.length,
       units: units, of: of,
       pct: Math.round((units / of) * 100),
-      started: units > 0, complete: read === total && practice,
+      started: units > 0, complete: read === total && watched === vids.length && practice,
       next: next
     };
   }
   function progressLabel(pr) {
     if (pr.complete) return 'Done';
     if (!pr.started) return 'Not started';
-    if (pr.read === pr.total) return 'Practice left';
-    // The bar counts practice too, so say so when it is part of the fill.
-    return pr.read + ' of ' + pr.total + ' sections read' + (pr.practice ? ' · practice done' : '');
+    var left = pr.videos - pr.watched;
+    var videosLeft = left + ' video' + (left === 1 ? '' : 's') + ' left';
+    if (pr.read === pr.total && !left) return 'Practice left';
+    if (pr.read === pr.total && pr.practice) return videosLeft;
+    // The bar counts videos and practice too, so say so when they are part of the fill.
+    return pr.read + ' of ' + pr.total + ' sections read' +
+      (pr.videos ? ' · ' + pr.watched + ' of ' + pr.videos + ' videos watched' : '') +
+      (pr.practice ? ' · practice done' : '');
   }
 
   function renderModule(m) {
     var n = MODULES.indexOf(m);
     var next = MODULES[n + 1];
+    var before = n > 0 ? MODULES[n - 1] : null;
     var st = moduleStats(m);
     var quiz = quizItemsFor(m);
     var demos = moduleParts(m).reduce(function (all, p) { return all.concat(demosFor(p.id)); }, []);
@@ -1473,13 +1508,25 @@
                 '</section>'
               : '') +
 
-            (next
-              ? '<a class="art-next" href="' + moduleHref(next) + '">' +
-                  '<span><small>Next: Module ' + (n + 2) + ' of ' + MODULES.length + '</small><strong>' + esc(next.title) + '</strong></span>' +
-                  '<span class="art-next-cta">Start Module ' + (n + 2) + '</span></a>'
-              : '<a class="art-next" href="#/">' +
-                  '<span><small>That was the last module</small><strong>Back to all modules</strong></span>' +
-                  '<span class="art-next-cta">All modules</span></a>') +
+            // Back on the left, onward on the right, the way a book or a
+            // docs site pages. Module 1 has nothing before it, so its way back
+            // is the list of all modules.
+            '<nav class="art-pager" aria-label="Other modules">' +
+              (before
+                ? '<a class="art-prev" href="' + moduleHref(before) + '">' +
+                    '<span class="art-pager-arrow" aria-hidden="true">←</span>' +
+                    '<span><small>Previous · Module ' + n + '</small><strong>' + esc(before.title) + '</strong></span></a>'
+                : '<a class="art-prev" href="#/">' +
+                    '<span class="art-pager-arrow" aria-hidden="true">←</span>' +
+                    '<span><small>Back</small><strong>All modules</strong></span></a>') +
+              (next
+                ? '<a class="art-next" href="' + moduleHref(next) + '">' +
+                    '<span><small>Next · Module ' + (n + 2) + ' of ' + MODULES.length + '</small><strong>' + esc(next.title) + '</strong></span>' +
+                    '<span class="art-pager-arrow" aria-hidden="true">→</span></a>'
+                : '<a class="art-next" href="#/">' +
+                    '<span><small>That was the last module</small><strong>All modules</strong></span>' +
+                    '<span class="art-pager-arrow" aria-hidden="true">→</span></a>') +
+            '</nav>' +
 
             (srcs.length
               ? '<section class="art-sources" aria-labelledby="srcHeading"><h2 id="srcHeading">Sources for this module</h2><ol>' +
@@ -1568,7 +1615,7 @@
     if (!m) return;
     var pr = moduleProgress(m);
     var byId = {};
-    m.sections.forEach(function (s) { byId[s.id] = isRead(s); });
+    m.sections.forEach(function (s) { byId[s.id] = sectionDone(s); });
     byId.practice = pr.practice;
     $$('.art-toc a', moduleView).forEach(function (a) {
       var on = !!byId[a.getAttribute('data-toc')];
@@ -1586,6 +1633,37 @@
     bar.style.width = pr.pct + '%';
     if (pr.complete && !wasComplete) toast('Module ' + (MODULES.indexOf(m) + 1) + ' done');
     wasComplete = pr.complete;
+  }
+
+  /* A video counts as watched once 90% of it has actually played. `played`
+     holds the stretches that really ran, so dragging the slider to the end
+     does not count, while skipping a few seconds of the ending still does.
+     Media events do not bubble, so this listens in the capture phase on the
+     module view, which outlives every player swapped into it. Partial viewing
+     is not carried over if the player is rebuilt (leaving the module). */
+  var WATCHED_AT = 0.9;
+  function playedFraction(v) {
+    if (!v.duration || !isFinite(v.duration)) return 0;
+    var t = 0;
+    for (var i = 0; i < v.played.length; i++) t += v.played.end(i) - v.played.start(i);
+    return t / v.duration;
+  }
+  function onVideoProgress(e) {
+    var v = e.target;
+    if (!v || v.tagName !== 'VIDEO') return;
+    var fig = v.closest('[data-lesson]');
+    if (!fig) return;
+    var id = fig.getAttribute('data-lesson');
+    if (watchedSet.has(id) || playedFraction(v) < WATCHED_AT) return;
+    watchedSet.add(id);
+    saveWatched();
+    var tag = $('.art-watched', fig);
+    if (tag) tag.hidden = false;
+    paintModuleProgress();
+  }
+  if (moduleView) {
+    moduleView.addEventListener('timeupdate', onVideoProgress, true);
+    moduleView.addEventListener('ended', onVideoProgress, true);
   }
 
   /* Called on scroll while a module is open: a section is read once its end
@@ -1764,6 +1842,7 @@
   if (resetBtn) resetBtn.addEventListener('click', function () {
     done.clear(); saveProgress();
     readSet.clear(); saveRead();
+    watchedSet.clear(); saveWatched();
     quizState = {};
     try { localStorage.removeItem(QKEY); } catch (e) {}
     renderModuleCards();
@@ -2556,7 +2635,7 @@
   }
 
   /* What counts as finished is whatever the progress line under the headline
-     counts: every section read and every module practice done. Keyed off
+     counts: every section read, every video watched and every module practice done. Keyed off
      moduleProgress() rather than the lesson list, so the two can never drift
      apart and tell a learner two different things. */
   function certUnits() {
@@ -2580,6 +2659,10 @@
   function certPaintCta() {
     var cta = $('#certCta');
     if (!cta || !CERT) return;
+    // No endpoint means initCertificate never wired the button, so it must
+    // not show at all, even to someone holding a certificate from the
+    // community edition on the same address.
+    if (!CERT.endpoint) { cta.hidden = true; return; }
     var have = certStored();
     if (have) {
       cta.hidden = false;
@@ -2597,8 +2680,16 @@
     $('#certViewName').textContent = c.name;
     $('#certViewCourse').textContent = c.course || CERT.courseName || '';
     $('#certViewDate').textContent = c.date || '';
-    $('#certViewScore').textContent = (c.n != null && c.total != null)
-      ? (c.n + ' of ' + c.total + ' lessons') : '';
+    $('#certSigDate').textContent = c.date || '';
+    $('#certSigIssuer').textContent = CERT.issuer || 'Purple Maiʻa';
+    $('.cert-meta-dot').hidden = !c.date;
+    // n and total count sections read, videos watched and each module's practice, the same
+    // measure as the progress line, so they are not lessons. A finished run
+    // says so in words; a partial one (requireAll set to a number) says how far.
+    var all = c.n != null && c.total != null && Number(c.n) >= Number(c.total);
+    $('#certViewScore').textContent = all
+      ? 'All ' + MODULES.length + ' modules, videos and practice included'
+      : (c.n != null && c.total != null ? c.n + ' of ' + c.total + ' sections, videos and practices' : '');
     $('#certViewCode').textContent = c.code ? ('Verification code  ' + c.code) : '';
     $('#certViewVerify').textContent = CERT.verifyNote || '';
     $('#certPrint').textContent = CERT.print || 'Print or save as PDF';

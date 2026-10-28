@@ -280,7 +280,7 @@
   ev.shortName = "Artificial Intelligence 101";
   ev.headline = "Artificial Intelligence 101";
   ev.badge = "";
-  ev.tagline = "Every big idea about AI, a minute or two each. Plain words, no math, no login.";
+  ev.tagline = "The essential ideas behind AI, explained through short videos and hands-on practice. Free and open to everyone.";
   ev.date = ""; ev.time = ""; ev.location = "";
   /* ev.intro, ev.facts and the two hero buttons are no longer rendered.
      Left unset rather than filled in with copy nobody will ever read. */
@@ -289,13 +289,14 @@
      The overlay has to claim this too, or somebody who finishes the
      community edition is handed a certificate for the staff course. */
   if (S.certificate) {
-    /* Deliberately still "Intro to AI" while the rest of the edition reads
-       "Artificial Intelligence 101". Asked for and chosen on 27 Oct, so that
-       certificates issued later stay consistent with any issued earlier.
-       Nothing has been issued yet — `certificate.endpoint` is still "" — so if
-       that reasoning stops applying, this is a one-line change. Until then it
-       prints a course name that appears nowhere else on the page. */
-    S.certificate.courseName = "Intro to AI";
+    /* Only this edition issues certificates, so the endpoint is set here and
+       content.js leaves it "" for the staff site. Paste the Apps Script's
+       /exec URL in (setup: tools/certificate-apps-script.js). Left "", the
+       button stays hidden on this edition too. */
+    S.certificate.endpoint = "https://script.google.com/macros/s/AKfycbwcDmmzrmVuWa7eHvDc1_1GrZfRLLQJzh54_CVAG9jHy9-FcVKS4wHNIlnXGVJ2Ut_Y/exec";
+    /* Matches the name on the page. Changed from "Intro to AI" on 28 Oct,
+       before any certificate had been issued, so none carry the old name. */
+    S.certificate.courseName = "Artificial Intelligence 101";
     S.certificate.blurb = "You went through all of it. Put your name on it and keep a copy.";
   }
 

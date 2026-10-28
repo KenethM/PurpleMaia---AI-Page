@@ -571,7 +571,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .resource-link span { display: block; font-size: .85rem; color: var(--muted); }
 
 /* ---------- FOOTER ---------- */
-.site-footer { border-top: 1px solid var(--border); padding: 46px 0 28px; background: var(--bg); }
+.site-footer { border-top: 1px solid var(--border); padding: 46px 0 84px; background: var(--bg); }
 .footer-inner { display: flex; flex-wrap: wrap; gap: 26px; justify-content: space-between; align-items: flex-start; }
 .footer-inner > div { max-width: 46ch; }
 .footer-logo { display: block; width: 200px; height: auto; margin-bottom: 14px; }
@@ -585,7 +585,7 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .footer-links a:hover { color: var(--accent); }
 .footer-bottom { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
 .footer-bottom p { margin: 0; }
-.to-top { background: none; border: 0; color: var(--muted); font-size: .875rem; cursor: pointer; font-weight: 500; }
+.to-top { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: .875rem; cursor: pointer; font-weight: 500; }
 .to-top:hover { color: var(--accent); }
 
 /* ---------- DIALOG CLOSE (feedback) ---------- */
@@ -1312,6 +1312,11 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-poster:focus-visible { outline-offset: -4px; border-radius: 0; }
 .art-video figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; font-size: .86rem; color: var(--text-2); line-height: 1.45; }
 .art-video figcaption span:last-child { color: var(--muted); }
+.art-video figcaption .art-watched {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
+  font-size: .74rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+}
+.art-video figcaption .art-watched[hidden] { display: none; }
 .art-video .video-standin { border-top: 1px solid var(--border); }
 /* The follow-on explainer. Same bar as the stand-in notice, because it is
    the same kind of thing: a note about the video, not part of it. */
@@ -1361,16 +1366,53 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-demo .practice-tag { display: none; }   /* the section already says which topic */
 .practice-card > h4 { font-size: 1.12rem; margin: 0; }
 
+/* Previous and next share one row and one height. Next is the filled card in
+   the wider column; previous is outlined and narrower, so the forward step
+   reads first without the way back being hard to find. */
+.art-pager {
+  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px;
+  margin: 0 0 52px;
+}
+.art-prev, .art-next {
+  display: flex; align-items: center; gap: 16px; min-height: 104px;
+  padding: 22px 26px; border-radius: var(--radius-lg); text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.art-prev small, .art-next small { display: block; font-size: .86rem; margin-bottom: 4px; }
+.art-prev strong, .art-next strong { display: block; font: 700 1.2rem/1.25 var(--font-display); letter-spacing: -.015em; }
+
+.art-prev {
+  grid-column: 1;
+  border: 1px solid var(--border-strong); color: var(--text);
+}
+.art-prev:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.art-prev small { color: var(--text-2); }
+
 .art-next {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin: 0 0 52px; padding: 26px 30px; border-radius: var(--radius-lg);
-  background: var(--accent); color: var(--accent-ink); text-decoration: none;
-  transition: background .15s ease;
+  grid-column: 2; justify-content: space-between; text-align: left;
+  background: var(--accent); color: var(--accent-ink);
 }
 .art-next:hover { background: var(--accent-hover); color: var(--accent-ink); }
-.art-next small { display: block; font-size: .88rem; color: color-mix(in srgb, var(--accent-ink) 80%, transparent); }
-.art-next strong { font: 700 1.5rem/1.2 var(--font-display); letter-spacing: -.02em; }
-.art-next-cta { background: var(--accent-ink); color: var(--accent); font-weight: 600; padding: 11px 20px; border-radius: 11px; }
+.art-next small { color: color-mix(in srgb, var(--accent-ink) 80%, transparent); }
+.art-next strong { font-size: 1.4rem; }
+
+.art-pager-arrow {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px;
+  border-radius: 50%; font-size: 1.15rem; transition: transform .15s ease;
+}
+.art-prev .art-pager-arrow { color: var(--accent); background: var(--accent-soft); }
+.art-next .art-pager-arrow { color: var(--accent); background: var(--accent-ink); }
+.art-prev:hover .art-pager-arrow { transform: translateX(-3px); }
+.art-next:hover .art-pager-arrow { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .art-prev:hover .art-pager-arrow, .art-next:hover .art-pager-arrow { transform: none; }
+}
+/* Too narrow for two cards: stack them, the next step first. */
+@media (max-width: 560px) {
+  .art-pager { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .art-prev, .art-next { grid-column: 1; min-height: 0; padding: 18px 20px; }
+  .art-next { order: -1; }
+}
 
 .art-sources h2 { font-size: 1.1rem; margin-bottom: 10px; }
 .art-sources ol { padding-left: 1.3em; margin: 0; font-size: .86rem; line-height: 1.55; color: var(--text-2); }
@@ -1418,7 +1460,6 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
   .art-head { grid-template-columns: 1fr; gap: 6px; padding: 34px 0 30px; margin-bottom: 30px; }
   .art-num { font-size: 5.5rem; justify-self: start; text-align: left; margin-bottom: 14px; }
   .art-practice { padding: 22px 18px; }
-  .art-next { padding: 22px 20px; }
   .art-video figcaption { flex-direction: column; gap: 2px; }
 }
 
@@ -1455,8 +1496,19 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
     var(--surface);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
-.cert-logo { height: 34px; width: auto; margin-bottom: 26px; }
-:root[data-theme="dark"] .cert-logo { content: url("pm-lockup-white.png"); }
+/* Mark as an image, name as live text, so the wordmark is never white on
+   white (the lockup PNGs carry a white wordmark). */
+.cert-brand {
+  display: inline-flex; align-items: center; gap: 10px; margin: 0 0 26px;
+  font: 700 1.02rem/1 var(--font-display); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text);
+}
+.cert-mark { height: 30px; width: auto; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cert-mark { content: url("pm-mark-white.png"); }
+}
+:root[data-theme="dark"] .cert-mark { content: url("pm-mark-white.png"); }
+.cert-print-only { display: none; }
 
 .cert-kicker {
   margin: 0 0 14px; font-size: .74rem; font-weight: 800;
@@ -1486,23 +1538,67 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 
 /* Printing. Everything on the page is hidden and the certificate is lifted
    out of the dialog's top layer, because a modal dialog prints clipped or
-   not at all depending on the browser. */
+   not at all depending on the browser. On paper it becomes a landscape
+   letter sheet with a double frame and a signature row. `margin: 0` on the
+   page is what keeps the browser's own date, title and URL off it: those
+   are only printed in the page margin. Colours are fixed here rather than
+   taken from the tokens, so a dark-mode screen still prints a light sheet. */
+@page { size: letter landscape; margin: 0; }
 @media print {
+  html, body { background: #fff !important; margin: 0 !important; }
   .no-print { display: none !important; }
   body > *:not(.cert-view-dialog) { display: none !important; }
   .cert-view-dialog[open] {
     display: block !important;
     position: static !important;
     inset: auto !important;
-    width: 100% !important; max-width: none !important;
-    margin: 0 !important; border: 0 !important; box-shadow: none !important;
+    width: 100% !important; max-width: none !important; max-height: none !important;
+    margin: 0 !important; padding: 0 !important; overflow: visible !important;
+    border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
     background: #fff !important; color: #15031f !important;
   }
   .cert-view-dialog[open]::backdrop { display: none !important; }
-  .cert-sheet {
-    background: #fff !important; padding: 12% 10% !important; border-radius: 0 !important;
-  }
-  .cert-name, .cert-course strong { color: #15031f !important; }
-  .cert-kicker { color: #6b2f96 !important; }
   .cert-actions { display: none !important; }
+
+  .cert-sheet {
+    position: relative; box-sizing: border-box;
+    width: 11in; height: 8.5in; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0.95in 1.5in 0.8in !important;
+    background: #fff !important; border-radius: 0 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  /* The frame: a purple rule, and a fine gold one just inside it. */
+  .cert-sheet::before, .cert-sheet::after { content: ""; position: absolute; pointer-events: none; }
+  .cert-sheet::before { inset: 0.38in; border: 2pt solid #6b2f96; }
+  .cert-sheet::after  { inset: 0.48in; border: 0.75pt solid #946a0c; }
+
+  .cert-brand { margin: 0 0 0.32in; font-size: 12pt; gap: 9pt; color: #15031f; }
+  .cert-mark { height: 30pt; content: url("pm-mark.png") !important; }
+  .cert-kicker { margin: 0 0 0.22in; font-size: 10pt; letter-spacing: .32em; color: #6b2f96 !important; }
+  .cert-print-only { display: block; }
+  .cert-lead { margin: 0 0 0.1in; font-size: 12pt; font-style: italic; color: #463a52; }
+  .cert-name {
+    margin: 0 0 0.16in; padding: 0 0.4in 0.12in; min-width: 5.5in;
+    font-size: 40pt; color: #15031f !important;
+    border-bottom: 0.75pt solid #946a0c;
+  }
+  .cert-course { margin: 0 0 0.06in; font-size: 13pt; color: #463a52; }
+  .cert-course strong { display: block; margin-top: 4pt; font: 700 20pt/1.2 var(--font-display); color: #15031f !important; }
+  .cert-meta { margin: 0 0 0.42in; font-size: 10pt; color: #6c6177; }
+  .cert-meta-date, .cert-meta-dot { display: none; }
+
+  .cert-sign { display: flex; justify-content: center; gap: 1.6in; margin: 0 0 0.34in; }
+  .cert-sig { margin: 0; min-width: 2.3in; text-align: center; }
+  .cert-sig span {
+    display: block; padding: 0 0 5pt; border-bottom: 0.75pt solid #15031f;
+    font: 600 12pt/1.3 var(--font-display); color: #15031f;
+  }
+  .cert-sig small {
+    display: block; margin-top: 5pt; font-size: 8pt; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .18em; color: #6c6177;
+  }
+
+  .cert-code { margin: 0 0 4pt; padding: 3pt 9pt; font-size: 8.5pt; color: #463a52; border-color: #b9aec4; }
+  .cert-verify { max-width: none; font-size: 7.5pt; color: #6c6177; }
 }
