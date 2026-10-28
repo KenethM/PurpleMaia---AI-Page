@@ -21,8 +21,10 @@
    ---------------------------------------------------------------
    SETUP, about five minutes, once
    ---------------------------------------------------------------
-   1.  sheets.new while signed in as keneth@purplemaia.org.
-       Name it "Artificial Intelligence 101 certificates".
+   1.  sheets.new, ideally inside a Purple Maiʻa Shared Drive so the
+       records do not belong to one person's account. Name it
+       "Artificial Intelligence 101 certificates" and share it, as
+       Editor, with the other admin (Keneth and Sheila both manage it).
 
    2.  Extensions -> Apps Script. Paste this whole file in. Save.
 
@@ -38,9 +40,15 @@
          Execute as:     Me
          Who has access: ANYONE
        Deploy, approve, copy the Web app URL (/exec).
+       "Me" is whoever deploys: the emails come from that account and
+       count against its daily mail quota. One admin owns the deployment;
+       the other can read and verify every record in the Sheet.
 
-   6.  Paste that URL into content.js:
-         certificate: { endpoint: "https://script.google.com/.../exec", ... }
+   6.  Paste that URL into community.js, NOT content.js (only the
+       community edition issues certificates):
+         S.certificate.endpoint = "https://script.google.com/.../exec";
+       Commit on main, then merge main into community-hub and deploy
+       ai-community.
 
    7.  Finish the lessons on the live site, ask for a certificate, and
        confirm you get the mail and land back on the page. Unlike the
@@ -54,7 +62,7 @@
    Nothing is written while somebody works through the lessons. The
    first write happens when they ask for a certificate.
 
-   KILL SWITCH: clear certificate.endpoint in content.js and deploy.
+   KILL SWITCH: clear S.certificate.endpoint in community.js and deploy.
    The button disappears and the page stops asking for anything.
    ============================================================= */
 
@@ -62,11 +70,13 @@
    against this list. Without that check anybody could call this script
    with their own origin and use Purple Maiʻa's domain as a redirector
    to send people to a site of their choosing, which is a phishing tool
-   with your name on it. Compare in full, never with indexOf. */
+   with your name on it. Compare in full, never with indexOf.
+
+   Only the community edition issues certificates, so the staff site is
+   deliberately absent. It needs HTTPS on ai-community first. */
 var ALLOWED_ORIGINS = [
-  'https://ai-page.sandbox.purplemaia.org/',
-  'https://kenethm.github.io/PurpleMaia---AI-Page/',
-  'http://127.0.0.1:8777/'          // local testing; drop before launch
+  'https://ai-community.sandbox.purplemaia.org/',
+  'http://127.0.0.1:5500/'          // local testing; drop before launch
 ];
 
 var SHEET_REQ   = 'requests';
@@ -231,13 +241,23 @@ function _b64url(s) {
   return Utilities.base64EncodeWebSafe(Utilities.newBlob(s).getBytes()).replace(/=+$/, '');
 }
 
-/* An Apps Script web app renders inside an iframe, so the navigation has to
-   be aimed at the top window or the site loads inside Google's frame. */
+/* An Apps Script web app renders inside a sandboxed iframe, so the navigation
+   has to be aimed at the top window or the site loads inside Google's frame.
+   The sandbox only lets that frame move the top window after a click, so a
+   script-only redirect hangs on this page. The button is the redirect; the
+   script stays as a fast path for browsers that still allow it. The token is
+   already burned by now, so this page has to work on the first visit. */
 function _redirect(url) {
+  var href = _esc(url).replace(/"/g, '&quot;');
   return HtmlService.createHtmlOutput(
-    '<!doctype html><meta charset="utf-8"><title>Opening your certificate</title>' +
-    '<p style="font-family:system-ui,sans-serif">Opening your certificate…</p>' +
-    '<script>window.top.location.href=' + JSON.stringify(url) + ';<\/script>'
+    '<!doctype html><meta charset="utf-8"><title>Your certificate is ready</title>' +
+    '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:34em;' +
+    'margin:12vh auto;padding:0 20px;font-size:16px;line-height:1.6;color:#15031f">' +
+    '<p>Your certificate is ready.</p>' +
+    '<p><a href="' + href + '" target="_top" style="display:inline-block;padding:11px 20px;' +
+    'background:#6b2f96;color:#fff;border-radius:999px;text-decoration:none;font-weight:600">' +
+    'Open my certificate</a></p></div>' +
+    '<script>try { window.top.location.href = ' + JSON.stringify(url) + '; } catch (e) {}<\/script>'
   );
 }
 

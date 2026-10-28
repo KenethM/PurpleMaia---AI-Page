@@ -2007,11 +2007,9 @@ window.SITE = {
     { q: "How deep does it go?",
       a: "This is an introductory course: enough to understand how these tools work and to use them sensibly. Fine-tuning, RLHF, open weights and agents get a short introduction at the end of Module 2. Broader questions, such as who governs AI, where training data comes from and whether people agreed to it, and Indigenous data sovereignty, need more room than a 101 can give them." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The practice at the end of each module is for you. Like your reading progress, answers are kept in your own browser and nothing is uploaded anywhere. Two things on this page can send anything, and both wait for you to press a button: the feedback form, which sends only what you type into it, and the certificate, which only appears once you have finished every module and only if you want one." },
+      a: "No and no. The practice at the end of each module is for you. Like your reading progress, answers are kept in your own browser and nothing is uploaded anywhere. One thing on this page can send anything, and it waits for you to press a button: the feedback form, which sends only what you type into it." },
     { q: "What does the feedback button send?",
       a: "Only what you send, and only when you press send: your note, which of the three kinds you picked, your name if you chose to fill it in, which module and section you were looking at, the address you were on, which version of the page you had on if it offers a choice, and your browser and window size so a layout bug can be reproduced. No account, no cookie, no tracking, and no raw device fingerprint. It lands in a spreadsheet in Purple Maiʻa’s own Drive and turns into a write-up every Friday." },
-    { q: "What is the certificate, and what does asking for one send?",
-      a: "It appears once you have finished every module, and it is optional — nothing on this page is locked behind it. Asking for one sends three things: the name you want printed, an email address, and how much of the course you finished. Nothing else, and nothing at all until you press the button. There is no password and no account: you get a one-time link by email, clicking it proves the address is yours, and that is the whole sign-in. Your reading progress, your quiz answers and the sections you opened never leave your browser. The record lives in a spreadsheet in Purple Maiʻa’s own Drive, and the code printed on the certificate is how anyone can check it with us." },
     { q: "Where are the Purple Maiʻa videos?",
       a: "All 19 of them. Every lesson in every module now carries Purple Maiʻa's own animation, made from this course's scripts, and there are no outside stand-ins left. If a lesson ever goes back to an outside explainer, a notice under the player says so — that notice is keyed to the kind of video, not to a flag anyone has to remember to set." },
     { q: "Will these materials stay up?",
@@ -2146,6 +2144,8 @@ window.SITE = {
      endpoint: the Apps Script web-app URL. Leave it "" and the whole feature
        stays hidden, so the page behaves exactly as it did before.
        Setup steps: tools/certificate-apps-script.js
+       Only the community edition issues certificates, so it stays "" here
+       and community.js sets it. Its FAQ is the one that describes them.
 
      requireAll: true means the certificate only unlocks at 100%. Set a number
        instead to unlock earlier, e.g. 15 of 19.

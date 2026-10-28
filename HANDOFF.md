@@ -65,6 +65,68 @@ with it. That is the thing to watch, not the command.
 
 ---
 
+## 2026-10-28 — Module pager, and certificates for the community edition only
+
+**Who:** Sheila, with Claude
+**Branch:** `main`, on top of `c1bbafa`
+**State:** pager pushed to both branches (PRs open upstream). Certificate prep in the working tree on `main`: not committed, not merged down, not deployed.
+**Files:** `assets/app.js`, `assets/styles.css`, `index.html`, `community.js`, `content.js`, `tools/certificate-apps-script.js`
+
+### What changed
+- **Previous / next pager** at the end of every module (`c1bbafa`): back on the
+  left, next on the right, same height, next is the filled card. Module 1's
+  back card goes to all modules. Stacks next-first under 560px.
+- **Certificates are the community edition's alone.** `community.js` now sets
+  `S.certificate.endpoint` (still `""`); `content.js` keeps it `""` for staff.
+  The staff FAQ's certificate question is gone and its "what can send
+  anything" answer now names only the feedback form, which closes the open
+  item about those answers.
+- **Certificate course name is "Artificial Intelligence 101"**, replacing the
+  deliberate "Intro to AI". Safe because none had been issued.
+- **`ALLOWED_ORIGINS`** now lists `https://ai-community.sandbox.purplemaia.org/`
+  and the local test address only. The staff origins were removed.
+- Setup notes: Sheet in a Shared Drive, shared with both admins (Keneth and
+  Sheila); paste the URL into `community.js`, not `content.js`.
+
+- **Certificate redirect fixed.** The Apps Script's "Opening your
+  certificate…" page hung: the sandboxed frame may only move the top window
+  after a click. It now shows an "Open my certificate" button (`target="_top"`)
+  and keeps the script redirect as a fast path. Deployed as a new version.
+- **Printed certificate redesigned.** Landscape letter, `@page { margin: 0 }`
+  (which is what keeps the browser's date/title/URL off the PDF), double
+  purple/gold frame, "This is to certify that", rule under the name, and a
+  Date / Issued by signature row. Colours are fixed in the print block so a
+  dark-mode screen still prints a light sheet.
+- **Logo fixed on the certificate**, screen and paper: `pm-mark.png` plus the
+  name as live text, replacing the lockup PNG whose white wordmark vanished in
+  light mode and on paper. The footer logo still uses the lockup.
+- **"24 of 24 lessons" was wrong**: n/total count sections plus practices,
+  not lessons. A finished run now reads "All 3 modules, practice included".
+
+### Decisions worth knowing
+- Whoever deploys the Apps Script is "Me": the mail comes from that account
+  and uses its quota. One admin owns the deployment; both can read the Sheet.
+- The request is `no-cors`, so a rejected origin still shows "Check your
+  inbox". No email means check `ALLOWED_ORIGINS` first.
+
+### Open / next
+- [ ] Enable HTTPS on `ai-community` (the allow-list assumes https).
+- [ ] Create the Sheet + Apps Script, deploy, paste `/exec` into `community.js`.
+- [ ] Test end to end from `http://127.0.0.1:8777/`, then on the live site;
+      then drop the local origin and publish a new version of the deployment.
+- [ ] Merge `main` into `community-hub` and deploy `ai-community`.
+
+### How it was tested
+`node --check` on all four JS files. Loaded `content.js` + `community.js` in
+Node: staff endpoint `""`, community endpoint `""`, both course names correct.
+Rendered the staff FAQ: no certificate question, button hidden. Sheila ran the
+full flow end to end from `http://127.0.0.1:5500/` (request, mail, link,
+certificate). The print design was checked as Chrome PDFs from light and dark
+mode: one landscape page each, no browser header/footer. Not checked in Safari
+or Firefox print.
+
+---
+
 ## 2026-10-27 (night) — Our films in front on staff, and the switcher saved
 
 **Who:** Keneth, with Claude
