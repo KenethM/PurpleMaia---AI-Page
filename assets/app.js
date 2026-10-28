@@ -416,31 +416,150 @@
   }
 
   /* =====================================================
+     SOUND
+     Synthesised in the browser, so there are no audio files to load. A right
+     answer is a soft bell that climbs a pentatonic step with every answer in
+     a streak; a miss is a low, muted pair of notes; a sealed result plays a
+     short arpeggio. On by default and quiet. The speaker button on every
+     quiz turns it off, and the choice is remembered in this browser.
+     The AudioContext is only made on the first answer, which is always a
+     click, so no browser blocks it.
+     ===================================================== */
+  var SKEY = 'aihub:sound';
+  var sfx = (function () {
+    var on = true, ctx = null;
+    try { on = localStorage.getItem(SKEY) !== 'off'; } catch (e) {}
+    // C major pentatonic from C5: every step up sounds like progress, none clash.
+    var SCALE = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
+
+    function audio() {
+      if (!ctx) {
+        var A = window.AudioContext || window.webkitAudioContext;
+        if (!A) return null;
+        try { ctx = new A(); } catch (e) { return null; }
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    function tone(freq, at, dur, vol, type) {
+      var c = audio();
+      if (!c) return;
+      var t = c.currentTime + at;
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }
+    // A sine with a quiet octave above it reads as a bell rather than a beep.
+    function bell(freq, at, vol) { tone(freq, at, 0.6, vol); tone(freq * 2, at, 0.3, vol * 0.22); }
+
+    return {
+      isOn: function () { return on; },
+      set: function (v) {
+        on = !!v;
+        try { localStorage.setItem(SKEY, on ? 'on' : 'off'); } catch (e) {}
+      },
+      right: function (streak) {
+        if (!on) return;
+        bell(SCALE[Math.min(Math.max(streak, 1), SCALE.length) - 1], 0, 0.07);
+      },
+      wrong: function () {
+        if (!on) return;
+        tone(196, 0, 0.22, 0.045, 'triangle');
+        tone(174.61, 0.09, 0.3, 0.035, 'triangle');
+      },
+      // Neutral: a guess recorded, a pair settled after a slip.
+      tap: function () {
+        if (!on) return;
+        tone(659.25, 0, 0.18, 0.03);
+      },
+      sealed: function (perfect) {
+        if (!on) return;
+        var run = perfect ? [0, 2, 3, 5, 7] : [0, 2, 3];
+        run.forEach(function (k, n) { bell(SCALE[k], n * 0.11, 0.06); });
+      }
+    };
+  })();
+
+  var SOUND_ON  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg>';
+  var SOUND_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+  function soundButton() {
+    var on = sfx.isOn();
+    return '<button class="quiz-sound" type="button" data-sound aria-pressed="' + on + '" ' +
+             'aria-label="Sound effects" title="' + (on ? 'Sound on' : 'Sound off') + '">' +
+             (on ? SOUND_ON : SOUND_OFF) + '</button>';
+  }
+  // One switch for the whole page: flipping it on any quiz flips them all.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('[data-sound]');
+    if (!btn) return;
+    var home = btn.closest('.quiz') || document;     // before the button is replaced
+    sfx.set(!sfx.isOn());
+    $$('[data-sound]').forEach(function (b) { b.outerHTML = soundButton(); });
+    if (sfx.isOn()) sfx.tap();
+    var again = $('[data-sound]', home);
+    if (again) again.focus();
+  });
+
+  /* =====================================================
      QUIZ ENGINE
-     One component, three homes: the check at the end of each
-     module, Term match, and Would you send it? Give it a host element
-     and a list of { q, options, answer, why }.
+     One component, three homes: the checks inside each module,
+     Term match, and Would you send it? Give it a host element and
+     a list of items. Each item has a `type`:
+
+       choice     (the default) { q, options, answer, why, fixed? }
+       truefalse  { q: a statement, answer: true | false, why }
+       order      { q, steps: [in the right order], why }
+       match      { q, pairs: [[term, meaning], …], why? }
+       sort       { q, buckets: [labels], cards: [{ text, bucket, why }], why? }
+
+     Scoring is in points, not screens: a choice, a true/false or an order
+     is one point, a match board one per pair, a sort one per card. That way
+     a board of five pairs is worth what five questions were.
+
      opts.onFinish(score, total)  — called once, at the end
      opts.restart()               — return fresh items for "Try again"
-     opts.doneLabel               — heading on the final card
+     opts.previous()              — the best run so far, for "New best"
+     opts.next()                  — { href, label } for the onward button
      ===================================================== */
   function renderQuiz(host, items, opts) {
     opts = opts || {};
-    var i = 0, score = 0, streak = 0, marks = [];
+    var i = 0, streak = 0, marks = [];
     var TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     var CROSS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
 
-    /* Shuffle each question's options at render time and remap `answer` to
-       follow. Content authors can write the correct option first — which is
-       the natural way to write one — without the answer always being A.
-       A question with `fixed: true` keeps its given order, for the rare case
-       where the options only make sense in sequence. */
+    /* Shuffle at render time so the answer is never reliably in one place,
+       and content authors can write the correct option first, which is the
+       natural way to write one. A choice with `fixed: true` keeps its order,
+       for the rare case where the options only make sense in sequence. */
     function prepare(list) {
       return (list || []).map(function (it) {
-        if (it.fixed) return it;
+        var type = it.type || 'choice';
+        if (type === 'truefalse') {
+          return { type: 'choice', q: it.q, options: ['True', 'False'], answer: it.answer ? 0 : 1, why: it.why, tf: true };
+        }
+        if (type === 'order') {
+          var start = it.steps.map(function (_, n) { return n; });
+          // Never start in the right order: that would be a free point.
+          do { shuffle(start); } while (start.length > 1 && start.every(function (k, n) { return k === n; }));
+          return { type: 'order', q: it.q, steps: it.steps, start: start, why: it.why };
+        }
+        if (type === 'match') {
+          return { type: 'match', q: it.q, pairs: shuffle(it.pairs.slice()),
+                   defs: shuffle(it.pairs.map(function (_, n) { return n; })), why: it.why };
+        }
+        if (type === 'sort') {
+          return { type: 'sort', q: it.q, buckets: it.buckets, cards: shuffle(it.cards.slice()), why: it.why };
+        }
+        if (it.fixed) return { type: 'choice', q: it.q, options: it.options, answer: it.answer, why: it.why };
         var order = it.options.map(function (_, n) { return n; });
         shuffle(order);
         return {
+          type: 'choice',
           q: it.q,
           options: order.map(function (n) { return it.options[n]; }),
           answer: order.indexOf(it.answer),
@@ -450,72 +569,45 @@
     }
     items = prepare(items);
 
-    function drawQuestion() {
-      var it = items[i];
-      host.innerHTML =
-        '<div class="quiz">' +
-          '<div class="quiz-head">' +
-            '<p class="quiz-q">' + esc(it.q) + '</p>' +
-            '<span class="quiz-meta">' +
-              '<span class="quiz-streak" data-streak' + (streak >= 2 ? '' : ' hidden') + '>' + streak + ' in a row</span>' +
-              (items.length > 1 ? '<span class="quiz-step">' + (i + 1) + ' / ' + items.length + '</span>' : '') +
-            '</span>' +
-          '</div>' +
-          '<ul class="quiz-options">' +
-            it.options.map(function (o, n) {
-              return '<li><button class="quiz-option" type="button" data-n="' + n + '">' +
-                       '<span class="mark">' + String.fromCharCode(65 + n) + '</span>' +
-                       '<span>' + esc(o) + '</span>' +
-                     '</button></li>';
-            }).join('') +
-          '</ul>' +
-          '<div class="quiz-foot" data-foot hidden></div>' +
+    function head(it, kicker) {
+      return '<div class="quiz-head">' +
+          '<p class="quiz-q">' + (kicker ? '<span class="quiz-kicker">' + esc(kicker) + '</span>' : '') + esc(it.q) + '</p>' +
+          '<span class="quiz-meta">' +
+            '<span class="quiz-streak" data-streak' + (streak >= 2 ? '' : ' hidden') + '>' + streak + ' in a row</span>' +
+            (items.length > 1 ? '<span class="quiz-step">' + (i + 1) + ' / ' + items.length + '</span>' : '') +
+            soundButton() +
+          '</span>' +
         '</div>';
-
-      $$('.quiz-option', host).forEach(function (btn) {
-        btn.addEventListener('click', function () { answer(Number(btn.getAttribute('data-n'))); });
-      });
     }
 
-    function answer(n) {
-      var it = items[i];
-      var right = n === it.answer;
-      if (right) { score++; streak++; } else { streak = 0; }
-      marks[i] = right;
-
-      /* A right pick gets stamped: the row presses down, violet floods out
-         from its mark and the tick inks in (CSS: .just-stamped). The answer
-         revealed after a wrong pick gets the tick without the ceremony. */
-      $$('.quiz-option', host).forEach(function (btn, idx) {
-        btn.disabled = true;
-        var mark = btn.querySelector('.mark');
-        if (idx === it.answer) {
-          btn.classList.add('is-correct');
-          mark.innerHTML = TICK + (right ? '<i class="ink" aria-hidden="true"></i>' : '');
-          if (right) btn.classList.add('just-stamped');
-        } else if (idx === n) {
-          btn.classList.add('is-wrong');
-          mark.innerHTML = CROSS;
-        }
-      });
-
-      var streakEl = $('[data-streak]', host);
-      if (streakEl) {
-        streakEl.hidden = streak < 2;
-        if (streak >= 2) {
-          streakEl.textContent = streak + ' in a row';
-          streakEl.classList.remove('bump');
-          void streakEl.offsetWidth;          // restart the bump animation
-          streakEl.classList.add('bump');
-        }
+    /* Every point goes through here: it is what keeps the streak, the sound
+       and the tally in step whatever kind of question earned it. */
+    function mark(ok) {
+      marks.push(ok);
+      if (ok) { streak++; sfx.right(streak); } else { streak = 0; sfx.wrong(); }
+      paintStreak();
+    }
+    function paintStreak() {
+      var el = $('[data-streak]', host);
+      if (!el) return;
+      el.hidden = streak < 2;
+      if (streak >= 2) {
+        el.textContent = streak + ' in a row';
+        el.classList.remove('bump');
+        void el.offsetWidth;          // restart the bump animation
+        el.classList.add('bump');
       }
+    }
 
+    /* The explanation and the way on, shared by every type. */
+    function settle(right, whyHtml, after, extraHtml) {
       var last = i === items.length - 1;
       var why = document.createElement('p');
       why.className = 'quiz-why' + (right ? ' is-right' : '');
       why.setAttribute('role', 'status');
-      why.innerHTML = '<strong>' + (right ? 'Yes.' : 'Not quite.') + '</strong> ' + esc(it.why);
-      $('.quiz-options', host).insertAdjacentElement('afterend', why);
+      why.innerHTML = '<strong>' + (right ? 'Yes.' : 'Not quite.') + '</strong> ' + whyHtml;
+      after.insertAdjacentElement('afterend', why);
+      if (extraHtml) why.insertAdjacentHTML('afterend', extraHtml);
 
       var foot = $('[data-foot]', host);
       foot.hidden = false;
@@ -526,12 +618,279 @@
         if (last) { drawDone(); return; }
         i++; drawQuestion();
       });
-      // The picked option is now disabled, so hand keyboard focus on.
+      // Whatever was pressed is now disabled, so hand keyboard focus on.
       try { next.focus({ preventScroll: true }); } catch (e) { next.focus(); }
     }
 
+    function drawQuestion() {
+      var it = items[i];
+      if (it.type === 'order') return drawOrder(it);
+      if (it.type === 'match') return drawMatch(it);
+      if (it.type === 'sort') return drawSort(it);
+      drawChoice(it);
+    }
+
+    /* ---------- choice, and true/false, which is a choice of two ---------- */
+    function drawChoice(it) {
+      host.innerHTML =
+        '<div class="quiz">' +
+          head(it, it.tf ? 'True or false?' : '') +
+          '<ul class="quiz-options' + (it.tf ? ' is-tf' : '') + '">' +
+            it.options.map(function (o, n) {
+              return '<li><button class="quiz-option" type="button" data-n="' + n + '">' +
+                       // True/False needs no letter; its mark waits for the tick or cross.
+                       '<span class="mark">' + (it.tf ? '' : String.fromCharCode(65 + n)) + '</span>' +
+                       '<span>' + esc(o) + '</span>' +
+                     '</button></li>';
+            }).join('') +
+          '</ul>' +
+          '<div class="quiz-foot" data-foot hidden></div>' +
+        '</div>';
+
+      $$('.quiz-option', host).forEach(function (btn) {
+        btn.addEventListener('click', function () { answerChoice(it, Number(btn.getAttribute('data-n'))); });
+      });
+    }
+    function answerChoice(it, n) {
+      var right = n === it.answer;
+      /* A right pick gets stamped: the row presses down, violet floods out
+         from its mark and the tick inks in (CSS: .just-stamped). The answer
+         revealed after a wrong pick gets the tick without the ceremony. */
+      $$('.quiz-option', host).forEach(function (btn, idx) {
+        btn.disabled = true;
+        var m = btn.querySelector('.mark');
+        if (idx === it.answer) {
+          btn.classList.add('is-correct');
+          m.innerHTML = TICK + (right ? '<i class="ink" aria-hidden="true"></i>' : '');
+          if (right) btn.classList.add('just-stamped');
+        } else if (idx === n) {
+          btn.classList.add('is-wrong');
+          m.innerHTML = CROSS;
+        }
+      });
+      mark(right);
+      settle(right, esc(it.why), $('.quiz-options', host));
+    }
+
+    /* ---------- put in order ----------
+       Arrows rather than dragging: they work the same with a mouse, a thumb,
+       a keyboard and a screen reader, and nothing can be dropped by accident. */
+    function drawOrder(it) {
+      var at = it.start.slice();
+      host.innerHTML =
+        '<div class="quiz">' +
+          head(it, 'Put in order') +
+          '<ol class="quiz-order" data-list></ol>' +
+          '<p class="sr-only" aria-live="polite" data-said></p>' +
+          '<div class="quiz-foot" data-foot><button class="btn btn-primary btn-small" type="button" data-order-done>Check the order</button></div>' +
+        '</div>';
+      var list = $('[data-list]', host);
+
+      function paint(focusKey, focusDir) {
+        list.innerHTML = at.map(function (k, pos) {
+          var text = esc(it.steps[k]);
+          return '<li class="order-row" data-k="' + k + '">' +
+              '<span class="order-n" aria-hidden="true">' + (pos + 1) + '</span>' +
+              '<span class="order-text">' + text + '</span>' +
+              '<span class="order-move">' +
+                '<button type="button" data-move="-1" aria-label="Move up: ' + text + '"' + (pos === 0 ? ' disabled' : '') + '>' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
+                '<button type="button" data-move="1" aria-label="Move down: ' + text + '"' + (pos === at.length - 1 ? ' disabled' : '') + '>' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+              '</span>' +
+            '</li>';
+        }).join('');
+        if (focusKey != null) {
+          var row = $('[data-k="' + focusKey + '"]', list);
+          var btn = row && ($('[data-move="' + focusDir + '"]:not(:disabled)', row) || $('[data-move]:not(:disabled)', row));
+          if (btn) btn.focus();
+        }
+      }
+      paint();
+
+      list.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-move]');
+        if (!btn || btn.disabled) return;
+        var k = Number(btn.closest('[data-k]').getAttribute('data-k'));
+        var dir = Number(btn.getAttribute('data-move'));
+        var pos = at.indexOf(k), to = pos + dir;
+        if (to < 0 || to >= at.length) return;
+        at[pos] = at[to]; at[to] = k;
+        paint(k, dir);
+        $('[data-said]', host).textContent = 'Now step ' + (to + 1) + ' of ' + at.length + '.';
+      });
+
+      $('[data-order-done]', host).addEventListener('click', function () {
+        var right = at.every(function (k, pos) { return k === pos; });
+        $$('.order-row', list).forEach(function (row, pos) {
+          var ok = at[pos] === pos;
+          row.classList.add(ok ? 'is-correct' : 'is-wrong');
+          $('.order-n', row).innerHTML = ok ? TICK : CROSS;
+        });
+        $$('[data-move]', list).forEach(function (b) { b.disabled = true; });
+        mark(right);
+        settle(right, esc(it.why), list, right ? '' :
+          '<ol class="order-answer" aria-label="The right order">' +
+            it.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>');
+      });
+    }
+
+    /* ---------- match board ----------
+       Pick a term, then the meaning that goes with it (or the other way
+       round). A pair matched with no slip on that term is a point; a slip
+       costs the point but the pair still has to be found, so the board
+       always ends complete. */
+    function drawMatch(it) {
+      var selT = null, selD = null, slipped = {}, matched = 0;
+      host.innerHTML =
+        '<div class="quiz">' +
+          head(it, 'Match them up') +
+          '<div class="match-board">' +
+            '<ul class="match-terms">' +
+              it.pairs.map(function (p, k) {
+                return '<li><button class="match-term" type="button" data-t="' + k + '" aria-pressed="false">' + esc(p[0]) + '</button></li>';
+              }).join('') +
+            '</ul>' +
+            '<ul class="match-defs">' +
+              it.defs.map(function (k) {
+                return '<li><button class="match-def" type="button" data-d="' + k + '" aria-pressed="false">' +
+                         '<span class="match-badge" aria-hidden="true"></span><span>' + esc(it.pairs[k][1]) + '</span></button></li>';
+              }).join('') +
+            '</ul>' +
+          '</div>' +
+          '<p class="sr-only" aria-live="polite" data-said></p>' +
+          '<div class="quiz-foot" data-foot hidden></div>' +
+        '</div>';
+      var said = $('[data-said]', host);
+
+      function press(sel, attr, k) {
+        $$('[' + attr + ']', host).forEach(function (b) {
+          var on = k != null && b.getAttribute(attr) === String(k);
+          b.classList.toggle('is-picked', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      }
+      function tryPair() {
+        if (selT == null || selD == null) return;
+        var t = $('[data-t="' + selT + '"]', host), d = $('[data-d="' + selD + '"]', host);
+        if (selT === selD) {
+          matched++;
+          var clean = !slipped[selT];
+          [t, d].forEach(function (b) { b.classList.remove('is-picked'); b.classList.add('is-matched'); b.disabled = true; });
+          $('.match-badge', d).textContent = it.pairs[selT][0];
+          marks.push(clean);
+          if (clean) { streak++; sfx.right(streak); } else sfx.tap();
+          paintStreak();
+          said.textContent = 'Matched: ' + it.pairs[selT][0] + '.';
+        } else {
+          slipped[selT] = true;
+          if (streak) { streak = 0; paintStreak(); }
+          sfx.wrong();
+          [t, d].forEach(function (b) {
+            b.classList.remove('is-picked', 'is-slip');
+            void b.offsetWidth;
+            b.classList.add('is-slip');
+          });
+          said.textContent = 'Not those two. Try another meaning.';
+        }
+        selT = selD = null;
+        press(null, 'data-t'); press(null, 'data-d');
+        if (matched === it.pairs.length) {
+          var clean = it.pairs.length - Object.keys(slipped).length;
+          var right = clean === it.pairs.length;
+          var line = right ? 'All ' + clean + ' matched first time.'
+                           : clean + ' of ' + it.pairs.length + ' matched first time.';
+          settle(right, esc(line + (it.why ? ' ' + it.why : '')), $('.match-board', host));
+        }
+      }
+      $$('.match-term', host).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = Number(b.getAttribute('data-t'));
+          selT = selT === k ? null : k;
+          press(null, 'data-t'); if (selT != null) press(null, 'data-t', selT);
+          tryPair();
+        });
+      });
+      $$('.match-def', host).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = Number(b.getAttribute('data-d'));
+          selD = selD === k ? null : k;
+          press(null, 'data-d'); if (selD != null) press(null, 'data-d', selD);
+          tryPair();
+        });
+      });
+    }
+
+    /* ---------- sort into buckets ----------
+       One card at a time. A right call moves on by itself after a beat; a
+       wrong one stops and explains, because that is the card worth reading. */
+    function drawSort(it) {
+      var c = 0, got = 0;
+      var filed = it.buckets.map(function () { return 0; });
+      host.innerHTML =
+        '<div class="quiz">' +
+          head(it, 'Sort them') +
+          '<div class="sort" data-sort></div>' +
+          '<div class="quiz-foot" data-foot hidden></div>' +
+        '</div>';
+      var box = $('[data-sort]', host);
+
+      function card() {
+        var cd = it.cards[c];
+        box.innerHTML =
+          '<p class="sort-count">Example ' + (c + 1) + ' of ' + it.cards.length + '</p>' +
+          '<p class="sort-card" tabindex="-1">' + esc(cd.text) + '</p>' +
+          '<ul class="sort-buckets">' +
+            it.buckets.map(function (b, n) {
+              return '<li><button class="sort-bucket" type="button" data-b="' + n + '">' +
+                       '<span>' + esc(b) + '</span><span class="sort-filed" aria-hidden="true">' + filed[n] + '</span>' +
+                     '</button></li>';
+            }).join('') +
+          '</ul>' +
+          '<div class="sort-after" data-after></div>';
+        $$('.sort-bucket', box).forEach(function (b) {
+          b.addEventListener('click', function () { pick(Number(b.getAttribute('data-b'))); });
+        });
+      }
+      function pick(n) {
+        var cd = it.cards[c];
+        var ok = n === cd.bucket;
+        if (ok) got++;
+        filed[cd.bucket]++;
+        $$('.sort-bucket', box).forEach(function (b, idx) {
+          b.disabled = true;
+          if (idx === cd.bucket) { b.classList.add('is-correct'); $('.sort-filed', b).textContent = filed[idx]; }
+          else if (idx === n) b.classList.add('is-wrong');
+        });
+        mark(ok);
+        var last = c === it.cards.length - 1;
+        var after = $('[data-after]', box);
+        if (ok && !last) {
+          after.innerHTML = '<p class="sort-note is-right" role="status"><strong>Yes.</strong> ' + esc(cd.why) + '</p>';
+          setTimeout(function () { c++; card(); $('.sort-card', box).focus({ preventScroll: true }); }, calm() ? 1600 : 1300);
+          return;
+        }
+        if (!ok) {
+          after.innerHTML = '<p class="sort-note" role="status"><strong>Not quite.</strong> ' + esc(cd.why) + '</p>';
+        }
+        if (last) {
+          var right = got === it.cards.length;
+          var line = (right ? 'All ' + got : got + ' of ' + it.cards.length) + ' sorted right.';
+          if (ok) after.innerHTML = '';
+          settle(right, esc(line + (it.why ? ' ' + it.why : '')), box);
+          return;
+        }
+        after.innerHTML += '<button class="btn btn-primary btn-small" type="button" data-on>Next example</button>';
+        var on = $('[data-on]', after);
+        on.addEventListener('click', function () { c++; card(); $('.sort-card', box).focus({ preventScroll: true }); });
+        try { on.focus({ preventScroll: true }); } catch (e) { on.focus(); }
+      }
+      card();
+    }
+
     function drawDone() {
-      var total = items.length;
+      var total = marks.length;
+      var score = marks.filter(Boolean).length;
       var note = score === total ? 'all of them. You can explain this to somebody else now.'
                : score >= total - 1 ? 'close. The one you missed is worth a re-read.'
                : 'worth another pass through the takeaways above.';
@@ -539,7 +898,7 @@
       var prev = opts.previous ? opts.previous() : null;
       var again = '<button class="btn btn-ghost btn-small" type="button" data-again>Try again</button>';
 
-      if (pct >= 80) drawSealed(total, pct, note, prev, again);
+      if (pct >= 80) drawSealed(score, total, pct, note, prev, again);
       else {
         host.innerHTML =
           '<div class="quiz">' +
@@ -549,16 +908,16 @@
       }
       $('[data-again]', host).addEventListener('click', function () {
         items = prepare(opts.restart ? opts.restart() : items);   // reshuffle on every run
-        i = 0; score = 0; streak = 0; marks = []; drawQuestion();
+        i = 0; streak = 0; marks = []; drawQuestion();
       });
       if (opts.onFinish) opts.onFinish(score, total);
     }
 
-    /* 80% or better: the page gets sealed. One pip per question fills in
+    /* 80% or better: the page gets sealed. One pip per point fills in
        order while the score counts up with it, then the seal stamps down.
        The finished state is in the markup; the motion only replays it. */
-    function drawSealed(total, pct, note, prev, again) {
-      var still = reduceMotion && reduceMotion.matches;
+    function drawSealed(score, total, pct, note, prev, again) {
+      var still = calm();
       var step = Math.min(70, Math.round(700 / total));      // the tally never takes more than ~0.7s
       var landAt = total * step + 120;
       var best = prev && prev.total === total && score > prev.score;
@@ -587,8 +946,10 @@
           '</div>' +
         '</div>';
 
-      var head = $('.sealed-score', host);
-      try { head.focus({ preventScroll: true }); } catch (e) {}
+      var headEl = $('.sealed-score', host);
+      try { headEl.focus({ preventScroll: true }); } catch (e) {}
+      // The arpeggio lands with the seal.
+      setTimeout(function () { sfx.sealed(score === total); }, still ? 0 : landAt);
       if (still) return;
       var count = $('[data-count]', host), shown = 0;
       marks.forEach(function (ok, n) {
@@ -946,29 +1307,28 @@
     draw();
   }
 
-  /* ---------- Term match (built from the glossary) ---------- */
-  /* `track` limits the draw, answers and wrong options alike, to glossary
-     terms whose `module` is that track id, so each module's Term match only
-     asks about what that module taught. "all" or nothing uses every term. */
-  function matchItems(n, track) {
-    var terms = (S.glossary || []).filter(function (g) {
-      return !track || track === 'all' || g.module === track;
+  /* ---------- Term match (a board built from the glossary) ----------
+     `terms` names the glossary entries to draw from, which is how a board
+     avoids re-asking a term a lesson question already covers. Without it,
+     the draw is every term whose `module` is the entry's track. `rounds` is
+     how many pairs go on the board, picked fresh on every run. Each meaning
+     is the definition's first sentence: the board is for recognising a
+     term, and the glossary under Reference has the rest. */
+  function matchBoard(cfg) {
+    var pool = (S.glossary || []).filter(function (g) {
+      if (cfg.terms) return cfg.terms.indexOf(g.term) >= 0;
+      return !cfg.module || cfg.module === 'all' || g.module === cfg.module;
     });
-    if (terms.length < 4) return [];
-    shuffle(terms);
-    return terms.slice(0, Math.min(n, terms.length)).map(function (g) {
-      var others = shuffle(terms.filter(function (t) { return t !== g; })).slice(0, 3);
-      var opts = shuffle(others.map(function (t) { return t.term; }).concat([g.term]));
-      return {
-        q: g.def,
-        options: opts,
-        answer: opts.indexOf(g.term),
-        why: 'The term is “' + g.term + '”. Every one of these is in the glossary, under Reference.'
-      };
+    if (pool.length < 3) return null;
+    shuffle(pool);
+    var pairs = pool.slice(0, Math.min(cfg.rounds || 5, pool.length)).map(function (g) {
+      var first = /^.*?[.!?](?=\s|$)/.exec(g.def);
+      return [g.term, first ? first[0] : g.def];
     });
+    return { type: 'match', q: cfg.prompt || 'Match each term to what it means.', pairs: pairs, why: cfg.why };
   }
   function buildMatch(host, cfg) {
-    var make = function () { return matchItems(cfg.rounds || 6, cfg.module); };
+    var make = function () { var b = matchBoard(cfg); return b ? [b] : []; };
     renderQuiz(host, make(), { restart: make });
   }
 
@@ -1356,18 +1716,50 @@
       return mod === m.track || (last && mod === 'all');
     });
   }
-  /* The module's whole quiz: its lessons' questions, then the question
-     activities. Term match draws fresh glossary questions on every call, so
-     "Try again" gets a new set. */
-  function quizItemsFor(m) {
-    var items = moduleLessonIds(m).reduce(function (all, id) {
+  /* A module's practice, as one or more checks.
+
+     Without `checks` in content.js a module has one, at the end, holding
+     every lesson's questions and every question activity: the shape this
+     page always had. With `checks`, each one names its lessons and its
+     activities and sits right after the section in `after`, so a long
+     module is tested in the stretch it covers rather than all at the end.
+
+     The last check keeps the key "module:<id>" and the section "practice",
+     so a result saved before checks existed still counts, and old
+     #/module/<id>/practice links still land on it. */
+  function checksFor(m) {
+    var acts = quizActivitiesFor(m);
+    if (!m.checks || !m.checks.length) {
+      return [{ key: 'module:' + m.id, sec: 'practice', title: m.title, lessons: moduleLessonIds(m), acts: acts, last: true }];
+    }
+    return m.checks.map(function (c, k) {
+      var last = k === m.checks.length - 1;
+      return {
+        key: last ? 'module:' + m.id : 'module:' + m.id + ':' + c.id,
+        sec: last ? 'practice' : 'check-' + c.id,
+        title: c.title,
+        after: last ? null : c.after,
+        lessons: c.lessons || [],
+        acts: acts.filter(function (p) { return (c.practice || []).indexOf(p.id) >= 0; }),
+        last: last
+      };
+    });
+  }
+  /* One check's items: its lessons' questions, then its activities. Term
+     match deals a fresh board on every call, so "Try again" gets new pairs. */
+  function checkItems(c) {
+    var items = c.lessons.reduce(function (all, id) {
       return all.concat(((S.quizzes || {})[id]) || []);
     }, []);
-    quizActivitiesFor(m).forEach(function (p) {
-      if (p.type === 'scenarios') items = items.concat(p.items || []);
-      else if (p.type === 'match') items = items.concat(matchItems(p.rounds || 6, p.module));
+    c.acts.forEach(function (p) {
+      if (p.type === 'match') { var b = matchBoard(p); if (b) items.push(b); }
+      else if (p.type === 'sort') items.push({ type: 'sort', q: p.prompt, buckets: p.buckets, cards: p.cards, why: p.note });
+      else items = items.concat(p.items || []);
     });
     return items;
+  }
+  function liveChecks(m) {
+    return checksFor(m).filter(function (c) { return checkItems(c).length > 0; });
   }
   /* Hands-on demos (group "demo") sit inside the section they illustrate. */
   function demosFor(partId) {
@@ -1418,18 +1810,25 @@
   function moduleProgress(m) {
     var read = m.sections.filter(isRead).length;
     var total = m.sections.length;
-    var hasQuiz = quizItemsFor(m).length > 0;
-    var practice = !hasQuiz || !!quizState['module:' + m.id];
+    // Each check is a unit of its own; a module with none counts one, done.
+    var checks = liveChecks(m).map(function (c) { return { sec: c.sec, after: c.after, done: !!quizState[c.key] }; });
+    var passed = checks.filter(function (c) { return c.done; }).length;
+    var practice = passed === checks.length;
     var vids = [];
     m.sections.forEach(function (s) { vids = vids.concat(sectionVideoIds(s)); });
     var watched = vids.filter(function (id) { return watchedSet.has(id); }).length;
-    var units = read + watched + (practice ? 1 : 0), of = total + vids.length + 1;
-    // "Continue" goes to the first section still short of a read or a video.
+    var units = read + watched + (checks.length ? passed : 1), of = total + vids.length + Math.max(checks.length, 1);
+    // "Continue" goes to the first thing still undone, in reading order: a
+    // section short of a read or a video, or a check sitting after one.
     var next = null;
-    for (var i = 0; i < m.sections.length; i++) if (!sectionDone(m.sections[i])) { next = m.sections[i].id; break; }
+    for (var i = 0; i < m.sections.length && !next; i++) {
+      var s = m.sections[i];
+      if (!sectionDone(s)) { next = s.id; break; }
+      checks.forEach(function (c) { if (!next && c.after === s.id && !c.done) next = c.sec; });
+    }
     if (!next && !practice) next = 'practice';
     return {
-      read: read, total: total, practice: practice,
+      read: read, total: total, practice: practice, checks: checks,
       watched: watched, videos: vids.length,
       units: units, of: of,
       pct: Math.round((units / of) * 100),
@@ -1455,10 +1854,29 @@
     var next = MODULES[n + 1];
     var before = n > 0 ? MODULES[n - 1] : null;
     var st = moduleStats(m);
-    var quiz = quizItemsFor(m);
+    var checks = liveChecks(m);
     var demos = moduleParts(m).reduce(function (all, p) { return all.concat(demosFor(p.id)); }, []);
     var srcs = moduleSources(m);
-    var prev = quizState['module:' + m.id];
+    // A mid-module check sits after its section; the last one closes the article.
+    function checksAfter(secId) {
+      return checks.filter(function (c) { return secId ? c.after === secId : !c.after; });
+    }
+    function checkLabel(c) {
+      if (c.last && !m.checks) return 'Practice';
+      return (c.last ? 'Practice: ' : 'Quick check: ') + c.title;
+    }
+    function checkToc(c) {
+      return '<li class="art-toc-practice"><a href="' + moduleHref(m, c.sec) + '" data-toc="' + esc(c.sec) + '">' +
+               esc(checkLabel(c)) + '<span class="sr-only" data-read-note></span></a></li>';
+    }
+    function checkHtml(c) {
+      var prev = quizState[c.key];
+      return '<section class="art-section art-practice' + (c.last ? '' : ' is-midway') + '" id="s-' + esc(c.sec) + '" data-sec="' + esc(c.sec) + '">' +
+          '<h2>' + esc(c.last && !m.checks ? 'Practice: ' + m.title : checkLabel(c)) +
+            (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
+          '</h2><div class="art-quiz" data-check="' + esc(c.sec) + '"></div>' +
+        '</section>';
+    }
 
     moduleView.innerHTML =
       '<div class="wrap">' +
@@ -1482,14 +1900,13 @@
           '<nav class="art-toc" aria-label="In this module"><span class="art-toc-marker" aria-hidden="true"></span><p class="art-toc-title">In this module</p><ol>' +
             m.sections.map(function (s) {
               return '<li><a href="' + moduleHref(m, s.id) + '" data-toc="' + esc(s.id) + '">' + esc(s.heading) +
-                '<span class="sr-only" data-read-note></span></a></li>';
+                '<span class="sr-only" data-read-note></span></a></li>' +
+                checksAfter(s.id).map(checkToc).join('');
             }).join('') +
-            (quiz.length
-              ? '<li class="art-toc-practice"><a href="' + moduleHref(m, 'practice') + '" data-toc="practice">Practice' +
-                  '<span class="sr-only" data-read-note></span></a></li>'
-              : '') +
+            checksAfter(null).map(checkToc).join('') +
           '</ol></nav>' +
           '<article class="art-body" aria-labelledby="moduleTitle">' +
+            (m.warmup ? '<section class="art-warmup" id="s-warmup" aria-labelledby="warmupTitle"></section>' : '') +
             m.sections.map(function (s) {
               return '<section class="art-section" id="s-' + esc(s.id) + '" data-sec="' + esc(s.id) + '">' +
                 partHtml(s, 'h2', !(s.parts || []).length) +
@@ -1497,16 +1914,11 @@
                   return '<div class="art-part" id="s-' + esc(p.id) + '">' + partHtml(p, 'h3') + '</div>';
                 }).join('') +
                 ((s.parts || []).length ? citeLine(s) : '') +
-              '</section>';
+              '</section>' +
+              checksAfter(s.id).map(checkHtml).join('');
             }).join('') +
 
-            (quiz.length
-              ? '<section class="art-section art-practice" id="s-practice" data-sec="practice">' +
-                  '<h2>Practice: ' + esc(m.title) +
-                    (prev ? ' <span class="quiz-step">best so far: ' + prev.score + ' / ' + prev.total + '</span>' : '') +
-                  '</h2><div class="art-quiz" id="moduleQuiz"></div>' +
-                '</section>'
-              : '') +
+            checksAfter(null).map(checkHtml).join('') +
 
             // Back on the left, onward on the right, the way a book or a
             // docs site pages. Module 1 has nothing before it, so its way back
@@ -1583,28 +1995,135 @@
       });
     });
 
-    if (quiz.length) {
-      renderQuiz($('#moduleQuiz', moduleView), quiz, {
-        restart: function () { return quizItemsFor(m); },
-        previous: function () { return quizState['module:' + m.id] || null; },
+    checks.forEach(function (c) {
+      // A midway check sends you on to the section after it; the last one on
+      // to the next module.
+      var resume = null;
+      if (!c.last) {
+        var at = m.sections.map(function (s) { return s.id; }).indexOf(c.after);
+        resume = m.sections[at + 1];
+      }
+      renderQuiz($('[data-check="' + c.sec + '"]', moduleView), checkItems(c), {
+        restart: function () { return checkItems(c); },
+        previous: function () { return quizState[c.key] || null; },
         next: function () {
+          if (resume) return { href: moduleHref(m, resume.id), label: 'Keep reading' };
           return next ? { href: moduleHref(next), label: 'On to Module ' + (n + 2) }
                       : { href: '#/', label: 'Back to all modules' };
         },
         onFinish: function (score, total) {
-          saveQuizResult('module:' + m.id, score, total);
+          saveQuizResult(c.key, score, total);
           paintModuleProgress();
         }
       });
-    }
+    });
     if (demos.length) mountPractice(moduleView, demos);
     observeReveals(moduleView);
     watchToc();
     seen = {};
     scrolledSinceOpen = false;
     shownModule = m.id;
+    warmPainted = null;
+    if (m.warmup) paintWarmup(m);
     wasComplete = moduleProgress(m).complete;
     paintModuleProgress();
+  }
+
+  /* ---------- Take a guess ----------
+     A few questions at the top of a module that nobody can know yet. There
+     is no score and nothing counts toward progress: guessing first is what
+     makes the answer stick when it turns up, and the not-knowing is what
+     pulls you into the section. Each guess is kept in this browser; the
+     answer is only shown once the section that teaches it has been read.
+     Shape, in content.js: warmup: { title, blurb, items: [{ q, options,
+     answer, why, at }] }, where `at` is the section or part that answers. */
+  var GKEY = 'aihub:guess';
+  var guesses = (function () {
+    try { return JSON.parse(localStorage.getItem(GKEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  })();
+  function saveGuesses() {
+    try { localStorage.setItem(GKEY, JSON.stringify(guesses)); } catch (e) {}
+  }
+  // The section that carries a part, so a part's answer waits for its section.
+  function sectionOf(m, id) {
+    for (var i = 0; i < m.sections.length; i++) {
+      var s = m.sections[i];
+      if (s.id === id || (s.parts || []).some(function (p) { return p.id === id; })) return s;
+    }
+    return null;
+  }
+  function partHeading(m, id) {
+    var hit = moduleParts(m).filter(function (p) { return p.id === id; })[0];
+    return hit ? hit.heading : '';
+  }
+  var warmOrder = {}, warmPainted = null;
+  function paintWarmup(m) {
+    var box = $('#s-warmup', moduleView);
+    var w = m.warmup;
+    if (!box || !w) return;
+    var mine = guesses[m.id] || {};
+    // Repaint only when something visible changed, so a section being read
+    // while you are mid-guess never pulls the buttons out from under you.
+    var state = w.items.map(function (it, k) {
+      var s = sectionOf(m, it.at);
+      return (k in mine ? 'g' + mine[k] : '-') + (s && isRead(s) ? 'r' : '');
+    }).join('|');
+    if (warmPainted === m.id + state) return;
+    warmPainted = m.id + state;
+    // Options are shuffled once per visit, not on every repaint.
+    if (!warmOrder[m.id]) {
+      warmOrder[m.id] = w.items.map(function (it) { return shuffle(it.options.map(function (_, n) { return n; })); });
+    }
+    var left = w.items.filter(function (_, k) { return !(k in mine); }).length;
+
+    box.innerHTML =
+      '<div class="warmup-head">' +
+        '<p class="warmup-kicker">Before you start</p>' +
+        '<h2 id="warmupTitle">' + esc(w.title || 'Take a guess') + '</h2>' +
+        '<p class="warmup-blurb">' + esc(w.blurb || '') + '</p>' +
+      '</div>' +
+      '<ol class="warmup-list">' +
+        w.items.map(function (it, k) {
+          var sec = sectionOf(m, it.at);
+          var where = '<a href="' + moduleHref(m, it.at) + '">' + esc(partHeading(m, it.at)) + '</a>';
+          var body;
+          if (!(k in mine)) {
+            body = '<ul class="warmup-options">' +
+              warmOrder[m.id][k].map(function (n) {
+                return '<li><button class="warmup-option" type="button" data-guess="' + k + ':' + n + '">' + esc(it.options[n]) + '</button></li>';
+              }).join('') +
+            '</ul>';
+          } else if (!(sec && isRead(sec))) {
+            body = '<p class="warmup-held"><span>Your guess:</span> ' + esc(it.options[mine[k]]) + '</p>' +
+                   '<p class="warmup-where">Find out in ' + where + '.</p>';
+          } else {
+            var had = mine[k] === it.answer;
+            body = '<p class="warmup-held"><span>Your guess:</span> ' + esc(it.options[mine[k]]) + '</p>' +
+                   '<p class="warmup-reveal' + (had ? ' is-right' : '') + '"><strong>' +
+                     (had ? 'You had it. ' : 'The answer: ') + '</strong>' +
+                     (had ? '' : esc(it.options[it.answer]) + '. ') + esc(it.why) + '</p>';
+          }
+          return '<li class="warmup-item"><p class="warmup-q">' + esc(it.q) + '</p>' + body + '</li>';
+        }).join('') +
+      '</ol>' +
+      (left === 0 && w.items.length
+        ? ''
+        : '<p class="warmup-foot">No score, and nothing here counts toward finishing. Skip it if you like.</p>');
+
+    $$('[data-guess]', box).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var kn = b.getAttribute('data-guess').split(':');
+        var g = guesses[m.id] = guesses[m.id] || {};
+        g[kn[0]] = Number(kn[1]);
+        saveGuesses();
+        sfx.tap();
+        paintWarmup(m);
+        // Keep the keyboard in the warm-up: on to the next unanswered question.
+        var nextBtn = $('[data-guess]', box) || $('.warmup-where a', box);
+        if (nextBtn) try { nextBtn.focus({ preventScroll: true }); } catch (e) {}
+      });
+    });
   }
 
   /* Ticks in "In this module", the line under the title, and the bar under
@@ -1616,7 +2135,9 @@
     var pr = moduleProgress(m);
     var byId = {};
     m.sections.forEach(function (s) { byId[s.id] = sectionDone(s); });
-    byId.practice = pr.practice;
+    pr.checks.forEach(function (c) { byId[c.sec] = c.done; });
+    if (!pr.checks.length) byId.practice = true;
+    if (m.warmup) paintWarmup(m);
     $$('.art-toc a', moduleView).forEach(function (a) {
       var on = !!byId[a.getAttribute('data-toc')];
       if (on && !a.classList.contains('is-read') && a.hasAttribute('data-painted')) a.classList.add('just-read');
@@ -1845,6 +2366,8 @@
     watchedSet.clear(); saveWatched();
     quizState = {};
     try { localStorage.removeItem(QKEY); } catch (e) {}
+    guesses = {};
+    try { localStorage.removeItem(GKEY); } catch (e) {}
     renderModuleCards();
     // The link hides itself once there is nothing left to reset; keep focus nearby.
     $('#overallText').focus();
@@ -2116,7 +2639,9 @@
       }
       if (!hit) {
         var mm = moduleForTrack(p.module) || MODULES[MODULES.length - 1];
-        if (mm) hit = { m: mm, sec: 'practice' };
+        // The check that carries it, which may be one midway through.
+        var holder = mm && checksFor(mm).filter(function (c) { return c.acts.indexOf(p) >= 0; })[0];
+        if (mm) hit = { m: mm, sec: holder ? holder.sec : 'practice' };
       }
       if (!hit) return;
       index.push({ kind: 'Practice', title: p.title, sub: p.tag || '', body: p.blurb || '', open: function () { closePalette(); location.hash = moduleHref(hit.m, hit.sec); } });
