@@ -148,6 +148,26 @@ Under that reading the staff edition is a **reference**, the community edition i
 a **course**. That is a real difference, and it decides the open questions
 below on its own rather than one at a time.
 
+### Also fixed: the full-width black circle
+
+Reported from a screenshot mid-session. It was **not** on either live site —
+`ai-page`, `ai-community` and the Pages mirror were all checked and all clean,
+and the Dokku host has no third app. It was a **stale browser tab**.
+
+nginx sent no `Cache-Control` for HTML at all: the existing location regex only
+covers `css|js|png|jpg|svg|pdf|mp4`. Browsers fell back to heuristic caching, so
+an old tab held a pre-rebuild `index.html` while the scripts beside it
+revalidated every 5 minutes. The result was a current `content.js` (new tagline)
+rendering into retired markup — including the old progress ring, which nothing
+styles any more. Without `.ring { width: 92px }` the SVG stretched to the
+container; without `.ring circle { fill: none }` the circle painted solid.
+Reproduced from `login:index.html` against today's assets.
+
+Fixed in `deploy/nginx.conf`: `location = /` and `~* \.html?$` both send
+`no-cache`. The ETag still does the work, so revalidating costs a 304 and no
+body. **If anyone reports a broken-looking page, get them to hard-refresh
+before investigating** — and now check the `Cache-Control` on `/` first.
+
 ### Open / next
 
 - [ ] **Decide the staff edition's one-sentence brief.** Everything else here is
