@@ -70,7 +70,7 @@ with it. That is the thing to watch, not the command.
 **Who:** Sheila, with Claude
 **Branch:** `main`, on top of `c1bbafa`
 **State:** pager pushed to both branches (PRs open upstream). Certificate prep in the working tree on `main`: not committed, not merged down, not deployed.
-**Files:** `assets/app.js`, `assets/styles.css`, `index.html`, `community.js`, `content.js`, `tools/certificate-apps-script.js`
+**Files:** `assets/app.js`, `assets/styles.css`, `index.html`, `community.js`, `content.js`, `README.md`, `tools/certificate-apps-script.js`
 
 ### What changed
 - **Previous / next pager** at the end of every module (`c1bbafa`): back on the
@@ -103,7 +103,21 @@ with it. That is the thing to watch, not the command.
 - **"24 of 24 lessons" was wrong**: n/total count sections plus practices,
   not lessons. A finished run now reads "All 3 modules, practice included".
 
+- **Videos now count, and are required.** A video is watched once 90% of it
+  has actually played (`video.played`, so scrubbing to the end does not
+  count), stored under `aihub:watched`. Units per module are sections +
+  videos + practice; a section ticks only when read and its videos watched;
+  Done and the certificate need all 19. Only `file:` videos are tracked,
+  because an embed cannot report playback. Sheila chose "required".
+
 ### Decisions worth knowing
+- **Anyone who finished before this ships drops below 100%** until they watch
+  the videos. A certificate already issued stays viewable.
+- **The videos have no captions or transcripts**, and they are now required
+  for the certificate. That is an access gap for deaf and hard-of-hearing
+  learners and on low bandwidth. Captions (`<track>` + `.vtt`) are the fix.
+- Partial viewing is not carried over if the player is rebuilt (leaving the
+  module): the 90% has to be reached in one viewing of that player.
 - Whoever deploys the Apps Script is "Me": the mail comes from that account
   and uses its quota. One admin owns the deployment; both can read the Sheet.
 - The request is `no-cors`, so a rejected origin still shows "Check your
@@ -124,6 +138,12 @@ full flow end to end from `http://127.0.0.1:5500/` (request, mail, link,
 certificate). The print design was checked as Chrome PDFs from light and dark
 mode: one landscape page each, no browser header/footer. Not checked in Safari
 or Firefox print.
+
+Video tracking, in real Chrome via DevTools protocol: a played video ticks at
+~90% and shows "Watched"; one scrubbed to the end does not. Seeded storage:
+all done but one video gives 98% and "1 video left", certificate hidden; all
+19 gives Done and, on the community edition, the certificate button. Not
+checked on Safari/iOS, where autoplay and `played` can behave differently.
 
 ---
 
@@ -209,6 +229,26 @@ staff edition has no equivalent sentence, and that is the actual gap. Proposed:
 Under that reading the staff edition is a **reference**, the community edition is
 a **course**. That is a real difference, and it decides the open questions
 below on its own rather than one at a time.
+
+### Also fixed: the full-width black circle
+
+Reported from a screenshot mid-session. It was **not** on either live site —
+`ai-page`, `ai-community` and the Pages mirror were all checked and all clean,
+and the Dokku host has no third app. It was a **stale browser tab**.
+
+nginx sent no `Cache-Control` for HTML at all: the existing location regex only
+covers `css|js|png|jpg|svg|pdf|mp4`. Browsers fell back to heuristic caching, so
+an old tab held a pre-rebuild `index.html` while the scripts beside it
+revalidated every 5 minutes. The result was a current `content.js` (new tagline)
+rendering into retired markup — including the old progress ring, which nothing
+styles any more. Without `.ring { width: 92px }` the SVG stretched to the
+container; without `.ring circle { fill: none }` the circle painted solid.
+Reproduced from `login:index.html` against today's assets.
+
+Fixed in `deploy/nginx.conf`: `location = /` and `~* \.html?$` both send
+`no-cache`. The ETag still does the work, so revalidating costs a 304 and no
+body. **If anyone reports a broken-looking page, get them to hard-refresh
+before investigating** — and now check the `Cache-Control` on `/` first.
 
 ### Open / next
 

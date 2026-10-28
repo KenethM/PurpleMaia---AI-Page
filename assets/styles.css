@@ -1312,6 +1312,11 @@ mark { background: color-mix(in srgb, var(--gold) 34%, transparent); color: inhe
 .art-poster:focus-visible { outline-offset: -4px; border-radius: 0; }
 .art-video figcaption { display: flex; justify-content: space-between; gap: 12px; padding: 11px 16px; font-size: .86rem; color: var(--text-2); line-height: 1.45; }
 .art-video figcaption span:last-child { color: var(--muted); }
+.art-video figcaption .art-watched {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
+  font-size: .74rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+}
+.art-video figcaption .art-watched[hidden] { display: none; }
 .art-video .video-standin { border-top: 1px solid var(--border); }
 /* The follow-on explainer. Same bar as the stand-in notice, because it is
    the same kind of thing: a note about the video, not part of it. */
