@@ -476,11 +476,16 @@ window.SITE = {
              "file:assets/clip.mp4"  -> a video file committed to the repo
      slides: optional URL (Google Slides, Canva, a PDF in the repo, anything)
      deeper:  optional. An outside explainer on the same topic, longer and
-             slower than ours, rendered as a link under the player rather
-             than as a second embed: ours is the lesson, this is the
-             follow-on for anyone who wants the long version. Every id was
-             checked against live YouTube, not recalled. The community
-             edition strips these — it is the inch-deep one by design.
+             slower than ours. It renders as a fold under our player -
+             "Go deeper: Outside explainer, 8:30" - which opens into a
+             second player. Ours is the lesson; this is the long version
+             behind it, and it is the staff edition's depth layer: the
+             community edition deletes `deeper`, because "a mile wide and
+             an inch deep" is that edition's brief and 3-to-27 minute
+             outside videos are exactly the depth it is meant not to have.
+             Nothing third-party loads until the fold is opened, and no
+             iframe until the poster inside it is clicked. Every id was
+             checked against live YouTube via oEmbed, not recalled.
      videoLength: the video's real runtime, read off the file with ffprobe
              rather than estimated. Nothing renders it today. It used to sit bottom-right
              of the thumbnail, but `duration` was what was being drawn there —

@@ -340,6 +340,13 @@
     if (i < 0) return null;
     return { kind: v.slice(0, i), ref: v.slice(i + 1) };
   }
+  /* `deeper` carries a watch URL, not a bare id, because that is the form a
+     person pastes in and the form every one of the 19 was checked in against
+     oEmbed. Parse it at render time rather than storing a second copy. */
+  function ytId(url) {
+    var m = /[?&]v=([\w-]{6,})/.exec(url || '') || /youtu\.be\/([\w-]{6,})/.exec(url || '');
+    return m ? m[1] : '';
+  }
   function thumbFor(v) {
     var p = parseVideo(v);
     if (p && p.kind === 'youtube') return 'https://i.ytimg.com/vi/' + encodeURIComponent(p.ref) + '/hqdefault.jpg';
@@ -363,7 +370,10 @@
      Those were exported onto a 16:9 canvas with black bars either side, so
      the frame is given their real shape and the video fills it: `cover`
      then crops exactly the bars away, with no re-encoding of the file. */
-  function embedFor(v, title, aspect) {
+  /* `noStandin` is for the follow-on explainers: the stand-in notice says
+     ours has not been made yet, and on a `deeper` video ours is the one
+     playing right above it. */
+  function embedFor(v, title, aspect, noStandin) {
     var p = parseVideo(v);
     if (!p) return '';
     var shape = aspect ? ' class="video-frame is-portrait" style="aspect-ratio:' + esc(aspect) + '"'
@@ -372,13 +382,13 @@
       return '<div' + shape + '><iframe src="https://www.youtube-nocookie.com/embed/' +
         encodeURIComponent(p.ref) + '?autoplay=1&rel=0" title="' + esc(title) +
         '" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
-        STANDIN_NOTE;
+        (noStandin ? '' : STANDIN_NOTE);
     }
     if (p.kind === 'vimeo') {
       return '<div' + shape + '><iframe src="https://player.vimeo.com/video/' +
         encodeURIComponent(p.ref) + '?autoplay=1" title="' + esc(title) +
         '" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>' +
-        STANDIN_NOTE;
+        (noStandin ? '' : STANDIN_NOTE);
     }
     if (p.kind === 'file') {
       return '<div' + shape + '><video src="' + esc(p.ref) + '" poster="' + esc(thumbFor(v)) +
@@ -1299,15 +1309,20 @@
       '</div>' +
       '<figcaption><span><strong>Video:</strong> ' + esc(l.title) + '</span>' +
         '<span>' + (p && p.kind === 'file' ? 'Purple Maiʻa' : 'Outside explainer') + '</span></figcaption>' +
-      /* Ours is the lesson. This is the long version for anyone who wants it,
-         so it is a link and not a second embed: a second player would read as
-         "watch both" rather than "there is more if you want it", and it would
-         pull a third-party frame into the page nobody asked for. */
+      /* Ours is the lesson; this is the long version standing behind it. A
+         real player and not a link, because depth is what separates this
+         edition from the community one: "a mile wide and an inch deep" is
+         that edition's brief, not this one's, and a link in the margin is not
+         a depth layer. It ships folded shut, so the page still loads no
+         third-party anything until someone asks for it - the YouTube
+         thumbnail is built on first open, the iframe only on the click after
+         that. `community.js` deletes `deeper`, so none of this reaches it. */
       (l.deeper
-        ? '<p class="art-deeper">Want it in more depth? ' +
-            '<a href="' + esc(l.deeper.url) + '" target="_blank" rel="noopener"' +
-            ' aria-label="Longer outside explainer on ' + esc(l.title) + ', ' + esc(l.deeper.length) + ', opens on YouTube">' +
-            'Outside explainer, ' + esc(l.deeper.length) + '</a></p>'
+        ? '<details class="art-deeper" data-deeper="' + esc(l.id) + '">' +
+            '<summary><span class="art-deeper-tag">Go deeper</span>' +
+            'Outside explainer, ' + esc(l.deeper.length) + '</summary>' +
+            '<div class="art-deeper-slot"></div>' +
+          '</details>'
         : '') +
     '</figure>';
   }
@@ -1496,6 +1511,41 @@
         var l = lessonById(btn.getAttribute('data-play'));
         var holder = btn.parentNode;
         holder.outerHTML = embedFor(l.video, l.title, l.videoAspect);
+      });
+    });
+
+    /* The follow-on explainer, built the first time its fold is opened and
+       swapped for the real player on the click after that. Two gates, so a
+       lesson nobody opens costs nothing and a fold nobody opens costs no
+       request at all. */
+    $$('[data-deeper]', moduleView).forEach(function (box) {
+      box.addEventListener('toggle', function () {
+        if (!box.open || box.getAttribute('data-filled')) return;
+        box.setAttribute('data-filled', '1');
+        var l = lessonById(box.getAttribute('data-deeper'));
+        var slot = $('.art-deeper-slot', box);
+        if (!l || !l.deeper || !slot) return;
+        var vid = ytId(l.deeper.url);
+        slot.innerHTML =
+          (vid
+            ? '<div class="art-player">' +
+                '<button class="art-poster" type="button" aria-label="Play the outside explainer on ' +
+                  esc(l.title) + ', ' + esc(l.deeper.length) + '">' +
+                  '<img src="https://i.ytimg.com/vi/' + encodeURIComponent(vid) + '/hqdefault.jpg"' +
+                  ' alt="" loading="lazy">' +
+                  '<span class="play">' + icon('play') + '</span>' +
+                '</button>' +
+              '</div>'
+            : '') +
+          '<p class="art-deeper-note">Not ours. Someone else’s explainer on the same ' +
+            'topic, kept because it goes further than a minute or two can. ' +
+            '<a href="' + esc(l.deeper.url) + '" target="_blank" rel="noopener">' +
+            'Watch it on YouTube</a> instead if you would rather.</p>';
+        var btn = $('.art-poster', slot);
+        if (btn) btn.addEventListener('click', function () {
+          btn.parentNode.outerHTML =
+            embedFor('youtube:' + vid, 'Outside explainer on ' + l.title, null, true);
+        });
       });
     });
 
