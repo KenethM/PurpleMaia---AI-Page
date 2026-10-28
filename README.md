@@ -341,8 +341,8 @@ no entry simply shows no quiz — nothing breaks.
 
 Two to four options each. The `why` is shown whether they got it right or wrong,
 so write it to teach rather than to say "correct". The quizzes of every lesson in
-a module run together as that module's "Check your understanding", at the end of
-its page. Scores live in `localStorage`
+a module run together as that module's practice, at the end of its page, unless
+the module splits them into `checks` (below). Scores live in `localStorage`
 alongside lesson progress — this browser only, never uploaded, and the
 "Reset progress" button clears both.
 
@@ -356,6 +356,41 @@ and it keeps the order you wrote.
 
 This applies to the module quizzes, Term match and "Would you send it?" alike,
 since all three run through the same component.
+
+#### Other kinds of question
+
+The same lists take two more kinds. Use them where the content is that shape,
+not for variety's sake:
+
+```js
+{ type: "truefalse", q: "One step of the loop looks up facts.", answer: false, why: "…" },
+{ type: "order", q: "Put the steps in order.", steps: ["first", "second", "third"], why: "…" }
+```
+
+Write `steps` in the right order; the page shuffles them. Matching boards and
+sort-into-buckets are practice activities (section 7): a `match` names its
+glossary `terms`, a `sort` has `buckets` and `cards`. Don't ask a definition
+as a lesson question if a board already has that term.
+
+#### Splitting a long module into checks
+
+```js
+checks: [
+  { id: "learning", title: "How it learns", after: "learning-stops",
+    lessons: ["m2-training-data", "m2-parameters"], practice: ["match-2a"] },
+  { id: "built", title: "How chatbots are built",          // no `after`: the last one
+    lessons: ["m2-sampling"], practice: ["match-2c"] }
+]
+```
+
+On a module, each check sits after the section in `after` and tests only its
+own lessons and activities. Every check counts toward the module being done.
+
+#### A warm-up at the top of a module
+
+`warmup: { title, blurb, items: [{ q, options, answer, why, at }] }` on a module
+puts a few "take a guess" questions above the first section. Nothing is scored
+or counted. Each answer appears once the section or part in `at` has been read.
 
 ### Re-skinning the page for a different room
 
