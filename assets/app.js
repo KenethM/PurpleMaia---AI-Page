@@ -2543,6 +2543,10 @@
   function certPaintCta() {
     var cta = $('#certCta');
     if (!cta || !CERT) return;
+    // No endpoint means initCertificate never wired the button, so it must
+    // not show at all, even to someone holding a certificate from the
+    // community edition on the same address.
+    if (!CERT.endpoint) { cta.hidden = true; return; }
     var have = certStored();
     if (have) {
       cta.hidden = false;
@@ -2560,8 +2564,16 @@
     $('#certViewName').textContent = c.name;
     $('#certViewCourse').textContent = c.course || CERT.courseName || '';
     $('#certViewDate').textContent = c.date || '';
-    $('#certViewScore').textContent = (c.n != null && c.total != null)
-      ? (c.n + ' of ' + c.total + ' lessons') : '';
+    $('#certSigDate').textContent = c.date || '';
+    $('#certSigIssuer').textContent = CERT.issuer || 'Purple Maiʻa';
+    $('.cert-meta-dot').hidden = !c.date;
+    // n and total count sections read plus each module's practice, the same
+    // measure as the progress line, so they are not lessons. A finished run
+    // says so in words; a partial one (requireAll set to a number) says how far.
+    var all = c.n != null && c.total != null && Number(c.n) >= Number(c.total);
+    $('#certViewScore').textContent = all
+      ? 'All ' + MODULES.length + ' modules, practice included'
+      : (c.n != null && c.total != null ? c.n + ' of ' + c.total + ' sections and practices' : '');
     $('#certViewCode').textContent = c.code ? ('Verification code  ' + c.code) : '';
     $('#certViewVerify').textContent = CERT.verifyNote || '';
     $('#certPrint').textContent = CERT.print || 'Print or save as PDF';

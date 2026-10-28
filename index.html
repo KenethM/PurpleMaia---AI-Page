@@ -437,11 +437,19 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
   <div class="cert-sheet" id="certSheet">
-    <img class="cert-logo" src="assets/pm-lockup.png" alt="Purple Maiʻa" width="200" height="40">
+    <!-- The mark is an image, the name is live text: the lockup PNGs carry a
+         white wordmark that disappears on paper and in light mode. -->
+    <p class="cert-brand"><img class="cert-mark" src="assets/pm-mark.png" alt="" width="56" height="45"><span>Purple Maiʻa</span></p>
     <p class="cert-kicker" id="certViewKicker"></p>
+    <p class="cert-lead cert-print-only">This is to certify that</p>
     <h2 class="cert-name" id="certViewName"></h2>
     <p class="cert-course">has completed <strong id="certViewCourse"></strong></p>
-    <p class="cert-meta"><span id="certViewDate"></span> &middot; <span id="certViewScore"></span></p>
+    <p class="cert-meta"><span class="cert-meta-date" id="certViewDate"></span><span class="cert-meta-dot"> &middot; </span><span id="certViewScore"></span></p>
+    <!-- Paper only: the date and issuer as a signature row. -->
+    <div class="cert-sign cert-print-only">
+      <p class="cert-sig"><span id="certSigDate"></span><small>Date</small></p>
+      <p class="cert-sig"><span id="certSigIssuer"></span><small>Issued by</small></p>
+    </div>
     <p class="cert-code" id="certViewCode"></p>
     <p class="cert-verify" id="certViewVerify"></p>
   </div>
