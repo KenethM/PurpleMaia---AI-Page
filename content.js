@@ -199,7 +199,7 @@ window.SITE = {
          revealed once the section in `at` (a section or part id) is read. */
       warmup: {
         title: "Take a guess",
-        blurb: "Three things most people get wrong about chatbots. You can't know these yet, so just guess. The answers are in this module.",
+        blurb: "Three things most people get wrong about chatbots. You may not know these yet, so take your best guess. The answers are in this module.",
         items: [
           {
             q: "You correct a chatbot partway through a conversation. Does the model learn from you?",
