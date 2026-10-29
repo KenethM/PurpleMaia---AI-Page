@@ -69,7 +69,8 @@ with it. That is the thing to watch, not the command.
 
 **Who:** Keneth, with Claude
 **Branch:** `main`, then merged forward to `community-hub`
-**State:** committed and pushed. **Not deployed.**
+**State:** **deployed, both sites**, 28 Oct: `ai-community` at `091a5ba`, `ai-page` at `c4f6a66`.
+Checked after: the right edition on each, `?for=partners` still 200, HTML still `no-cache`.
 **Files:** `assets/app.js`, `assets/styles.css`, `content.js`, `HANDOFF.md`
 
 Sheila's PRs #1 and #2 went in first, as fast-forwards. Her footer change was
@@ -165,7 +166,7 @@ them; jsdom has no audio. Worth five minutes with headphones before deploying.
 
 - [ ] Listen to the sounds, on a laptop and a phone. Adjust in `sfx` (`app.js`).
 - [ ] Decide whether the warm-up goes on Modules 1 and 3 after people try it.
-- [ ] Deploy both editions once someone has played a check end to end.
+- [x] Deploy both editions. Keneth played the checks on localhost first.
 
 ---
 
