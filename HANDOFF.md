@@ -69,7 +69,7 @@ with it. That is the thing to watch, not the command.
 
 **Who:** Sam, with Claude
 **Branch:** `main`, then merged forward to `community-hub`
-**State:** committed and pushed to `origin`; `ai-community` deploy pending
+**State:** deployed to `ai-community` on 30 Oct; Umami Realtime confirmed
 **Files:** `assets/app.js`, `content.js`, `community.js`, `README.md`
 
 ### Why
@@ -100,10 +100,10 @@ Headless Chrome with the community hostname mapped to a local server, Umami's
 script replaced by a recording stub and GA blocked, so no test data reached
 either dashboard. Page views and events arrived with path URLs, the first
 (queued) page view was delivered, no console errors. Not yet checked: the real
-Umami dashboard after deploy.
+Umami dashboard after deploy (since done: Realtime showed the visit).
 
 ### Open / next
-- [ ] Deploy `community-hub` to `ai-community`, then watch Umami's Realtime.
+- [x] Deployed to `ai-community`; Sam saw her own visit in Umami's Realtime.
 - [ ] Pin the Umami image to the version in its Settings instead of `latest`.
 - [ ] Ask David whether `umami-db` is covered by any server backup.
 - [ ] After a couple of weeks, compare the two and decide whether GA4 stays.
