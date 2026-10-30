@@ -183,6 +183,59 @@ window.SITE = {
     {
       id: "how-llms-work",
       track: "how-it-works",
+      /* Three short checks instead of one 30-question block at the end. Each
+         sits after the section in `after` and tests only the stretch since
+         the last one. The last has no `after`: it closes the module. */
+      checks: [
+        { id: "learning", title: "How it learns", after: "learning-stops",
+          lessons: ["m2-training-data", "m2-parameters", "m2-pretraining-inference"], practice: ["match-2a"] },
+        { id: "writing", title: "How it writes an answer", after: "generation-loop",
+          lessons: ["m2-loop", "m2-tokenization", "m2-embeddings", "m2-transformers", "m2-next-token"], practice: ["match-2b"] },
+        { id: "built", title: "Variation, memory and how chatbots are built",
+          lessons: ["m2-sampling", "m2-context-window", "m3-model-families"], practice: ["match-2c"] }
+      ],
+      /* Take a guess: questions nobody can answer before reading, at the top
+         of the module. No score, not counted toward progress. Each answer is
+         revealed once the section in `at` (a section or part id) is read. */
+      warmup: {
+        title: "Take a guess",
+        blurb: "Three things most people get wrong about chatbots. You may not know these yet, so take your best guess. The answers are in this module.",
+        items: [
+          {
+            q: "You correct a chatbot partway through a conversation. Does the model learn from you?",
+            options: [
+              "No. The model stays exactly as it was",
+              "Yes, it updates itself straight away",
+              "Yes, but only once the conversation ends"
+            ],
+            answer: 0,
+            why: "Learning stops when training ends. It can use your correction for the rest of that conversation, but the model itself does not change.",
+            at: "learning-stops"
+          },
+          {
+            q: "Ask a chatbot how many r's are in “strawberry” and it may well get it wrong. Why?",
+            options: [
+              "It reads text in chunks, not letter by letter",
+              "It was never trained on the word “strawberry”",
+              "It is designed to make small mistakes so it seems human"
+            ],
+            answer: 0,
+            why: "Text is split into tokens, numbered chunks that are often whole words. The letters inside a token are not what the model works with.",
+            at: "tokenization"
+          },
+          {
+            q: "You ask a chatbot the same question twice and get two different answers. Why?",
+            options: [
+              "It picks each word from weighted options, so some variation is built in",
+              "It learned something new between your two questions",
+              "Something went wrong the first time"
+            ],
+            answer: 0,
+            why: "The model is probabilistic. At every step it samples from likely next words rather than always taking the top one, so variation is expected behavior.",
+            at: "sampling"
+          }
+        ]
+      },
       image: "assets/video/autocomplete-trick.jpg",
       title: "How AI chatbots work",
       summary: "How a chatbot learns from huge amounts of text then writes every answer, one small piece at a time.",
@@ -310,6 +363,12 @@ window.SITE = {
     {
       id: "using-llms-well",
       track: "using-llms",
+      checks: [
+        { id: "checking", title: "Prompting, grounding and checking", after: "hallucinations",
+          lessons: ["m3-prompts", "m3-grounding", "m3-hallucinations"], practice: ["match-3a"] },
+        { id: "judgment", title: "Bias, reasoning and judgment",
+          lessons: ["m3-bias", "m3-reasoning", "m3-oversight"], practice: ["match-3b", "judge"] }
+      ],
       image: "assets/video/fake-citation.jpg",
       title: "Using AI well",
       summary: "How to ask for what you need, how to check what comes back, and the limits to keep in mind: hallucinations, bias, privacy, and who's responsible.",
@@ -1082,6 +1141,14 @@ window.SITE = {
        why     shown after answering, whether they got it right or not
      Keep `why` teaching something rather than saying "correct".
 
+     Two other kinds go in the same lists:
+       type: "truefalse"  q is a statement; answer is true or false. Best for
+                          a misconception worth knocking down.
+       type: "order"      steps: [...] written in the right order; the page
+                          shuffles them. Only for things that are a sequence.
+     Definitions are not asked here: each module's Term match board (under
+     PRACTICE ACTIVITIES) covers them, and asking both was asking twice.
+
      Write the correct option first if that is easiest. The page shuffles the
      options on every render and remaps `answer` to follow, so the answer is
      never reliably in the same place. Add `fixed: true` to a question whose
@@ -1091,73 +1158,35 @@ window.SITE = {
     /* ===== Module 1 — What is AI? ===== */
     "m1-map": [
       {
-        q: "Which statement correctly describes how these terms fit together?",
-        options: [
-          "LLMs sit inside generative AI, which sits inside machine learning, which sits inside AI",
-          "AI sits inside machine learning, which sits inside NLP",
-          "They are different names for the same technology, used by different companies"
-        ],
-        answer: 0,
-        why: "AI is the broadest category. Machine learning is one way of building AI, generative AI is machine learning that creates new content, and LLMs are the technology behind AI chatbots."
+        type: "order",
+        q: "These terms fit inside one another. Put them in order, from the broadest to the most specific.",
+        steps: ["Artificial intelligence", "Machine learning", "Generative AI", "Large language model"],
+        why: "AI is the broadest category. Machine learning is one way of building AI, generative AI is machine learning that creates new content, and LLMs are the generative AI behind chatbots. Natural language processing overlaps the last two: an LLM is language work too."
       },
       {
-        q: "What distinguishes machine learning from other ways of building AI?",
-        options: [
-          "The system learns patterns from examples instead of following rules written by a person",
-          "It always produces text or images",
-          "It only runs on very large computers"
-        ],
-        answer: 0,
-        why: "Machine learning systems learn from data. Generating content is what generative AI adds, and many machine learning systems, such as spam filters, generate nothing at all."
-      },
-      {
-        q: "A translation app is an example of…",
-        options: [
-          "Natural language processing: machine learning applied to language",
-          "Generative AI that creates images",
-          "Neither; translation apps follow hand-written rules"
-        ],
-        answer: 0,
-        why: "Translation, live captions and spell-check are all natural language processing. Most of these tools predate AI chatbots, which is why many people have used NLP for years without calling it AI."
+        type: "truefalse",
+        q: "Every AI system learns from data.",
+        answer: false,
+        why: "Machine learning is one way of building AI, not the only one. Some systems follow rules written out by a person. What makes machine learning different is that it learns its patterns from examples."
       }
     ],
 
     "m1-daily": [
       {
-        q: "You dictate a text message and your phone types it out. Which technology did you use?",
-        options: ["Natural language processing", "A large language model", "None; voice-to-text is not AI"],
-        answer: 0,
-        why: "Voice-to-text is natural language processing: machine learning applied to language. It does not require a large language model."
-      },
-      {
-        q: "A streaming service recommends a show based on what you watched last week. Which technology is this?",
-        options: ["Machine learning", "A large language model", "Generative AI"],
-        answer: 0,
-        why: "Recommendations come from patterns learned from viewing data. Nothing new is generated, and no language is being processed."
+        type: "truefalse",
+        q: "When your phone types out a text message you dictate, it is using a large language model.",
+        answer: false,
+        why: "Voice-to-text is natural language processing: machine learning applied to language. It does not need a large language model, and phones were doing it long before chatbots."
       }
     ],
 
     /* ===== Module 2 — How AI chatbots work ===== */
     "m2-pretraining-inference": [
       {
-        q: "What is the difference between training and inference?",
-        options: [
-          "Training is when the model learns from text; inference is when it uses what it learned to answer you",
-          "Training happens every time you send a message; inference happens once",
-          "They are two names for the same process"
-        ],
-        answer: 0,
-        why: "Pre-training happens once for each version of a model, before release. Inference happens every time someone sends a prompt."
-      },
-      {
-        q: "You correct a chatbot partway through a conversation. Has the model learned from you?",
-        options: [
-          "No. It can use the correction within this conversation, but the model itself has not changed",
-          "Yes, its parameters were updated immediately",
-          "Yes, but only after you close the conversation"
-        ],
-        answer: 0,
-        why: "Learning ends when training ends. Some products save conversations or offer memory features, but that is a product feature, not the model retraining itself."
+        type: "truefalse",
+        q: "Once you correct a chatbot's mistake, the model has learned from it and will not make that mistake again for anyone.",
+        answer: false,
+        why: "Learning ends when training ends. The correction helps for the rest of your conversation, but the model itself has not changed. Some products save conversations or offer memory features; that is a product feature, not the model retraining itself."
       }
     ],
 
@@ -1186,16 +1215,6 @@ window.SITE = {
 
     "m2-parameters": [
       {
-        q: "Parameters are best described as…",
-        options: [
-          "The model's internal settings, adjusted during training, that control how it weighs information",
-          "The documents the model searches when you ask a question",
-          "The options you choose in the app, such as tone or length"
-        ],
-        answer: 0,
-        why: "Parameters are set during training and are fixed by the time you use the model. Changing them changes which next word the model considers most likely."
-      },
-      {
         q: "In the water-channel comparison, where is the model's learning stored?",
         options: [
           "In the overall pattern of all its parameters, not in any single one",
@@ -1221,28 +1240,26 @@ window.SITE = {
         why: "Tokenization, embeddings, attention, probabilities, sampling, then back to the start. Every token you see is another pass through the loop."
       },
       {
-        q: "At which step of the generation loop does the model look up facts?",
-        options: [
-          "None. No step of the loop retrieves information or checks facts",
-          "The attention step",
-          "The sampling step"
+        type: "order",
+        q: "Put the five steps of the generation loop in order.",
+        steps: [
+          "Tokenization: the text is split into numbered tokens",
+          "Embeddings: each token becomes a list of numbers in a meaning space",
+          "Attention: each token weighs which others matter to it",
+          "Probabilities: every possible next token gets a score",
+          "Sampling: one token is picked, added, and the loop goes again"
         ],
-        answer: 0,
+        why: "Text in, numbers, context, probabilities, one pick. Then the new token joins the text and the whole loop runs again, once for every token in the answer."
+      },
+      {
+        type: "truefalse",
+        q: "One step of the generation loop looks up facts to check the answer.",
+        answer: false,
         why: "The loop is prediction, not lookup. Some tools add search or document retrieval on top of the model (grounding, in Module 3), but that is an addition, not part of the loop."
       }
     ],
 
     "m2-tokenization": [
-      {
-        q: "What happens to your text in the first step of the loop?",
-        options: [
-          "It is divided into tokens, and each token is given an ID number",
-          "Each word is looked up in a dictionary",
-          "It is read one letter at a time"
-        ],
-        answer: 0,
-        why: "A token is a small unit of text, often a whole word and sometimes part of one. The model works with these numbered units, not with words or letters."
-      },
       {
         q: "Why do chatbots often struggle to count the letters in a word?",
         options: [
@@ -1257,16 +1274,6 @@ window.SITE = {
 
     "m2-embeddings": [
       {
-        q: "What is an embedding?",
-        options: [
-          "A list of numbers that places a token in a “meaning space”",
-          "The ID number a token receives",
-          "A summary of the conversation so far"
-        ],
-        answer: 0,
-        why: "Tokenization gives each token an ID. The embedding step then turns it into a list of numbers that positions it among other words."
-      },
-      {
         q: "In that meaning space, what does it mean when two words sit close together?",
         options: ["They are used in similar contexts", "They are spelled similarly", "They appear equally often"],
         answer: 0,
@@ -1276,11 +1283,11 @@ window.SITE = {
 
     "m2-transformers": [
       {
-        q: "What does the attention step do?",
+        q: "“Python” can be a programming language or a snake. How does the model tell which one a sentence means?",
         options: [
-          "For each token, it weighs which other tokens are most relevant to it",
-          "It removes unimportant words before the model answers",
-          "It checks the response against reliable sources"
+          "Attention: it weighs the words nearby, such as “import” or “reptile”, to pull the token toward one sense",
+          "It looks the word up in a dictionary of meanings",
+          "It can't: both sentences mean the same thing to it"
         ],
         answer: 0,
         why: "Attention is the core of the transformer design. Weighing the surrounding words is how the same word can carry different meanings in different sentences."
@@ -1288,16 +1295,6 @@ window.SITE = {
     ],
 
     "m2-next-token": [
-      {
-        q: "At each step, what does the model actually produce?",
-        options: [
-          "A probability for every possible next token",
-          "The single correct next word",
-          "A complete sentence, which it then checks"
-        ],
-        answer: 0,
-        why: "The model scores every possible next token, selects one, adds it to the text, and repeats the process."
-      },
       {
         q: "Why does a chatbot sound just as confident when it is wrong?",
         options: [
@@ -1320,16 +1317,6 @@ window.SITE = {
         ],
         answer: 0,
         why: "A calculator is deterministic: the same input always gives the same output. A chatbot is probabilistic, so variation is expected behavior."
-      },
-      {
-        q: "What happens when the temperature setting is raised?",
-        options: [
-          "The model selects less likely tokens more often, so responses vary more",
-          "The model takes longer to think",
-          "The responses become longer"
-        ],
-        answer: 0,
-        why: "At a low temperature the model almost always selects the most likely token. At a higher temperature, less likely tokens are chosen more often."
       }
     ],
 
@@ -1361,24 +1348,10 @@ window.SITE = {
        "How chatbots are built and refined", which has no video of its own. */
     "m3-model-families": [
       {
-        q: "What is a “model family”?",
-        options: [
-          "A series of versions of one company's model, released over time",
-          "A group of companies that share their models",
-          "Models trained on the same data"
-        ],
-        answer: 0,
-        why: "ChatGPT is built on OpenAI's GPT family, Claude is made by Anthropic, and Gemini by Google. Each new version builds on the last, much as each generation of a phone does."
-      },
-      {
-        q: "What does “open weights” mean?",
-        options: [
-          "The model's trained parameters have been published, so others can run and adapt it",
-          "The model is free to use in a company's app",
-          "The model's code and all of its training data have been published"
-        ],
-        answer: 0,
-        why: "Publishing the code and training data as well would make a model fully open source. Open weights is a narrower step."
+        type: "truefalse",
+        q: "An “open weights” model has published everything about itself, including all of its training data.",
+        answer: false,
+        why: "Open weights means the trained parameters are published, so others can run and adapt the model. Publishing the code and training data as well would make it fully open source. Open weights is a narrower step."
       },
       {
         q: "What is RLHF mainly responsible for?",
@@ -1427,16 +1400,6 @@ window.SITE = {
     ],
 
     "m3-grounding": [
-      {
-        q: "What does retrieval-augmented generation (RAG) do?",
-        options: [
-          "It finds relevant passages in trusted sources and gives them to the model before it answers",
-          "It retrains the model on your documents",
-          "It guarantees that the answer is correct"
-        ],
-        answer: 0,
-        why: "Retrieve, augment, generate. Retraining the model would be fine-tuning, and RAG does not eliminate errors, but it does give you sources you can check."
-      },
       {
         q: "Which parts of an AI-generated draft deserve the closest checking?",
         options: ["Names, dates, figures, quotations and citations", "Grammar and spelling", "Length and formatting"],
@@ -1493,14 +1456,10 @@ window.SITE = {
 
     "m3-reasoning": [
       {
-        q: "A chatbot shows its reasoning step by step. Does that mean the answer is right?",
-        options: [
-          "No. Each step is generated text too, and no step is checked independently",
-          "Yes, because the model has verified each step",
-          "Yes, because showing reasoning prevents hallucination"
-        ],
-        answer: 0,
-        why: "An orderly, confident sequence of steps can still reach a wrong conclusion. Displaying reasoning and verifying it are two different things."
+        type: "truefalse",
+        q: "When a chatbot shows its reasoning step by step, each step has been checked, so the answer can be trusted.",
+        answer: false,
+        why: "Each step is generated text too, and no step is checked independently. An orderly, confident sequence of steps can still reach a wrong conclusion: displaying reasoning and verifying it are two different things."
       }
     ],
 
@@ -1519,18 +1478,23 @@ window.SITE = {
   },
 
   /* ---------- 7. PRACTICE ACTIVITIES ----------
-     Seven activities. `type` picks the engine, so a new kind of activity
+     `type` picks the engine, so a new kind of activity
      needs an engine in assets/app.js too.
 
      Where each one appears on a module page:
-       group: "quiz"   its questions join that module's "Check your
-                       understanding" (module = a track id, or "all" for the
-                       last module). Works for `scenarios` and `match`.
+       group: "quiz"   its questions join that module's practice (module = a
+                       track id, or "all" for the last module). In a module
+                       with `checks`, the check whose `practice` lists its id.
+                       Works for `scenarios`, `match` and `sort`.
        group: "demo"   it sits inside the section named by `section` (a
                        section or part id from `modules`), under the text.
        tokens     live token-chopping sandbox (no data needed)
        predict    next-token dice roll with a temperature slider; needs `rounds`
-       match      definition → term quiz, generated from the glossary below
+       match      a board: tap a term, then its meaning. `terms` names the
+                  glossary entries to use (pick ones no lesson question
+                  already asks), `rounds` how many go on one board.
+       sort       examples filed into buckets, one at a time: `prompt`,
+                  `buckets` (labels), `cards` ({ text, bucket, why })
        scenarios  judgment calls; same shape as the quizzes above
   --------------------------------------------------------------- */
   practice: [
@@ -1538,67 +1502,33 @@ window.SITE = {
       id: "which",
       module: "overview",
       group: "quiz",
-      type: "scenarios",
+      type: "sort",
       title: "Which one is it?",
       tag: "Module 1 · AI, ML, NLP, generative AI, LLMs",
-      blurb: "Five everyday examples. For each one, choose the most specific label that fits. Because the terms fit inside one another, more than one label is often technically true, but only one is precise.",
-      note: "Every example here is machine learning, and everything inside natural language processing is also machine learning. The question is always which circle is the most specific fit.",
-      items: [
-        {
-          q: "Your photo app automatically groups every picture of the same person.",
-          options: [
-            "Machine learning, but not language-related",
-            "Natural language processing",
-            "Generative AI, but not a language model",
-            "A large language model"
-          ],
-          answer: 0,
-          why: "The app learned to recognize faces from examples rather than following hand-written rules, so it is machine learning. It works with images, not language, so it is not natural language processing."
-        },
-        {
-          q: "Live captions appear under a speaker on a video call.",
-          options: [
-            "Natural language processing",
-            "Machine learning, but not language-related",
-            "Generative AI, but not a language model",
-            "A large language model"
-          ],
-          answer: 0,
-          why: "Turning speech into text is language work, so it is natural language processing. Nothing new is created; the captions transcribe what was said."
-        },
-        {
-          q: "Your phone corrects “teh” to “the” as you type.",
-          options: [
-            "Natural language processing",
-            "Machine learning, but not language-related",
-            "Generative AI, but not a language model",
-            "A large language model"
-          ],
-          answer: 0,
-          why: "Spell-check is natural language processing, and it does not involve a large language model. Tools like this were in use long before AI chatbots."
-        },
-        {
-          q: "You type a description into a design app and it produces an image.",
-          options: [
-            "Generative AI, but not a language model",
-            "Machine learning, but not language-related",
-            "Natural language processing",
-            "A large language model"
-          ],
-          answer: 0,
-          why: "It creates something new, so it is generative AI. The output is an image rather than text, so it is not a large language model. These two are the pair people most often confuse."
-        },
-        {
-          q: "Claude drafts an email to your landlord from notes you pasted in.",
-          options: [
-            "A large language model",
-            "Machine learning, but not language-related",
-            "Natural language processing",
-            "Generative AI, but not a language model"
-          ],
-          answer: 0,
-          why: "This is the innermost circle. It is a large language model, which also makes it generative AI, natural language processing and machine learning. “LLM” is the most specific, and therefore the most useful, label."
-        }
+      blurb: "Everyday examples, sorted by the most specific label that fits.",
+      prompt: "File each everyday example under the most specific label that fits.",
+      note: "Because the terms fit inside one another, more than one label is often technically true. The question is always which circle is the most specific fit.",
+      buckets: [
+        "Machine learning, not language",
+        "Natural language processing",
+        "Generative AI, not language",
+        "Large language model"
+      ],
+      cards: [
+        { text: "Your photo app groups every picture of the same person.", bucket: 0,
+          why: "It learned to recognize faces from examples, so it is machine learning. It works with images, not language." },
+        { text: "A streaming service recommends a show from what you watched last week.", bucket: 0,
+          why: "Recommendations come from patterns learned from viewing data. Nothing new is generated, and no language is processed." },
+        { text: "Live captions appear under a speaker on a video call.", bucket: 1,
+          why: "Turning speech into text is language work. Nothing new is created; the captions transcribe what was said." },
+        { text: "Your phone corrects “teh” to “the” as you type.", bucket: 1,
+          why: "Spell-check is natural language processing, and it does not involve a large language model. It long predates chatbots." },
+        { text: "A translation app turns a menu into English.", bucket: 1,
+          why: "Translation is machine learning applied to language. Most people have used NLP like this for years without calling it AI." },
+        { text: "You describe a picture to a design app and it draws it.", bucket: 2,
+          why: "It creates something new, so it is generative AI. The output is an image, not text, so it is not a large language model." },
+        { text: "Claude drafts an email to your landlord from your notes.", bucket: 3,
+          why: "The innermost circle: a large language model, which also makes it generative AI, NLP and machine learning. “LLM” is the most specific label." }
       ]
     },
     {
@@ -1667,28 +1597,64 @@ window.SITE = {
       type: "match",
       title: "Term match",
       tag: "Module 1 · Key terms",
-      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
-      rounds: 4
+      blurb: "Match each term to what it means.",
+      terms: ["Artificial intelligence (AI)", "Machine learning (ML)", "Natural language processing (NLP)", "Generative AI", "Large language model (LLM)"],
+      rounds: 5
     },
     {
-      id: "match-2",
+      id: "match-2a",
       module: "how-it-works",
       group: "quiz",
       type: "match",
       title: "Term match",
-      tag: "Module 2 · Key terms",
-      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
-      rounds: 6
+      tag: "Module 2 · How it learns",
+      blurb: "Match each term to what it means.",
+      terms: ["Training data", "Parameters", "Pre-training", "Inference"],
+      rounds: 4
     },
     {
-      id: "match-3",
+      id: "match-2b",
+      module: "how-it-works",
+      group: "quiz",
+      type: "match",
+      title: "Term match",
+      tag: "Module 2 · The generation loop",
+      blurb: "Match each term to what it means.",
+      terms: ["Token", "Embedding", "Attention", "Next-token prediction"],
+      rounds: 4
+    },
+    {
+      id: "match-2c",
+      module: "how-it-works",
+      group: "quiz",
+      type: "match",
+      title: "Term match",
+      tag: "Module 2 · Variation and how chatbots are built",
+      blurb: "Match each term to what it means.",
+      terms: ["Temperature", "Context window", "Base model", "Fine-tuning", "Model family"],
+      rounds: 5
+    },
+    {
+      id: "match-3a",
       module: "using-llms",
       group: "quiz",
       type: "match",
       title: "Term match",
-      tag: "Module 3 · Key terms",
-      blurb: "Match each definition to its term. The questions are drawn from the terms introduced in this module, so each attempt is different.",
-      rounds: 5
+      tag: "Module 3 · Prompting and checking",
+      blurb: "Match each term to what it means.",
+      terms: ["Prompt", "Grounding", "Retrieval-augmented generation (RAG)", "Hallucination"],
+      rounds: 4
+    },
+    {
+      id: "match-3b",
+      module: "using-llms",
+      group: "quiz",
+      type: "match",
+      title: "Term match",
+      tag: "Module 3 · Judgment",
+      blurb: "Match each term to what it means.",
+      terms: ["Bias", "Data retention", "Human oversight"],
+      rounds: 3
     },
     {
       id: "cite",
