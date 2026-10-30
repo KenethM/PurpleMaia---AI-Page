@@ -79,7 +79,7 @@ Running it beside GA4 for a while so the two can be compared.
 
 ### What changed
 - **Server (done by Sam over ssh):** Dokku app `umami` with Postgres
-  `umami-db` linked, `APP_SECRET` (its first value was pasted in a chat; rotate it if that has not been done),
+  `umami-db` linked, `APP_SECRET` (rotated on 30 Oct after its first value was pasted in a chat),
   `DISABLE_TELEMETRY=1`, port `http:80:3000`, image pulled with
   `git:from-image`, Let's Encrypt on. Live at https://umami.sandbox.purplemaia.org.
 - **Site:** `track()` now sends to GA4 and/or Umami. Umami's own page views
