@@ -308,10 +308,18 @@
   }
 
   /* ---------- analytics ----------
-     Google Analytics 4, for this edition only: the stream is
-     ai-community.sandbox.purplemaia.org. content.js leaves it "" so the
-     staff site sends nothing. The FAQ below says what this collects. */
-  if (S.analytics) S.analytics.ga4 = "G-Y6HCB0HT5S";
+     Google Analytics 4 and Umami, for this edition only: both count
+     ai-community.sandbox.purplemaia.org. content.js leaves them "" so the
+     staff site sends nothing. The FAQ below says what this collects.
+     Umami runs on the PMF Dokku box (app `umami`, database `umami-db`). */
+  if (S.analytics) {
+    S.analytics.ga4 = "G-Y6HCB0HT5S";
+    S.analytics.umami = {
+      script: "https://umami.sandbox.purplemaia.org/script.js",
+      website: "390435a4-0805-4610-848f-b52bd859a0bf",
+      domains: "ai-community.sandbox.purplemaia.org"
+    };
+  }
 
   /* S.pathways is gone too: the rebuild answers "where do I start?" with
      the three placement questions under the module cards instead, and this
@@ -342,7 +350,7 @@
     { q: "Are the quizzes graded, and does anyone see my score?",
       a: "No and no. The practice at the end of each module is for you. Your answers, your scores and your reading progress stay in your own browser. Two things can send what you write, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
     { q: "Do you track visits to this page?",
-      a: "We count them with Google Analytics, so we can see which modules people use and where they stop. It records which pages are opened, and when a section is read, a video is played or finished, a practice is tried, a quiz is completed, a prompt is copied, or the feedback form or certificate is used. It does not record your answers, your scores, what you search for, or anything you type. If your browser is set to send Do Not Track or Global Privacy Control, nothing is counted at all." },
+      a: "We count them, so we can see which modules people use and where they stop. The counts go to two places: Google Analytics, and Umami, which runs on Purple Maiʻa's own server. It records which pages are opened, and when a section is read, a video is played or finished, a practice is tried, a quiz is completed, a prompt is copied, or the feedback form or certificate is used. It does not record your answers, your scores, what you search for, or anything you type. If your browser is set to send Do Not Track or Global Privacy Control, nothing is counted at all." },
     { q: "Can our organization use this?",
       a: "Yes. It is free and public, and nothing on it is gated. Share the link, work through it together in a meeting, or copy the source and adapt it for your own group." },
     { q: "What is the certificate at the end?",
