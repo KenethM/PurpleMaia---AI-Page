@@ -681,15 +681,29 @@ The one deliberate exception is analytics on the community edition (below).
 
 ## 7. Analytics
 
-Google Analytics 4, **off unless an edition sets a measurement ID**.
-`SITE.analytics.ga4` in `content.js` is `""`, so the staff site loads no
-analytics script at all. `community.js` sets `G-Y6HCB0HT5S`, the stream for
-`ai-community.sandbox.purplemaia.org`, and its FAQ ("Do you track visits to
-this page?") says what is collected.
+Two tools, side by side for now: Google Analytics 4 and a self-hosted
+Umami. Both are **off unless an edition sets them**. `SITE.analytics` in
+`content.js` leaves them blank, so the staff site loads no analytics script
+at all. `community.js` sets both for `ai-community.sandbox.purplemaia.org`,
+and its FAQ ("Do you track visits to this page?") says what is collected.
+
+- **GA4:** measurement ID `G-Y6HCB0HT5S`.
+- **Umami:** https://umami.sandbox.purplemaia.org, Website ID
+  `390435a4-0805-4610-848f-b52bd859a0bf`. Dokku app `umami`, Postgres service
+  `umami-db`, image `docker.umami.is/umami-software/umami`. `data-domains`
+  limits it to the community hostname, so local copies never report.
+
+Every event goes to both through one `track()` helper in `app.js`, so the
+table below is the same for each. In Umami the parameters show as event data.
 
 Nothing is sent from `file://`, `localhost`, or a browser that sends Do Not
 Track or Global Privacy Control. Google Signals and ad personalisation are
-switched off in the tag.
+switched off in the GA tag.
+
+**Running Umami.** Every command is `ssh dokku@dokku-pmf-sandbox.westus2.cloudapp.azure.com …`.
+`logs umami` if the dashboard misbehaves; `git:from-image umami <image:tag>`
+to upgrade (pin a tag, then bump it on purpose); `postgres:export umami-db >
+umami.dump` for a backup. The admin login is not in this repo.
 
 | Event | Sent when | Parameters |
 | --- | --- | --- |

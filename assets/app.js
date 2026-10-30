@@ -113,10 +113,12 @@
   }
 
   /* =====================================================
-     ANALYTICS — Google Analytics 4, off unless configured
-     SITE.analytics.ga4 is a measurement ID ("G-…"). Empty means
-     no script loads and track() does nothing, which is how the
-     staff edition runs; community.js sets the ID for its own site.
+     ANALYTICS — Google Analytics 4 and/or Umami, off unless configured
+     SITE.analytics.ga4 is a GA4 measurement ID ("G-…");
+     SITE.analytics.umami is { script, website } for the self-hosted
+     Umami on Purple Maiʻa's Dokku box. Either can be on alone. Both
+     empty means no script loads and track() does nothing, which is how
+     the staff edition runs; community.js sets the IDs for its own site.
 
      Also off from file://, localhost, and for anyone whose browser
      sends Do Not Track or Global Privacy Control. What is sent is
@@ -125,11 +127,17 @@
      routed by its hash, so page views are sent by hand from route()
      with the hash turned into a path (#/module/m2 -> /module/m2).
      ===================================================== */
-  var GA_ID = String((S.analytics || {}).ga4 || '').trim();
-  var tracking = !!GA_ID && /^https?:$/.test(location.protocol) &&
+  var AN = S.analytics || {};
+  var GA_ID = String(AN.ga4 || '').trim();
+  var UM = AN.umami || {};
+  var UM_SRC = String(UM.script || '').trim(), UM_ID = String(UM.website || '').trim();
+  var trackable = /^https?:$/.test(location.protocol) &&
     !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) &&
     !(navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true);
-  if (tracking) {
+  var useGa = trackable && !!GA_ID;
+  var useUmami = trackable && !!UM_SRC && !!UM_ID;
+  var tracking = useGa || useUmami;
+  if (useGa) {
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
@@ -143,9 +151,43 @@
     gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
     document.head.appendChild(gaScript);
   }
+  /* Umami's own page views are off: route() sends them, like GA4's. Calls
+     made before its script arrives (the first page view always is) wait
+     in umamiQueue. Every call carries the path-style url, or Umami would
+     file events under the raw #/… address. */
+  var umamiQueue = [], umamiPath = '/';
+  if (useUmami) {
+    var umScript = document.createElement('script');
+    umScript.defer = true;
+    umScript.src = UM_SRC;
+    umScript.setAttribute('data-website-id', UM_ID);
+    umScript.setAttribute('data-auto-pageview', 'false');
+    umScript.setAttribute('data-do-not-track', 'true');
+    if (UM.domains) umScript.setAttribute('data-domains', UM.domains);
+    umScript.onload = function () {
+      umamiQueue.forEach(function (f) { f(); });
+      umamiQueue = null;
+    };
+    umScript.onerror = function () { umamiQueue = null; };   // blocked: drop, don't pile up
+    document.head.appendChild(umScript);
+  }
+  function toUmami(name, params) {
+    var url = umamiPath;
+    var send = function () {
+      if (!window.umami) return;
+      window.umami.track(function (props) {
+        var p = Object.assign({}, props, { url: url });
+        if (name === 'page_view') p.title = params.page_title;
+        else { p.name = name; if (params && Object.keys(params).length) p.data = params; }
+        return p;
+      });
+    };
+    if (umamiQueue) umamiQueue.push(send); else send();
+  }
   function track(name, params) {
     if (!tracking) return;
-    try { window.gtag('event', name, params || {}); } catch (e) {}
+    if (useGa) { try { window.gtag('event', name, params || {}); } catch (e) {} }
+    if (useUmami) { try { toUmami(name, params || {}); } catch (e) {} }
   }
 
   /* =====================================================
@@ -2471,6 +2513,7 @@
   function trackView(key) {
     var m = key.indexOf('module:') === 0 ? moduleById(key.slice(7)) : null;
     var path = m ? '/module/' + m.id : key === 'reference' ? '/reference' : '/';
+    umamiPath = path + location.search;
     track('page_view', {
       page_location: location.origin + location.pathname.replace(/\/[^\/]*$/, '') + path + location.search,
       page_title: m ? m.title : key === 'reference' ? 'Reference' : 'Home',
