@@ -298,7 +298,20 @@
        before any certificate had been issued, so none carry the old name. */
     S.certificate.courseName = "Artificial Intelligence 101";
     S.certificate.blurb = "You went through all of it. Put your name on it and keep a copy.";
+    /* content.js says the lessons you opened stay in the browser. On this
+       edition Google Analytics counts page views, so it cannot say that. */
+    S.certificate.disclosureBody =
+      "Your name, your email, and how many lessons you finished. Nothing else, " +
+      "and nothing until you press the button. Your answers and your progress " +
+      "stay in this browser. The record lives in a spreadsheet in Purple " +
+      "Maiʻa's own Drive.";
   }
+
+  /* ---------- analytics ----------
+     Google Analytics 4, for this edition only: the stream is
+     ai-community.sandbox.purplemaia.org. content.js leaves it "" so the
+     staff site sends nothing. The FAQ below says what this collects. */
+  if (S.analytics) S.analytics.ga4 = "G-Y6HCB0HT5S";
 
   /* S.pathways is gone too: the rebuild answers "where do I start?" with
      the three placement questions under the module cards instead, and this
@@ -327,7 +340,9 @@
     { q: "Where are the Purple Maiʻa videos?",
       a: ours + " of the " + total + " topics have one now, and the rest are being made. Until a topic's video is ready, the few lines of text carry the idea, and a longer outside explainer is linked if you want one." },
     { q: "Are the quizzes graded, and does anyone see my score?",
-      a: "No and no. The practice at the end of each module is for you. Your answers and reading progress stay in your own browser and nothing is uploaded. Two things can send anything, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
+      a: "No and no. The practice at the end of each module is for you. Your answers, your scores and your reading progress stay in your own browser. Two things can send what you write, and both wait for you to press a button: the feedback form, and the certificate at the end if you want one." },
+    { q: "Do you track visits to this page?",
+      a: "We count them with Google Analytics, so we can see which modules people use and where they stop. It records which pages are opened, and when a section is read, a video is played or finished, a practice is tried, a quiz is completed, a prompt is copied, or the feedback form or certificate is used. It does not record your answers, your scores, what you search for, or anything you type. If your browser is set to send Do Not Track or Global Privacy Control, nothing is counted at all." },
     { q: "Can our organization use this?",
       a: "Yes. It is free and public, and nothing on it is gated. Share the link, work through it together in a meeting, or copy the source and adapt it for your own group." },
     { q: "What is the certificate at the end?",
