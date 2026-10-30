@@ -698,7 +698,7 @@ switched off in the tag.
 | `video_start` | A video poster is pressed | `video` (lesson id), `source` (`file`, `youtube`, `deeper`) |
 | `video_complete` | 90% of one of our own videos has played | `video` |
 | `practice_use` | First click or keystroke in a practice activity, per module visit | `activity`, `type` |
-| `quiz_complete` | A module quiz is finished | `module` (no score, the FAQ promises scores stay put) |
+| `quiz_complete` | A quick check or end-of-module practice is finished | `module`, `check` (the check's section id; no score, the FAQ promises scores stay put) |
 | `placement_result` | The placement questions are answered | `track` |
 | `prompt_copy` | A prompt is copied | `prompt` (its title) |
 | `audience_switch` | A visitor switches audience | `audience` |
@@ -709,7 +709,7 @@ In the GA4 stream settings, **Enhanced measurement → Page views → "Page
 changes based on browser history events" must be off**, or every hash change
 is counted a second time with the raw `#/…` URL. Form interactions are off
 too: the feedback form is counted by the events above. Custom parameters
-(`module`, `section`, `video`, `activity`, `audience` …) only show up in
+(`module`, `section`, `check`, `video`, `activity`, `audience` …) only show up in
 reports once they are registered under Admin → Custom definitions.
 
 If you add an event, add a row here and keep the FAQ answer true.
