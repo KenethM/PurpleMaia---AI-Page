@@ -103,7 +103,7 @@ either dashboard. Page views and events arrived with path URLs, the first
 Umami dashboard after deploy (since done: Realtime showed the visit).
 
 ### Open / next
-- [x] Deployed to `ai-community`; Sam saw her own visit in Umami's Realtime.
+- [x] Deployed to `ai-community`; Sam's own visit showed in Umami's Realtime.
 - [ ] Pin the Umami image to the version in its Settings instead of `latest`.
 - [ ] Ask David whether `umami-db` is covered by any server backup.
 - [ ] After a couple of weeks, compare the two and decide whether GA4 stays.
