@@ -65,11 +65,56 @@ with it. That is the thing to watch, not the command.
 
 ---
 
+## 2026-10-30 — Umami on Dokku, next to GA4
+
+**Who:** Sam, with Claude
+**Branch:** `main`, then merged forward to `community-hub`
+**State:** committed and pushed to `origin`; `ai-community` deploy pending
+**Files:** `assets/app.js`, `content.js`, `community.js`, `README.md`
+
+### Why
+The self-hosted option from the start: free, cookieless, and the data stays
+on Purple Maiʻa's own server, which fits what the course teaches about data.
+Running it beside GA4 for a while so the two can be compared.
+
+### What changed
+- **Server (done by Sam over ssh):** Dokku app `umami` with Postgres
+  `umami-db` linked, `APP_SECRET` (its first value was pasted in a chat; rotate it if that has not been done),
+  `DISABLE_TELEMETRY=1`, port `http:80:3000`, image pulled with
+  `git:from-image`, Let's Encrypt on. Live at https://umami.sandbox.purplemaia.org.
+- **Site:** `track()` now sends to GA4 and/or Umami. Umami's own page views
+  are off (`data-auto-pageview="false"`); route() sends them with the same
+  hash-to-path URL as GA4. Calls made before its script loads are queued.
+  Config is `SITE.analytics.umami = { script, website, domains }`, blank in
+  `content.js`, set in `community.js`. FAQ now names both tools.
+
+### Decisions worth knowing
+- **Every Umami call sets `url` itself**, events included. Otherwise Umami
+  files them under the raw `/#/module/…` address and they never line up with
+  the page views.
+- `data-domains` is set, so a local or Pages copy of the community edition
+  never reports to the real dashboard.
+
+### How it was tested
+Headless Chrome with the community hostname mapped to a local server, Umami's
+script replaced by a recording stub and GA blocked, so no test data reached
+either dashboard. Page views and events arrived with path URLs, the first
+(queued) page view was delivered, no console errors. Not yet checked: the real
+Umami dashboard after deploy.
+
+### Open / next
+- [ ] Deploy `community-hub` to `ai-community`, then watch Umami's Realtime.
+- [ ] Pin the Umami image to the version in its Settings instead of `latest`.
+- [ ] Ask David whether `umami-db` is covered by any server backup.
+- [ ] After a couple of weeks, compare the two and decide whether GA4 stays.
+
+---
+
 ## 2026-10-29 — Google Analytics 4 on the community edition
 
 **Who:** Sam, with Claude
-**Branch:** `community-hub`, on top of `570dfb5`
-**State:** working tree only
+**Branch:** `main` (`266ca61`), merged forward to `community-hub`
+**State:** deployed to `ai-community` at `9fa89ae`, 29 Oct
 **Files:** `assets/app.js`, `content.js`, `community.js`, `README.md`
 
 ### Why

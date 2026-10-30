@@ -2160,15 +2160,20 @@ window.SITE = {
 ,
 
   /* ---------- 16. ANALYTICS ----------
-     ga4: a Google Analytics 4 measurement ID ("G-…"). Leave it "" and no
-       analytics script loads at all, which is how the staff edition runs.
-       community.js sets the community edition's own ID.
+     ga4: a Google Analytics 4 measurement ID ("G-…").
+     umami: the self-hosted Umami on the PMF Dokku box.
+       script   its tracker, https://umami.sandbox.purplemaia.org/script.js
+       website  the Website ID from Umami's Settings -> Websites
+       domains  optional: the only hostname(s) allowed to report
+     Leave them "" and no analytics script loads at all, which is how the
+     staff edition runs. community.js sets the community edition's own.
      What is sent, and what is not, is listed at the top of the ANALYTICS
      section in assets/app.js. If you turn this on for an edition, its FAQ
      has to say so: the page tells people what leaves their browser.
   --------------------------------------------------------------- */
   analytics: {
-    ga4: ""
+    ga4: "",
+    umami: { script: "", website: "", domains: "" }
   }
 
 };
