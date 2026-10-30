@@ -115,6 +115,111 @@ no events were queued. Not tested: reports in GA itself, which needs a deploy.
 
 ---
 
+## 2026-10-28 (later) — Quizzes: five kinds of question, shorter checks, a warm-up, and sound
+
+**Who:** Keneth, with Claude
+**Branch:** `main`, then merged forward to `community-hub`
+**State:** **deployed, both sites**, 28 Oct: `ai-community` at `091a5ba`, `ai-page` at `c4f6a66`.
+Checked after: the right edition on each, `?for=partners` still 200, HTML still `no-cache`.
+**Files:** `assets/app.js`, `assets/styles.css`, `content.js`, `HANDOFF.md`
+
+Sheila's PRs #1 and #2 went in first, as fast-forwards. Her footer change was
+already on `main`, so the branches still differ in `index.html` only.
+
+### Why
+
+Keneth, after working through the course: every question was the same
+three-option multiple choice, Module 2's quiz was 30 questions in one sitting,
+and some things were being asked twice. Measured before changing anything:
+
+- **Every lesson question was 3-option multiple choice**, and the scenarios
+  4-option. Even Term match was multiple choice, one definition at a time.
+- **Module 1 asked "which label fits?" about 8 times in 14**: two lesson
+  questions, then five "Which one is it?" scenarios doing the same job.
+- **Term match re-asked lesson questions.** It drew glossary terms at random,
+  so "What is an embedding?" could come up twice in one sitting.
+- **Module 2 was 30 questions**, all at the bottom of a nine-section article.
+
+### What changed
+
+**Five kinds of question, one engine.** `renderQuiz` items now take a `type`:
+`choice` (as before), `truefalse`, `order` (arrows, not dragging: same for
+mouse, thumb, keyboard and screen reader), `match` (a board: tap a term, then
+its meaning) and `sort` (examples filed into buckets one at a time). Each type
+was matched to content it suits rather than sprinkled in for variety: `order`
+for the generation loop and the nested terms, `sort` for Module 1's labels,
+`truefalse` for misconceptions.
+
+**Scoring is in points now, not screens.** A board of five pairs is five
+points, a sort of seven cards seven. A pair matched after a slip costs its
+point but still has to be found, so the board always finishes.
+
+**Long modules are split into checks.** A module can list `checks`, each with
+its lessons, its activities, and the section it sits `after`. Module 2 has
+three (6, 8 and 7 screens, was 30), Module 3 two (6 and 11, was 21). Module 1
+stays as one, now 5 screens instead of 14. The last check keeps the old key
+`module:<id>` and the old `#…/practice` address. Progress counts each check
+as a unit, so the certificate needs all of them.
+
+**Nothing is asked twice in one check.** Each Term match board now names its
+`terms`, and the lesson questions those terms covered were removed. Module 2's
+three boards, Module 3's two, Module 1's one: no overlaps, checked by hand.
+
+**Take a guess, at the top of Module 2.** Three questions nobody can answer
+before reading (does it learn from your correction, strawberry, same question
+twice). No score, not counted toward progress. Each guess is kept in this
+browser and its answer is revealed only once the section that teaches it has
+been read; before that it says where to find out. Data-driven: adding one to
+another module is a `warmup` block in `content.js`. Trialled on Module 2 only.
+
+**Sound.** Synthesised with Web Audio, so there are no files. A right answer is
+a soft bell that climbs a pentatonic step with each answer in a streak; a miss
+is a low, muted pair; a sealed result plays a short arpeggio. On by default
+and quiet. The speaker button on every quiz switches it off for all of them,
+remembered in `aihub:sound`.
+
+### Content decisions worth knowing
+
+- Two questions were **rewritten, not just reformatted**: attention now asks how
+  the model tells the two Pythons apart (the lesson's own example, not a new
+  one), and Module 1's nesting question became an `order`.
+- "Which one is it?" became a `sort` and absorbed the streaming-recommendation
+  and translation-app examples from the lesson questions it duplicated.
+- "Spot the problem" was suggested but not built: Module 3's "Spot the real
+  one" demo already does that job.
+
+### How it was tested
+
+jsdom, both editions (`main`'s `index.html` and `community-hub`'s), against
+the working tree: **every check in every module played through by clicking**,
+with answers keyed from `content.js` rather than from the page. Order rows
+moved with the arrows, boards paired by tapping (one deliberate slip per
+midway board), sort cards filed. 199 assertions each, all passing. A second
+suite loads saved progress: all modules read on "Done" with every check
+passed; a warm-up answer appears only after its section is read; guessing
+does not move progress; reset clears guesses. 10 each, all passing.
+
+Screenshots of every new type at 1200px and 390px from headless Edge, dark
+theme. **Not tested: what the sounds actually sound like.** Nobody has heard
+them; jsdom has no audio. Worth five minutes with headphones before deploying.
+
+### Watch for
+
+- **Anyone who finished Module 2 or 3 before this lands is short a check.**
+  The old result counts for the last check, not the new midway ones, so those
+  modules read "Practice left" until the short checks are done. It costs a
+  six-question check, and the certificate is the reason it should not be waived.
+- Term match boards are curated now. **A new glossary term is not on any
+  board until it is added to a board's `terms`.**
+
+### Open / next
+
+- [ ] Listen to the sounds, on a laptop and a phone. Adjust in `sfx` (`app.js`).
+- [ ] Decide whether the warm-up goes on Modules 1 and 3 after people try it.
+- [x] Deploy both editions. Keneth played the checks on localhost first.
+
+---
+
 ## 2026-10-28 — Module pager, and certificates for the community edition only
 
 **Who:** Sheila, with Claude
