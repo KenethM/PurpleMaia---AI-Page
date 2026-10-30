@@ -641,6 +641,44 @@ and that stays true of progress, quiz answers, theme and audience, all of which
 live in the browser. The feedback form is the single exception, it is labelled
 as such in the FAQ, which lists exactly what each note carries. If you extend it, keep that property: no background collection.
 
+The one deliberate exception is analytics on the community edition (below).
+
+
+## 7. Analytics
+
+Google Analytics 4, **off unless an edition sets a measurement ID**.
+`SITE.analytics.ga4` in `content.js` is `""`, so the staff site loads no
+analytics script at all. `community.js` sets `G-Y6HCB0HT5S`, the stream for
+`ai-community.sandbox.purplemaia.org`, and its FAQ ("Do you track visits to
+this page?") says what is collected.
+
+Nothing is sent from `file://`, `localhost`, or a browser that sends Do Not
+Track or Global Privacy Control. Google Signals and ad personalisation are
+switched off in the tag.
+
+| Event | Sent when | Parameters |
+| --- | --- | --- |
+| `page_view` | Home, a module, or Reference is opened (once per page, not per section jump) | `page_location` with the hash as a path (`/module/<id>`), `page_title`, `audience` |
+| `section_read` | A section counts as read (same rule as progress) | `module`, `section` |
+| `video_start` | A video poster is pressed | `video` (lesson id), `source` (`file`, `youtube`, `deeper`) |
+| `video_complete` | 90% of one of our own videos has played | `video` |
+| `practice_use` | First click or keystroke in a practice activity, per module visit | `activity`, `type` |
+| `quiz_complete` | A module quiz is finished | `module` (no score, the FAQ promises scores stay put) |
+| `placement_result` | The placement questions are answered | `track` |
+| `prompt_copy` | A prompt is copied | `prompt` (its title) |
+| `audience_switch` | A visitor switches audience | `audience` |
+| `feedback_open`, `feedback_send` | The feedback dialog opens / a note is submitted | `kind` on send, never the note |
+| `certificate_request` | A certificate link is requested | none, no name or email |
+
+In the GA4 stream settings, **Enhanced measurement → Page views → "Page
+changes based on browser history events" must be off**, or every hash change
+is counted a second time with the raw `#/…` URL. Form interactions are off
+too: the feedback form is counted by the events above. Custom parameters
+(`module`, `section`, `video`, `activity`, `audience` …) only show up in
+reports once they are registered under Admin → Custom definitions.
+
+If you add an event, add a row here and keep the FAQ answer true.
+
 
 ## Licence
 

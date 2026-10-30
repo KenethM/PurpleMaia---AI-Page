@@ -65,6 +65,56 @@ with it. That is the thing to watch, not the command.
 
 ---
 
+## 2026-10-29 — Google Analytics 4 on the community edition
+
+**Who:** Sam, with Claude
+**Branch:** `community-hub`, on top of `570dfb5`
+**State:** working tree only
+**Files:** `assets/app.js`, `content.js`, `community.js`, `README.md`
+
+### Why
+We want to know which modules people use and where they stop. GA4 first, as a
+comparison; self-hosted Umami on Dokku is still the preferred long-term route.
+
+### What changed
+- New ANALYTICS section near the top of `app.js`: loads `gtag.js` only when
+  `SITE.analytics.ga4` is set, and a `track()` helper that does nothing otherwise.
+- Page views are sent by hand from `route()`, once per page, with the hash
+  turned into a path. Events: section read, video start / 90%, practice used,
+  quiz completed, placement result, prompt copied, audience switch, feedback
+  opened / sent, certificate requested. Full table in README §7.
+- `content.js` §16 `analytics.ga4: ""`; `community.js` sets `G-Y6HCB0HT5S`.
+- Community FAQ: the scores answer no longer says "nothing is uploaded", and a
+  new "Do you track visits to this page?" says what is and is not collected.
+  The certificate disclosure on this edition drops "the lessons you opened
+  stay in this browser", which stopped being true.
+
+### Decisions worth knowing
+- **Staff site stays analytics-free.** The ID lives in `community.js`, not
+  `content.js`, so merging main into community-hub can never switch it on there.
+- **No scores, no search text, nothing typed.** `quiz_complete` carries the
+  module only, because the FAQ says nobody sees your score.
+- Off for `file://`, localhost, Do Not Track and Global Privacy Control.
+  Google Signals and ad personalisation are off in the tag.
+
+### How it was tested
+Headless Chrome against the local files under a non-localhost hostname:
+page views fired once per page (a section jump inside a module did not add
+one), `video_start`, `practice_use` (once for two clicks) and `feedback_open`
+landed in `dataLayer`, no console errors. On `localhost` no script loaded and
+no events were queued. Not tested: reports in GA itself, which needs a deploy.
+
+### Open / next
+- [ ] Turn off "Page changes based on browser history events" in the stream's
+      Enhanced measurement, or page views double up.
+- [ ] Register the custom parameters as custom dimensions in GA4.
+- [ ] Deploy `community-hub` to `ai-community` and check Realtime in GA4.
+- [ ] The `app.js` / `content.js` parts are edition-neutral; land them on
+      `main` too so the one-way merge flow stays clean.
+- [ ] Umami on Dokku, then decide which one to keep.
+
+---
+
 ## 2026-10-28 — Module pager, and certificates for the community edition only
 
 **Who:** Sheila, with Claude

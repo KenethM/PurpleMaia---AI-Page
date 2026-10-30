@@ -113,6 +113,42 @@
   }
 
   /* =====================================================
+     ANALYTICS — Google Analytics 4, off unless configured
+     SITE.analytics.ga4 is a measurement ID ("G-…"). Empty means
+     no script loads and track() does nothing, which is how the
+     staff edition runs; community.js sets the ID for its own site.
+
+     Also off from file://, localhost, and for anyone whose browser
+     sends Do Not Track or Global Privacy Control. What is sent is
+     which page and which step: never quiz answers or scores, search
+     text, or anything typed into a form. The page is one document
+     routed by its hash, so page views are sent by hand from route()
+     with the hash turned into a path (#/module/m2 -> /module/m2).
+     ===================================================== */
+  var GA_ID = String((S.analytics || {}).ga4 || '').trim();
+  var tracking = !!GA_ID && /^https?:$/.test(location.protocol) &&
+    !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) &&
+    !(navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true);
+  if (tracking) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', GA_ID, {
+      send_page_view: false,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false
+    });
+    var gaScript = document.createElement('script');
+    gaScript.async = true;
+    gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+    document.head.appendChild(gaScript);
+  }
+  function track(name, params) {
+    if (!tracking) return;
+    try { window.gtag('event', name, params || {}); } catch (e) {}
+  }
+
+  /* =====================================================
      AUDIENCE — one knowledge base, re-skinned per room
      ===================================================== */
   /* `draft: true` holds an audience back completely: no chip, and no way in
@@ -269,6 +305,7 @@
       var id = winner();
       var r = (P.results || {})[id] || {};
       var m = moduleForTrack(id);
+      track('placement_result', { track: id });
       host.innerHTML =
         '<div class="hq-card hq-result">' +
           '<div class="hq-head">' +
@@ -650,6 +687,7 @@
         var text = S.prompts[Number(btn.getAttribute('data-copy'))].text;
         copyText(text, function (ok) {
           if (!ok) { toast('Could not copy — select the text instead'); return; }
+          track('prompt_copy', { prompt: S.prompts[Number(btn.getAttribute('data-copy'))].title });
           btn.classList.add('copied');
           btn.querySelector('span').textContent = 'Copied';
           toast('Prompt copied to your clipboard');
@@ -1169,7 +1207,17 @@
   function mountPractice(root, items) {
     items.forEach(function (p) {
       var card = root.querySelector('[data-practice="' + p.id + '"]');
-      if (card) PRACTICE_ENGINES[p.type]($('.practice-body', card), p);
+      if (!card) return;
+      PRACTICE_ENGINES[p.type]($('.practice-body', card), p);
+      // Counted once per visit to the module, on the first click or keystroke.
+      var used = false;
+      var onUse = function () {
+        if (used) return;
+        used = true;
+        track('practice_use', { activity: p.id, type: p.type });
+      };
+      card.addEventListener('click', onUse);
+      card.addEventListener('input', onUse);
     });
   }
 
@@ -1414,6 +1462,7 @@
     sectionLessonIds(s).forEach(function (id) { done.add(id); });
     saveRead();
     saveProgress();
+    track('section_read', { module: shownModule || '', section: s.id });
   }
   function moduleProgress(m) {
     var read = m.sections.filter(isRead).length;
@@ -1545,6 +1594,7 @@
         var l = lessonById(btn.getAttribute('data-play'));
         var holder = btn.parentNode;
         holder.outerHTML = embedFor(l.video, l.title, l.videoAspect);
+        track('video_start', { video: l.id, source: (parseVideo(l.video) || {}).kind || '' });
       });
     });
 
@@ -1579,6 +1629,7 @@
         if (btn) btn.addEventListener('click', function () {
           btn.parentNode.outerHTML =
             embedFor('youtube:' + vid, 'Outside explainer on ' + l.title, null, true);
+          track('video_start', { video: l.id, source: 'deeper' });
         });
       });
     });
@@ -1593,6 +1644,7 @@
         },
         onFinish: function (score, total) {
           saveQuizResult('module:' + m.id, score, total);
+          track('quiz_complete', { module: m.id });   // the score stays here (FAQ)
           paintModuleProgress();
         }
       });
@@ -1657,6 +1709,7 @@
     if (watchedSet.has(id) || playedFraction(v) < WATCHED_AT) return;
     watchedSet.add(id);
     saveWatched();
+    track('video_complete', { video: id });
     var tag = $('.art-watched', fig);
     if (tag) tag.hidden = false;
     paintModuleProgress();
@@ -1882,12 +1935,24 @@
   function route() {
     var key = viewKey(location.hash || '');
     var changing = shownView !== null && key !== shownView && key !== 'lesson';
+    if (key !== 'lesson' && key !== shownView) trackView(key);
     if (key !== 'lesson') shownView = key;
     if (changing && document.startViewTransition && !calm()) {
       document.startViewTransition(routeNow);
     } else {
       routeNow();
     }
+  }
+
+  // One page view per page, not per section jump inside it (see ANALYTICS).
+  function trackView(key) {
+    var m = key.indexOf('module:') === 0 ? moduleById(key.slice(7)) : null;
+    var path = m ? '/module/' + m.id : key === 'reference' ? '/reference' : '/';
+    track('page_view', {
+      page_location: location.origin + location.pathname.replace(/\/[^\/]*$/, '') + path + location.search,
+      page_title: m ? m.title : key === 'reference' ? 'Reference' : 'Home',
+      audience: (audience && audience.id) || ''
+    });
   }
 
   /* While the page scrolls itself to a section, sections it passes are not
@@ -2347,7 +2412,10 @@
 
     try { localStorage.setItem(AKEY, audience.id); } catch (e) {}
     try { history.replaceState(null, '', audienceUrl(audience.id) + location.hash); } catch (e) {}
-    if (!initial) toast('Now showing the ' + audience.label.toLowerCase() + ' version');
+    if (!initial) {
+      toast('Now showing the ' + audience.label.toLowerCase() + ' version');
+      track('audience_switch', { audience: audience.id });
+    }
   }
 
   (function initAudience() {
@@ -2528,7 +2596,7 @@
 
     fab.addEventListener('click', function () {
       fbStatus('');
-      if (!dlg.open) dlg.showModal();
+      if (!dlg.open) { dlg.showModal(); track('feedback_open'); }
       setTimeout(function () { $('#fbMessage').focus(); }, 30);
     });
     $('#fbClose').addEventListener('click', function () { dlg.close(); });
@@ -2559,6 +2627,7 @@
       var btn = $('#fbSubmit');
       btn.disabled = true;
       fbStatus('Sending…');
+      track('feedback_send', { kind: p.kind });   // the kind, never the note
 
       fbSend(p, function (sent, why) {
         btn.disabled = false;
@@ -2792,6 +2861,7 @@
       }).then(function () {
         btn.disabled = false;
         certStatus(CERT.sent, 'ok');
+        track('certificate_request');   // no name, no email
         $('#certEmail').value = '';
       }, function () {
         btn.disabled = false;
